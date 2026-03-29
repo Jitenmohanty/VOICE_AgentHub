@@ -13,7 +13,8 @@ export default function DashboardPage() {
   const [sessions, setSessions] = useState<AgentSessionData[]>([]);
 
   useEffect(() => {
-    fetch("/api/sessions")
+    // Fetch up to 50 for stats calculation
+    fetch("/api/sessions?page=1&limit=50")
       .then((res) => res.json())
       .then((data) => setSessions(data.sessions || []))
       .catch(() => {});
@@ -21,12 +22,15 @@ export default function DashboardPage() {
 
   const totalSessions = sessions.length;
   const totalMinutes = Math.round(
-    sessions.reduce((sum, s) => sum + (s.duration || 0), 0) / 60
+    sessions.reduce((sum, s) => sum + (s.duration || 0), 0) / 60,
   );
-  const ratedSessions = sessions.filter((s) => s.rating != null && s.rating > 0);
+  const ratedSessions = sessions.filter(
+    (s) => s.rating != null && s.rating > 0,
+  );
   const avgRating =
     ratedSessions.length > 0
-      ? ratedSessions.reduce((sum, s) => sum + (s.rating || 0), 0) / ratedSessions.length
+      ? ratedSessions.reduce((sum, s) => sum + (s.rating || 0), 0) /
+        ratedSessions.length
       : 0;
 
   return (

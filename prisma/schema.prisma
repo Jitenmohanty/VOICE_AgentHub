@@ -65,8 +65,10 @@ model AgentSession {
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   agentType  String
+  title      String?
   config     Json
   transcript Json?
+  summary    String?
   duration   Int?
   rating     Int?
   feedback   String?

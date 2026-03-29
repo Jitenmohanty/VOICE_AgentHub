@@ -16,12 +16,13 @@ export const AGENTS: AgentDefinition[] = [
       "Complaint Resolution",
     ],
     configFields: [
-      { id: "hotelName", label: "Hotel Name", type: "text" },
+      { id: "hotelName", label: "Hotel Name", type: "text", defaultValue: "Grand Hotel" },
       {
         id: "hotelType",
         label: "Hotel Type",
         type: "select",
         options: ["Luxury", "Business", "Budget", "Resort", "Boutique"],
+        defaultValue: "Luxury",
       },
     ],
   },
@@ -40,7 +41,7 @@ export const AGENTS: AgentDefinition[] = [
       "Insurance FAQ",
     ],
     configFields: [
-      { id: "clinicName", label: "Clinic/Hospital Name", type: "text" },
+      { id: "clinicName", label: "Clinic/Hospital Name", type: "text", defaultValue: "City Clinic" },
       {
         id: "specialty",
         label: "Specialty",
@@ -52,6 +53,7 @@ export const AGENTS: AgentDefinition[] = [
           "Pediatrics",
           "Dermatology",
         ],
+        defaultValue: "General",
       },
     ],
   },
@@ -89,14 +91,16 @@ export const AGENTS: AgentDefinition[] = [
           "System Design",
           "DSA",
         ],
+        defaultValue: ["React", "TypeScript", "Node.js"],
       },
       {
         id: "level",
         label: "Experience Level",
         type: "select",
         options: ["Junior", "Mid", "Senior", "Staff", "Principal"],
+        defaultValue: "Mid",
       },
-      { id: "company", label: "Target Company (optional)", type: "text" },
+      { id: "company", label: "Target Company (optional)", type: "text", defaultValue: "" },
     ],
   },
   {
@@ -114,7 +118,7 @@ export const AGENTS: AgentDefinition[] = [
       "Allergy Info",
     ],
     configFields: [
-      { id: "restaurantName", label: "Restaurant Name", type: "text" },
+      { id: "restaurantName", label: "Restaurant Name", type: "text", defaultValue: "The Kitchen" },
       {
         id: "cuisineType",
         label: "Cuisine",
@@ -128,6 +132,7 @@ export const AGENTS: AgentDefinition[] = [
           "Chinese",
           "Mediterranean",
         ],
+        defaultValue: "Indian",
       },
     ],
   },
@@ -146,7 +151,7 @@ export const AGENTS: AgentDefinition[] = [
       "Procedure Guidance",
     ],
     configFields: [
-      { id: "jurisdiction", label: "Jurisdiction", type: "text" },
+      { id: "jurisdiction", label: "Jurisdiction", type: "text", defaultValue: "India" },
       {
         id: "legalArea",
         label: "Legal Area",
@@ -159,6 +164,7 @@ export const AGENTS: AgentDefinition[] = [
           "Family",
           "Criminal",
         ],
+        defaultValue: "Corporate",
       },
     ],
   },

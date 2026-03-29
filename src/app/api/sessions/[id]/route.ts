@@ -2,6 +2,35 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const agentSession = await prisma.agentSession.findFirst({
+      where: { id, userId: session.user.id },
+    });
+
+    if (!agentSession) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ session: agentSession });
+  } catch {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -26,7 +55,9 @@ export async function PATCH(
     const updated = await prisma.agentSession.update({
       where: { id },
       data: {
+        ...(body.title !== undefined && { title: body.title }),
         ...(body.transcript !== undefined && { transcript: body.transcript }),
+        ...(body.summary !== undefined && { summary: body.summary }),
         ...(body.duration !== undefined && { duration: body.duration }),
         ...(body.rating !== undefined && { rating: body.rating }),
         ...(body.feedback !== undefined && { feedback: body.feedback }),

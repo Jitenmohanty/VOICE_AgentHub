@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getAgentById } from "@/lib/agents";
 
 export async function POST(request: Request) {
   try {
@@ -18,11 +19,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create agent session record
+    // Create agent session record with initial title
+    const agent = getAgentById(agentType);
     const agentSession = await prisma.agentSession.create({
       data: {
         userId: session.user.id,
         agentType,
+        title: `${agent?.name || agentType} Session`,
         config: config || {},
         status: "active",
       },

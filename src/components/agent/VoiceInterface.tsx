@@ -9,6 +9,7 @@ import { useGeminiLive } from "@/hooks/useGeminiLive";
 import { useSessionStore } from "@/stores/session-store";
 import { useAgentStore } from "@/stores/agent-store";
 import { getAgentById } from "@/lib/agents";
+import { generateSessionTitle, generateSessionSummary } from "@/lib/summary";
 import { AgentAvatar } from "./AgentAvatar";
 import { AudioVisualizer } from "./AudioVisualizer";
 import { TranscriptPanel } from "./TranscriptPanel";
@@ -56,33 +57,83 @@ export function VoiceInterface({ agentType }: VoiceInterfaceProps) {
     };
   }, [connectionState, setElapsedSeconds]);
 
-  /**
-   * Save session data (duration, transcript, status) to the server
-   * when the call ends.
-   */
-  const saveSession = useCallback(async () => {
+  const savedRef = useRef(false);
+
+  /** Build the payload for saving session data */
+  const buildSavePayload = useCallback(() => {
     const store = useSessionStore.getState();
-    const sid = store.sessionId;
+    const msgs = store.transcript;
+    const agentName = agent?.name || agentType;
+    return {
+      title: generateSessionTitle(agentName, msgs),
+      duration: store.elapsedSeconds,
+      transcript: msgs.map((m) => ({
+        speaker: m.speaker,
+        text: m.text,
+        timestamp: m.timestamp,
+      })),
+      summary: generateSessionSummary(agentName, msgs, store.elapsedSeconds),
+      status: "completed",
+    };
+  }, [agent?.name, agentType]);
+
+  /** Save session data to the server when the call ends. */
+  const saveSession = useCallback(async () => {
+    if (savedRef.current) return;
+    const sid = useSessionStore.getState().sessionId;
     if (!sid) return;
+    savedRef.current = true;
 
     try {
       await fetch(`/api/sessions/${sid}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          duration: store.elapsedSeconds,
-          transcript: store.transcript.map((m) => ({
-            speaker: m.speaker,
-            text: m.text,
-            timestamp: m.timestamp,
-          })),
-          status: "completed",
-        }),
+        body: JSON.stringify(buildSavePayload()),
       });
     } catch {
-      // Silent fail — session save is best-effort
+      savedRef.current = false; // allow retry
     }
-  }, []);
+  }, [buildSavePayload]);
+
+  /** Best-effort save via keepalive fetch (works during page unload) */
+  const saveSessionBeacon = useCallback(() => {
+    if (savedRef.current) return;
+    const sid = useSessionStore.getState().sessionId;
+    if (!sid) return;
+    savedRef.current = true;
+
+    try {
+      fetch(`/api/sessions/${sid}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildSavePayload()),
+        keepalive: true,
+      });
+    } catch {
+      // best-effort
+    }
+  }, [buildSavePayload]);
+
+  // Save on browser close / tab switch
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (connectionState === "connected") {
+        saveSessionBeacon();
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.hidden && connectionState === "connected") {
+        saveSessionBeacon();
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [connectionState, saveSessionBeacon]);
 
   const handleEndCall = useCallback(async () => {
     await disconnect();
@@ -91,10 +142,13 @@ export function VoiceInterface({ agentType }: VoiceInterfaceProps) {
   }, [disconnect, saveSession]);
 
   const handleBack = useCallback(() => {
+    if (connectionState === "connected") {
+      saveSessionBeacon();
+    }
     disconnect();
     reset();
     router.push("/dashboard");
-  }, [disconnect, reset, router]);
+  }, [connectionState, disconnect, reset, router, saveSessionBeacon]);
 
   if (!agent) {
     return (

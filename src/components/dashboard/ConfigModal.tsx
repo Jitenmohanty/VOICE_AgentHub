@@ -22,7 +22,13 @@ interface ConfigModalProps {
 }
 
 export function ConfigModal({ agent, onSubmit, onClose }: ConfigModalProps) {
-  const [config, setConfig] = useState<AgentConfig>({});
+  const [config, setConfig] = useState<AgentConfig>(() => {
+    const initial: AgentConfig = {};
+    for (const field of agent.configFields) {
+      if (field.defaultValue !== undefined) initial[field.id] = field.defaultValue;
+    }
+    return initial;
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

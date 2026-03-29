@@ -8,8 +8,10 @@ export interface TranscriptMessage {
 export interface AgentSessionData {
   id: string;
   agentType: string;
+  title: string | null;
   config: Record<string, unknown>;
   transcript: TranscriptMessage[];
+  summary: string | null;
   duration: number | null;
   rating: number | null;
   feedback: string | null;

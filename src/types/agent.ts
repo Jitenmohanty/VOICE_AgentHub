@@ -3,6 +3,7 @@ export interface AgentConfigField {
   label: string;
   type: "text" | "select" | "multi-select";
   options?: string[];
+  defaultValue?: string | string[];
 }
 
 export interface AgentDefinition {
