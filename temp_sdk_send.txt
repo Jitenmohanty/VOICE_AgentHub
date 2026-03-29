@@ -1,0 +1,261 @@
+﻿
+  node_modules\@google\genai\dist\index.mjs:11643:    }
+  node_modules\@google\genai\dist\index.mjs:11644:    return toObject;
+  node_modules\@google\genai\dist\index.mjs:11645:}
+> node_modules\@google\genai\dist\index.mjs:11646:function 
+liveSendRealtimeInputParametersToMldev(fromObject) {
+  node_modules\@google\genai\dist\index.mjs:11647:    const toObject = {};
+  node_modules\@google\genai\dist\index.mjs:11648:    const fromMedia = 
+getValueByPath(fromObject, ['media']);
+  node_modules\@google\genai\dist\index.mjs:11649:    if (fromMedia != null) {
+  node_modules\@google\genai\dist\index.mjs:11650:        let transformedList 
+= tBlobs(fromMedia);
+  node_modules\@google\genai\dist\index.mjs:11651:        if 
+(Array.isArray(transformedList)) {
+  node_modules\@google\genai\dist\index.mjs:11652:            transformedList 
+= transformedList.map((item) => {
+  node_modules\@google\genai\dist\index.mjs:11653:                return 
+blobToMldev$2(item);
+  node_modules\@google\genai\dist\index.mjs:11654:            });
+  node_modules\@google\genai\dist\index.mjs:11655:        }
+  node_modules\@google\genai\dist\index.mjs:11656:        
+setValueByPath(toObject, ['mediaChunks'], transformedList);
+  node_modules\@google\genai\dist\index.mjs:11657:    }
+  node_modules\@google\genai\dist\index.mjs:11658:    const fromAudio = 
+getValueByPath(fromObject, ['audio']);
+  node_modules\@google\genai\dist\index.mjs:11659:    if (fromAudio != null) {
+  node_modules\@google\genai\dist\index.mjs:11660:        
+setValueByPath(toObject, ['audio'], blobToMldev$2(tAudioBlob(fromAudio)));
+  node_modules\@google\genai\dist\index.mjs:11661:    }
+  node_modules\@google\genai\dist\index.mjs:11662:    const fromAudioStreamEnd 
+= getValueByPath(fromObject, [
+  node_modules\@google\genai\dist\index.mjs:11663:        'audioStreamEnd',
+  node_modules\@google\genai\dist\index.mjs:11664:    ]);
+  node_modules\@google\genai\dist\index.mjs:11665:    if (fromAudioStreamEnd 
+!= null) {
+  node_modules\@google\genai\dist\index.mjs:11666:        
+setValueByPath(toObject, ['audioStreamEnd'], fromAudioStreamEnd);
+  node_modules\@google\genai\dist\index.mjs:11667:    }
+  node_modules\@google\genai\dist\index.mjs:11668:    const fromVideo = 
+getValueByPath(fromObject, ['video']);
+  node_modules\@google\genai\dist\index.mjs:11669:    if (fromVideo != null) {
+  node_modules\@google\genai\dist\index.mjs:11670:        
+setValueByPath(toObject, ['video'], blobToMldev$2(tImageBlob(fromVideo)));
+  node_modules\@google\genai\dist\index.mjs:11671:    }
+  node_modules\@google\genai\dist\index.mjs:11672:    const fromText = 
+getValueByPath(fromObject, ['text']);
+  node_modules\@google\genai\dist\index.mjs:11673:    if (fromText != null) {
+  node_modules\@google\genai\dist\index.mjs:11674:        
+setValueByPath(toObject, ['text'], fromText);
+  node_modules\@google\genai\dist\index.mjs:11675:    }
+  node_modules\@google\genai\dist\index.mjs:11676:    const fromActivityStart 
+= getValueByPath(fromObject, [
+  node_modules\@google\genai\dist\index.mjs:11685:    }
+  node_modules\@google\genai\dist\index.mjs:11686:    return toObject;
+  node_modules\@google\genai\dist\index.mjs:11687:}
+> node_modules\@google\genai\dist\index.mjs:11688:function 
+liveSendRealtimeInputParametersToVertex(fromObject) {
+  node_modules\@google\genai\dist\index.mjs:11689:    const toObject = {};
+  node_modules\@google\genai\dist\index.mjs:11690:    const fromMedia = 
+getValueByPath(fromObject, ['media']);
+  node_modules\@google\genai\dist\index.mjs:11691:    if (fromMedia != null) {
+  node_modules\@google\genai\dist\index.mjs:11692:        let transformedList 
+= tBlobs(fromMedia);
+  node_modules\@google\genai\dist\index.mjs:11693:        if 
+(Array.isArray(transformedList)) {
+  node_modules\@google\genai\dist\index.mjs:11694:            transformedList 
+= transformedList.map((item) => {
+  node_modules\@google\genai\dist\index.mjs:11695:                return item;
+  node_modules\@google\genai\dist\index.mjs:11696:            });
+  node_modules\@google\genai\dist\index.mjs:11697:        }
+  node_modules\@google\genai\dist\index.mjs:11698:        
+setValueByPath(toObject, ['mediaChunks'], transformedList);
+  node_modules\@google\genai\dist\index.mjs:11699:    }
+  node_modules\@google\genai\dist\index.mjs:11700:    const fromAudio = 
+getValueByPath(fromObject, ['audio']);
+  node_modules\@google\genai\dist\index.mjs:11701:    if (fromAudio != null) {
+  node_modules\@google\genai\dist\index.mjs:11702:        
+setValueByPath(toObject, ['audio'], tAudioBlob(fromAudio));
+  node_modules\@google\genai\dist\index.mjs:11703:    }
+  node_modules\@google\genai\dist\index.mjs:11704:    const fromAudioStreamEnd 
+= getValueByPath(fromObject, [
+  node_modules\@google\genai\dist\index.mjs:11705:        'audioStreamEnd',
+  node_modules\@google\genai\dist\index.mjs:11706:    ]);
+  node_modules\@google\genai\dist\index.mjs:11707:    if (fromAudioStreamEnd 
+!= null) {
+  node_modules\@google\genai\dist\index.mjs:11708:        
+setValueByPath(toObject, ['audioStreamEnd'], fromAudioStreamEnd);
+  node_modules\@google\genai\dist\index.mjs:11709:    }
+  node_modules\@google\genai\dist\index.mjs:11710:    const fromVideo = 
+getValueByPath(fromObject, ['video']);
+  node_modules\@google\genai\dist\index.mjs:11711:    if (fromVideo != null) {
+  node_modules\@google\genai\dist\index.mjs:11712:        
+setValueByPath(toObject, ['video'], tImageBlob(fromVideo));
+  node_modules\@google\genai\dist\index.mjs:11713:    }
+  node_modules\@google\genai\dist\index.mjs:11714:    const fromText = 
+getValueByPath(fromObject, ['text']);
+  node_modules\@google\genai\dist\index.mjs:11715:    if (fromText != null) {
+  node_modules\@google\genai\dist\index.mjs:11716:        
+setValueByPath(toObject, ['text'], fromText);
+  node_modules\@google\genai\dist\index.mjs:11717:    }
+  node_modules\@google\genai\dist\index.mjs:11718:    const fromActivityStart 
+= getValueByPath(fromObject, [
+  node_modules\@google\genai\dist\index.mjs:16597:  
+  node_modules\@google\genai\dist\index.mjs:16598:      @remarks
+  node_modules\@google\genai\dist\index.mjs:16599:      There are two ways to 
+send messages to the live API:
+> node_modules\@google\genai\dist\index.mjs:16600:      `sendClientContent` 
+and `sendRealtimeInput`.
+  node_modules\@google\genai\dist\index.mjs:16601:  
+  node_modules\@google\genai\dist\index.mjs:16602:      `sendClientContent` 
+messages are added to the model context **in order**.
+  node_modules\@google\genai\dist\index.mjs:16603:      Having a conversation 
+using `sendClientContent` messages is roughly
+  node_modules\@google\genai\dist\index.mjs:16604:      equivalent to using 
+the `Chat.sendMessageStream`, except that the state of
+  node_modules\@google\genai\dist\index.mjs:16605:      the `chat` history is 
+stored on the API server instead of locally.
+  node_modules\@google\genai\dist\index.mjs:16606:  
+  node_modules\@google\genai\dist\index.mjs:16607:      Because of 
+`sendClientContent`'s order guarantee, the model cannot respons
+> node_modules\@google\genai\dist\index.mjs:16608:      as quickly to 
+`sendClientContent` messages as to `sendRealtimeInput`
+  node_modules\@google\genai\dist\index.mjs:16609:      messages. This makes 
+the biggest difference when sending objects that have
+  node_modules\@google\genai\dist\index.mjs:16610:      significant 
+preprocessing time (typically images).
+  node_modules\@google\genai\dist\index.mjs:16611:  
+  node_modules\@google\genai\dist\index.mjs:16612:      The 
+`sendClientContent` message sends a `Content[]`
+> node_modules\@google\genai\dist\index.mjs:16613:      which has more options 
+than the `Blob` sent by `sendRealtimeInput`.
+  node_modules\@google\genai\dist\index.mjs:16614:  
+> node_modules\@google\genai\dist\index.mjs:16615:      So the main use-cases 
+for `sendClientContent` over `sendRealtimeInput` are:
+  node_modules\@google\genai\dist\index.mjs:16616:  
+  node_modules\@google\genai\dist\index.mjs:16617:      - Sending anything 
+that can't be represented as a `Blob` (text,
+  node_modules\@google\genai\dist\index.mjs:16618:      
+`sendClientContent({turns="Hello?"}`)).
+  node_modules\@google\genai\dist\index.mjs:16619:      - Managing turns when 
+not using audio input and voice activity detection.
+  node_modules\@google\genai\dist\index.mjs:16620:        
+(`sendClientContent({turnComplete:true})` or the short form
+  node_modules\@google\genai\dist\index.mjs:16621:      `sendClientContent()`)
+  node_modules\@google\genai\dist\index.mjs:16622:      - Prefilling a 
+conversation context
+  node_modules\@google\genai\dist\index.mjs:16623:        ```
+  node_modules\@google\genai\dist\index.mjs:16624:        sendClientContent({
+  node_modules\@google\genai\dist\index.mjs:16625:            turns: [
+  node_modules\@google\genai\dist\index.mjs:16626:              
+Content({role:user, parts:...}),
+  node_modules\@google\genai\dist\index.mjs:16627:              
+Content({role:user, parts:...}),
+  node_modules\@google\genai\dist\index.mjs:16628:              ...
+  node_modules\@google\genai\dist\index.mjs:16629:            ]
+  node_modules\@google\genai\dist\index.mjs:16630:        })
+  node_modules\@google\genai\dist\index.mjs:16631:        ```
+  node_modules\@google\genai\dist\index.mjs:16632:      @experimental
+  node_modules\@google\genai\dist\index.mjs:16633:     */
+  node_modules\@google\genai\dist\index.mjs:16634:    
+sendClientContent(params) {
+  node_modules\@google\genai\dist\index.mjs:16635:        params = 
+Object.assign(Object.assign({}, defaultLiveSendClientContentParamerters), 
+params);
+  node_modules\@google\genai\dist\index.mjs:16636:        const clientMessage 
+= this.tLiveClientContent(this.apiClient, params);
+  node_modules\@google\genai\dist\index.mjs:16637:        
+this.conn.send(JSON.stringify(clientMessage));
+  node_modules\@google\genai\dist\index.mjs:16638:    }
+  node_modules\@google\genai\dist\index.mjs:16639:    /**
+  node_modules\@google\genai\dist\index.mjs:16640:      Send a realtime 
+message over the established connection.
+  node_modules\@google\genai\dist\index.mjs:16641:  
+  node_modules\@google\genai\dist\index.mjs:16642:      @param params - 
+Contains one property, `media`.
+  node_modules\@google\genai\dist\index.mjs:16643:  
+  node_modules\@google\genai\dist\index.mjs:16644:        - `media` will be 
+converted to a `Blob`
+  node_modules\@google\genai\dist\index.mjs:16645:  
+  node_modules\@google\genai\dist\index.mjs:16646:      @experimental
+  node_modules\@google\genai\dist\index.mjs:16647:  
+  node_modules\@google\genai\dist\index.mjs:16648:      @remarks
+> node_modules\@google\genai\dist\index.mjs:16649:      Use 
+`sendRealtimeInput` for realtime audio chunks and video frames (images).
+  node_modules\@google\genai\dist\index.mjs:16650:  
+> node_modules\@google\genai\dist\index.mjs:16651:      With 
+`sendRealtimeInput` the api will respond to audio automatically
+  node_modules\@google\genai\dist\index.mjs:16652:      based on voice 
+activity detection (VAD).
+  node_modules\@google\genai\dist\index.mjs:16653:  
+> node_modules\@google\genai\dist\index.mjs:16654:      `sendRealtimeInput` is 
+optimized for responsivness at the expense of
+  node_modules\@google\genai\dist\index.mjs:16655:      deterministic ordering 
+guarantees. Audio and video tokens are to the
+  node_modules\@google\genai\dist\index.mjs:16656:      context when they 
+become available.
+  node_modules\@google\genai\dist\index.mjs:16657:  
+  node_modules\@google\genai\dist\index.mjs:16658:      Note: The Call 
+signature expects a `Blob` object, but only a subset
+  node_modules\@google\genai\dist\index.mjs:16659:      of audio and image 
+mimetypes are allowed.
+  node_modules\@google\genai\dist\index.mjs:16660:     */
+> node_modules\@google\genai\dist\index.mjs:16661:    
+sendRealtimeInput(params) {
+  node_modules\@google\genai\dist\index.mjs:16662:        let clientMessage = 
+{};
+  node_modules\@google\genai\dist\index.mjs:16663:        if 
+(this.apiClient.isVertexAI()) {
+  node_modules\@google\genai\dist\index.mjs:16664:            clientMessage = {
+> node_modules\@google\genai\dist\index.mjs:16665:                
+'realtimeInput': liveSendRealtimeInputParametersToVertex(params),
+  node_modules\@google\genai\dist\index.mjs:16666:            };
+  node_modules\@google\genai\dist\index.mjs:16667:        }
+  node_modules\@google\genai\dist\index.mjs:16668:        else {
+  node_modules\@google\genai\dist\index.mjs:16669:            clientMessage = {
+> node_modules\@google\genai\dist\index.mjs:16670:                
+'realtimeInput': liveSendRealtimeInputParametersToMldev(params),
+  node_modules\@google\genai\dist\index.mjs:16671:            };
+  node_modules\@google\genai\dist\index.mjs:16672:        }
+  node_modules\@google\genai\dist\index.mjs:16673:        
+this.conn.send(JSON.stringify(clientMessage));
+  node_modules\@google\genai\dist\index.mjs:16674:    }
+  node_modules\@google\genai\dist\index.mjs:16675:    /**
+  node_modules\@google\genai\dist\index.mjs:16676:      Send a function 
+response message over the established connection.
+  node_modules\@google\genai\dist\index.mjs:16677:  
+  node_modules\@google\genai\dist\index.mjs:16678:      @param params - 
+Contains property `functionResponses`.
+  node_modules\@google\genai\dist\index.mjs:16679:  
+  node_modules\@google\genai\dist\index.mjs:16680:        - 
+`functionResponses` will be converted to a `functionResponses[]`
+  node_modules\@google\genai\dist\index.mjs:16681:  
+  node_modules\@google\genai\dist\index.mjs:16682:      @remarks
+  node_modules\@google\genai\dist\index.mjs:16683:      Use 
+`sendFunctionResponse` to reply to `LiveServerToolCall` from the server.
+  node_modules\@google\genai\dist\index.mjs:16684:  
+  node_modules\@google\genai\dist\index.mjs:16685:      Use {@link 
+types.LiveConnectConfig#tools} to configure the callable functions.
+  node_modules\@google\genai\dist\index.mjs:16686:  
+  node_modules\@google\genai\dist\index.mjs:16687:      @experimental
+  node_modules\@google\genai\dist\index.mjs:16688:     */
+  node_modules\@google\genai\dist\index.mjs:16689:    sendToolResponse(params) 
+{
+  node_modules\@google\genai\dist\index.mjs:16690:        if 
+(params.functionResponses == null) {
+  node_modules\@google\genai\dist\index.mjs:16691:            throw new 
+Error('Tool response parameters are required.');
+  node_modules\@google\genai\dist\index.mjs:16692:        }
+  node_modules\@google\genai\dist\index.mjs:16693:        const clientMessage 
+= this.tLiveClienttToolResponse(this.apiClient, params);
+  node_modules\@google\genai\dist\index.mjs:16694:        
+this.conn.send(JSON.stringify(clientMessage));
+  node_modules\@google\genai\dist\index.mjs:16695:    }
+  node_modules\@google\genai\dist\index.mjs:16696:    /**
+  node_modules\@google\genai\dist\index.mjs:16697:       Terminates the 
+WebSocket connection.
+  node_modules\@google\genai\dist\index.mjs:16698:  
+  node_modules\@google\genai\dist\index.mjs:16699:       @experimental
+  node_modules\@google\genai\dist\index.mjs:16700:  
+
+

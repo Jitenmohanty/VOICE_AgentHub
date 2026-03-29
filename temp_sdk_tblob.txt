@@ -1,0 +1,147 @@
+﻿
+  node_modules\@google\genai\dist\index.mjs:2835:    }
+  node_modules\@google\genai\dist\index.mjs:2836:}
+> node_modules\@google\genai\dist\index.mjs:2837:function tBlobs(blobs) {
+  node_modules\@google\genai\dist\index.mjs:2838:    if (Array.isArray(blobs)) 
+{
+  node_modules\@google\genai\dist\index.mjs:2839:        return 
+blobs.map((blob) => tBlob(blob));
+  node_modules\@google\genai\dist\index.mjs:2840:    }
+  node_modules\@google\genai\dist\index.mjs:2841:    else {
+  node_modules\@google\genai\dist\index.mjs:2842:        return [tBlob(blobs)];
+  node_modules\@google\genai\dist\index.mjs:2843:    }
+  node_modules\@google\genai\dist\index.mjs:2844:}
+  node_modules\@google\genai\dist\index.mjs:2845:function tBlob(blob) {
+  node_modules\@google\genai\dist\index.mjs:2846:    if (typeof blob === 
+'object' && blob !== null) {
+  node_modules\@google\genai\dist\index.mjs:2847:        return blob;
+  node_modules\@google\genai\dist\index.mjs:2857:    throw new 
+Error(`Unsupported mime type: ${transformedBlob.mimeType}`);
+  node_modules\@google\genai\dist\index.mjs:2858:}
+> node_modules\@google\genai\dist\index.mjs:2859:function tAudioBlob(blob) {
+  node_modules\@google\genai\dist\index.mjs:2860:    const transformedBlob = 
+tBlob(blob);
+  node_modules\@google\genai\dist\index.mjs:2861:    if 
+(transformedBlob.mimeType &&
+  node_modules\@google\genai\dist\index.mjs:2862:        
+transformedBlob.mimeType.startsWith('audio/')) {
+  node_modules\@google\genai\dist\index.mjs:2863:        return 
+transformedBlob;
+  node_modules\@google\genai\dist\index.mjs:2864:    }
+  node_modules\@google\genai\dist\index.mjs:2865:    throw new 
+Error(`Unsupported mime type: ${transformedBlob.mimeType}`);
+  node_modules\@google\genai\dist\index.mjs:2866:}
+  node_modules\@google\genai\dist\index.mjs:2867:function tPart(origin) {
+  node_modules\@google\genai\dist\index.mjs:2868:    if (origin === null || 
+origin === undefined) {
+  node_modules\@google\genai\dist\index.mjs:2869:        throw new 
+Error('PartUnion is required');
+  node_modules\@google\genai\dist\index.mjs:8152:        }
+  node_modules\@google\genai\dist\index.mjs:8153:        else {
+> node_modules\@google\genai\dist\index.mjs:8154:            return 
+getBlobStat(file);
+  node_modules\@google\genai\dist\index.mjs:8155:        }
+  node_modules\@google\genai\dist\index.mjs:8156:    }
+  node_modules\@google\genai\dist\index.mjs:8157:}
+  node_modules\@google\genai\dist\index.mjs:8158:async function 
+uploadBlob(file, uploadUrl, apiClient, httpOptions) {
+  node_modules\@google\genai\dist\index.mjs:8159:    var _a;
+  node_modules\@google\genai\dist\index.mjs:8160:    const response = await 
+uploadBlobInternal(file, uploadUrl, apiClient, httpOptions);
+  node_modules\@google\genai\dist\index.mjs:8161:    const responseJson = 
+(await (response === null || response === void 0 ? void 0 : response.json()));
+  node_modules\@google\genai\dist\index.mjs:8162:    if (((_a = response === 
+null || response === void 0 ? void 0 : response.headers) === null || _a === 
+void 0 ? void 0 : _a[X_GOOG_UPLOAD_STATUS_HEADER_FIELD]) !== 'final') {
+  node_modules\@google\genai\dist\index.mjs:8163:        throw new 
+Error('Failed to upload file: Upload status is not finalized.');
+  node_modules\@google\genai\dist\index.mjs:8164:    }
+  node_modules\@google\genai\dist\index.mjs:8231:    return response;
+  node_modules\@google\genai\dist\index.mjs:8232:}
+> node_modules\@google\genai\dist\index.mjs:8233:async function 
+getBlobStat(file) {
+  node_modules\@google\genai\dist\index.mjs:8234:    const fileStat = { size: 
+file.size, type: file.type };
+  node_modules\@google\genai\dist\index.mjs:8235:    return fileStat;
+  node_modules\@google\genai\dist\index.mjs:8236:}
+  node_modules\@google\genai\dist\index.mjs:8237:function sleep$1(ms) {
+  node_modules\@google\genai\dist\index.mjs:8238:    return new 
+Promise((resolvePromise) => setTimeout(resolvePromise, ms));
+  node_modules\@google\genai\dist\index.mjs:8239:}
+  node_modules\@google\genai\dist\index.mjs:8240:
+  node_modules\@google\genai\dist\index.mjs:8241:/**
+  node_modules\@google\genai\dist\index.mjs:8242: * @license
+  node_modules\@google\genai\dist\index.mjs:8243: * Copyright 2025 Google LLC
+  node_modules\@google\genai\dist\index.mjs:11648:    const fromMedia = 
+getValueByPath(fromObject, ['media']);
+  node_modules\@google\genai\dist\index.mjs:11649:    if (fromMedia != null) {
+> node_modules\@google\genai\dist\index.mjs:11650:        let transformedList 
+= tBlobs(fromMedia);
+  node_modules\@google\genai\dist\index.mjs:11651:        if 
+(Array.isArray(transformedList)) {
+  node_modules\@google\genai\dist\index.mjs:11652:            transformedList 
+= transformedList.map((item) => {
+  node_modules\@google\genai\dist\index.mjs:11653:                return 
+blobToMldev$2(item);
+  node_modules\@google\genai\dist\index.mjs:11654:            });
+  node_modules\@google\genai\dist\index.mjs:11655:        }
+  node_modules\@google\genai\dist\index.mjs:11656:        
+setValueByPath(toObject, ['mediaChunks'], transformedList);
+  node_modules\@google\genai\dist\index.mjs:11657:    }
+  node_modules\@google\genai\dist\index.mjs:11658:    const fromAudio = 
+getValueByPath(fromObject, ['audio']);
+  node_modules\@google\genai\dist\index.mjs:11659:    if (fromAudio != null) {
+> node_modules\@google\genai\dist\index.mjs:11660:        
+setValueByPath(toObject, ['audio'], blobToMldev$2(tAudioBlob(fromAudio)));
+  node_modules\@google\genai\dist\index.mjs:11661:    }
+  node_modules\@google\genai\dist\index.mjs:11662:    const fromAudioStreamEnd 
+= getValueByPath(fromObject, [
+  node_modules\@google\genai\dist\index.mjs:11663:        'audioStreamEnd',
+  node_modules\@google\genai\dist\index.mjs:11664:    ]);
+  node_modules\@google\genai\dist\index.mjs:11665:    if (fromAudioStreamEnd 
+!= null) {
+  node_modules\@google\genai\dist\index.mjs:11666:        
+setValueByPath(toObject, ['audioStreamEnd'], fromAudioStreamEnd);
+  node_modules\@google\genai\dist\index.mjs:11667:    }
+  node_modules\@google\genai\dist\index.mjs:11668:    const fromVideo = 
+getValueByPath(fromObject, ['video']);
+  node_modules\@google\genai\dist\index.mjs:11669:    if (fromVideo != null) {
+  node_modules\@google\genai\dist\index.mjs:11670:        
+setValueByPath(toObject, ['video'], blobToMldev$2(tImageBlob(fromVideo)));
+  node_modules\@google\genai\dist\index.mjs:11690:    const fromMedia = 
+getValueByPath(fromObject, ['media']);
+  node_modules\@google\genai\dist\index.mjs:11691:    if (fromMedia != null) {
+> node_modules\@google\genai\dist\index.mjs:11692:        let transformedList 
+= tBlobs(fromMedia);
+  node_modules\@google\genai\dist\index.mjs:11693:        if 
+(Array.isArray(transformedList)) {
+  node_modules\@google\genai\dist\index.mjs:11694:            transformedList 
+= transformedList.map((item) => {
+  node_modules\@google\genai\dist\index.mjs:11695:                return item;
+  node_modules\@google\genai\dist\index.mjs:11696:            });
+  node_modules\@google\genai\dist\index.mjs:11697:        }
+  node_modules\@google\genai\dist\index.mjs:11698:        
+setValueByPath(toObject, ['mediaChunks'], transformedList);
+  node_modules\@google\genai\dist\index.mjs:11699:    }
+  node_modules\@google\genai\dist\index.mjs:11700:    const fromAudio = 
+getValueByPath(fromObject, ['audio']);
+  node_modules\@google\genai\dist\index.mjs:11701:    if (fromAudio != null) {
+> node_modules\@google\genai\dist\index.mjs:11702:        
+setValueByPath(toObject, ['audio'], tAudioBlob(fromAudio));
+  node_modules\@google\genai\dist\index.mjs:11703:    }
+  node_modules\@google\genai\dist\index.mjs:11704:    const fromAudioStreamEnd 
+= getValueByPath(fromObject, [
+  node_modules\@google\genai\dist\index.mjs:11705:        'audioStreamEnd',
+  node_modules\@google\genai\dist\index.mjs:11706:    ]);
+  node_modules\@google\genai\dist\index.mjs:11707:    if (fromAudioStreamEnd 
+!= null) {
+  node_modules\@google\genai\dist\index.mjs:11708:        
+setValueByPath(toObject, ['audioStreamEnd'], fromAudioStreamEnd);
+  node_modules\@google\genai\dist\index.mjs:11709:    }
+  node_modules\@google\genai\dist\index.mjs:11710:    const fromVideo = 
+getValueByPath(fromObject, ['video']);
+  node_modules\@google\genai\dist\index.mjs:11711:    if (fromVideo != null) {
+  node_modules\@google\genai\dist\index.mjs:11712:        
+setValueByPath(toObject, ['video'], tImageBlob(fromVideo));
+
+

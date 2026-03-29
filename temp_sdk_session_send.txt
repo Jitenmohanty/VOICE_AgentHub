@@ -1,0 +1,53 @@
+﻿
+  node_modules\@google\genai\dist\index.mjs:16658:      Note: The Call 
+signature expects a `Blob` object, but only a subset
+  node_modules\@google\genai\dist\index.mjs:16659:      of audio and image 
+mimetypes are allowed.
+  node_modules\@google\genai\dist\index.mjs:16660:     */
+> node_modules\@google\genai\dist\index.mjs:16661:    
+sendRealtimeInput(params) {
+  node_modules\@google\genai\dist\index.mjs:16662:        let clientMessage = 
+{};
+  node_modules\@google\genai\dist\index.mjs:16663:        if 
+(this.apiClient.isVertexAI()) {
+  node_modules\@google\genai\dist\index.mjs:16664:            clientMessage = {
+  node_modules\@google\genai\dist\index.mjs:16665:                
+'realtimeInput': liveSendRealtimeInputParametersToVertex(params),
+  node_modules\@google\genai\dist\index.mjs:16666:            };
+  node_modules\@google\genai\dist\index.mjs:16667:        }
+  node_modules\@google\genai\dist\index.mjs:16668:        else {
+  node_modules\@google\genai\dist\index.mjs:16669:            clientMessage = {
+  node_modules\@google\genai\dist\index.mjs:16670:                
+'realtimeInput': liveSendRealtimeInputParametersToMldev(params),
+  node_modules\@google\genai\dist\index.mjs:16671:            };
+  node_modules\@google\genai\dist\index.mjs:16672:        }
+  node_modules\@google\genai\dist\index.mjs:16673:        
+this.conn.send(JSON.stringify(clientMessage));
+  node_modules\@google\genai\dist\index.mjs:16674:    }
+  node_modules\@google\genai\dist\index.mjs:16675:    /**
+  node_modules\@google\genai\dist\index.mjs:16676:      Send a function 
+response message over the established connection.
+  node_modules\@google\genai\dist\index.mjs:16677:  
+  node_modules\@google\genai\dist\index.mjs:16678:      @param params - 
+Contains property `functionResponses`.
+  node_modules\@google\genai\dist\index.mjs:16679:  
+  node_modules\@google\genai\dist\index.mjs:16680:        - 
+`functionResponses` will be converted to a `functionResponses[]`
+  node_modules\@google\genai\dist\index.mjs:16681:  
+  node_modules\@google\genai\dist\index.mjs:16682:      @remarks
+  node_modules\@google\genai\dist\index.mjs:16683:      Use 
+`sendFunctionResponse` to reply to `LiveServerToolCall` from the server.
+  node_modules\@google\genai\dist\index.mjs:16684:  
+  node_modules\@google\genai\dist\index.mjs:16685:      Use {@link 
+types.LiveConnectConfig#tools} to configure the callable functions.
+  node_modules\@google\genai\dist\index.mjs:16686:  
+  node_modules\@google\genai\dist\index.mjs:16687:      @experimental
+  node_modules\@google\genai\dist\index.mjs:16688:     */
+  node_modules\@google\genai\dist\index.mjs:16689:    sendToolResponse(params) 
+{
+  node_modules\@google\genai\dist\index.mjs:16690:        if 
+(params.functionResponses == null) {
+  node_modules\@google\genai\dist\index.mjs:16691:            throw new 
+Error('Tool response parameters are required.');
+
+
