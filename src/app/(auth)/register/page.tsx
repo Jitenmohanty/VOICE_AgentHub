@@ -89,7 +89,7 @@ export default function RegisterPage() {
         router.push("/login");
       } else {
         toast.success("Welcome to AgentHub!");
-        router.push("/business/dashboard");
+        router.push("/business/onboarding");
       }
     } catch {
       toast.error("Something went wrong");

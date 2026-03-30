@@ -12,7 +12,7 @@ async function verifyOwnership(userId: string, businessId: string, agentId: stri
       business: { ownerId: userId },
     },
     include: {
-      business: { select: { slug: true, name: true } },
+      business: { select: { id: true, slug: true, name: true, description: true, phone: true, address: true, website: true } },
       _count: { select: { agentSessions: true, knowledgeItems: true, businessData: true } },
     },
   });
