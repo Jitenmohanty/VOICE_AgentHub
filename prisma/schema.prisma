@@ -1,28 +1,29 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
+// ── Auth Models ───────────────────────────────
+
 model User {
-  id            String         @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String         @unique
+  email         String     @unique
   emailVerified DateTime?
   image         String?
   password      String?
+  role          String     @default("BUSINESS_OWNER") // BUSINESS_OWNER | ADMIN
   accounts      Account[]
   sessions      Session[]
-  agentSessions AgentSession[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  businesses    Business[]
+  agentSessions AgentSession[] // legacy, kept for migration
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
 model Account {
@@ -38,8 +39,7 @@ model Account {
   scope             String?
   id_token          String? @db.Text
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -60,22 +60,131 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model AgentSession {
+// ── Multi-Tenant Models ───────────────────────
+
+model Business {
+  id          String   @id @default(cuid())
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String   @unique
+  industry    String   // template id: hotel, medical, restaurant, interview, legal
+  description String?
+  logoUrl     String?
+  website     String?
+  phone       String?
+  address     String?
+  isActive    Boolean  @default(true)
+  agents      Agent[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
+model Agent {
+  id            String          @id @default(cuid())
+  businessId    String
+  business      Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  templateType  String          // hotel, medical, restaurant, interview, legal
+  name          String
+  description   String?
+  isActive      Boolean         @default(true)
+
+  // Prompt customization
+  systemPrompt  String?         @db.Text
+  greeting      String?
+  personality   String?
+  rules         String?         @db.Text
+
+  // Template-specific config (hotelName, cuisineType, etc.)
+  config        Json            @default("{}")
+
+  // Tool & voice settings
+  enabledTools  String[]        @default([])
+  voiceName     String?
+  language      String          @default("en")
+
+  // Relations
+  knowledgeItems  KnowledgeItem[]
+  businessData    BusinessData[]
+  agentSessions   AgentSession[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([businessId])
+}
+
+model KnowledgeItem {
   id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agentType  String
-  title      String?
-  config     Json
-  transcript Json?
-  summary    String?
-  duration   Int?
-  rating     Int?
-  feedback   String?
-  status     String   @default("active")
+  agentId    String
+  agent      Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  title      String
+  content    String   @db.Text
+  category   String   // faq, policy, menu, service, general
+  sourceType String   @default("TEXT") // TEXT, FAQ, DOCUMENT, URL
+  embedding  Unsupported("vector(768)")? // Gemini embedding dimension
+  metadata   Json?
+  isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@index([userId])
-  @@index([agentType])
+  @@index([agentId])
+  @@index([category])
+}
+
+model BusinessData {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  dataType  String   // rooms, menu_items, services, doctors, pricing
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([agentId, dataType])
+  @@index([agentId])
+}
+
+// ── Session Model (anonymous callers) ─────────
+
+model AgentSession {
+  id             String   @id @default(cuid())
+  agentId        String?
+  agent          Agent?   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Legacy fields (kept for migration, will be removed)
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  agentType      String?
+
+  // Anonymous caller info
+  callerName     String?
+  callerPhone    String?
+  callerEmail    String?
+
+  // Session data
+  title          String?
+  transcript     Json?
+  duration       Int?
+  status         String   @default("active") // active, completed, cancelled
+
+  // Post-call intelligence (Claude)
+  summary        String?  @db.Text
+  sentiment      String?  // positive, neutral, negative, mixed
+  sentimentScore Float?
+  actionItems    Json?
+  topics         String[] @default([])
+  escalated      Boolean  @default(false)
+
+  // Customer rating
+  rating         Int?
+  feedback       String?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([createdAt])
+  @@index([status])
 }

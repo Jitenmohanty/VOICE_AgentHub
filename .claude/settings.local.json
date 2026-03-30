@@ -4,7 +4,9 @@
       "Bash(curl -s -L https://ai.google.dev/gemini-api/docs/live-api)",
       "WebFetch(domain:ai.google.dev)",
       "Bash(npx tsc:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npx next:*)"
     ]
   }
 }

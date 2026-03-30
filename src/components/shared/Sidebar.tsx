@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
+  Bot,
   History,
   Settings,
   LogOut,
@@ -14,9 +15,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/dashboard/history", icon: History, label: "History" },
-  { href: "/dashboard/settings", icon: Settings, label: "Settings" },
+  { href: "/business/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/business/agents", icon: Bot, label: "Agents" },
+  { href: "/business/sessions", icon: History, label: "Sessions" },
+  { href: "/business/settings", icon: Settings, label: "Settings" },
 ];
 
 export function Sidebar() {
@@ -28,7 +30,7 @@ export function Sidebar() {
       animate={{ x: 0, opacity: 1 }}
       className="hidden md:flex flex-col w-64 min-h-screen bg-[#0E0E16] border-r border-[#2A2A3E] p-4"
     >
-      <Link href="/" className="flex items-center gap-2 mb-8 px-2">
+      <Link href="/business/dashboard" className="flex items-center gap-2 mb-8 px-2">
         <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
           <Zap className="w-4 h-4 text-white" />
         </div>
@@ -39,7 +41,9 @@ export function Sidebar() {
 
       <nav className="flex-1 flex flex-col gap-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/business/dashboard" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}

@@ -51,7 +51,7 @@ export default function DashboardPage() {
         totalSessions={totalSessions}
         totalMinutes={totalMinutes}
         avgRating={avgRating}
-        agentsUsed={new Set(sessions.map((s) => s.agentType)).size}
+        agentsUsed={new Set(sessions.map((s) => s.agent?.templateType || s.agentType).filter(Boolean)).size}
       />
 
       <div>

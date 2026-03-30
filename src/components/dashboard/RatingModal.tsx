@@ -9,10 +9,12 @@ interface RatingModalProps {
   agentName: string;
   accentColor: string;
   sessionId: string;
+  /** Override the API endpoint for public (no-auth) pages */
+  apiUrl?: string;
   onClose: () => void;
 }
 
-export function RatingModal({ agentName, accentColor, sessionId, onClose }: RatingModalProps) {
+export function RatingModal({ agentName, accentColor, sessionId, apiUrl, onClose }: RatingModalProps) {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -21,7 +23,7 @@ export function RatingModal({ agentName, accentColor, sessionId, onClose }: Rati
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await fetch(`/api/sessions/${sessionId}`, {
+      await fetch(apiUrl || `/api/sessions/${sessionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating, feedback, status: "completed" }),

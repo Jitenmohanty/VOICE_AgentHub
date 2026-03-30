@@ -1,11 +1,24 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { triggerPostCallAnalysis } from "@/lib/post-call";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Params = { params: Promise<{ id: string }> };
+
+/** Verify the session belongs to the authenticated owner's agents */
+async function findOwnedSession(userId: string, sessionId: string) {
+  return prisma.agentSession.findFirst({
+    where: {
+      id: sessionId,
+      agent: { business: { ownerId: userId } },
+    },
+    include: {
+      agent: { select: { name: true, templateType: true, business: { select: { name: true } } } },
+    },
+  });
+}
+
+export async function GET(_request: Request, { params }: Params) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -13,10 +26,7 @@ export async function GET(
     }
 
     const { id } = await params;
-
-    const agentSession = await prisma.agentSession.findFirst({
-      where: { id, userId: session.user.id },
-    });
+    const agentSession = await findOwnedSession(session.user.id, id);
 
     if (!agentSession) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
@@ -24,17 +34,11 @@ export async function GET(
 
     return NextResponse.json({ session: agentSession });
   } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: Params) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -42,16 +46,13 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const body = await request.json();
+    const existing = await findOwnedSession(session.user.id, id);
 
-    const agentSession = await prisma.agentSession.findFirst({
-      where: { id, userId: session.user.id },
-    });
-
-    if (!agentSession) {
+    if (!existing) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
+    const body = await request.json();
     const updated = await prisma.agentSession.update({
       where: { id },
       data: {
@@ -65,19 +66,18 @@ export async function PATCH(
       },
     });
 
+    // Trigger Claude post-call analysis when session completes
+    if (body.status === "completed" && body.transcript) {
+      triggerPostCallAnalysis(id);
+    }
+
     return NextResponse.json({ session: updated });
   } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: Params) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -85,12 +85,9 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const existing = await findOwnedSession(session.user.id, id);
 
-    const agentSession = await prisma.agentSession.findFirst({
-      where: { id, userId: session.user.id },
-    });
-
-    if (!agentSession) {
+    if (!existing) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
@@ -98,9 +95,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

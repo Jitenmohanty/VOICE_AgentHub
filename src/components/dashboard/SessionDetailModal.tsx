@@ -33,7 +33,9 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
       .finally(() => setLoading(false));
   }, [sessionId]);
 
-  const agent = session ? getAgentById(session.agentType) : null;
+  const templateId = session?.agent?.templateType || session?.agentType;
+  const template = templateId ? getAgentById(templateId) : null;
+  const agentName = session?.agent?.name || template?.name || "Agent";
 
   const startTime = session ? new Date(session.createdAt) : null;
   const endTime =
@@ -46,7 +48,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 
   // Use persisted summary if available, else build from transcript
   const summary = session?.summary || buildSummary(
-    agent?.name || session?.agentType || "Agent",
+    agentName,
     transcript.filter((m) => m.speaker === "user"),
     transcript.filter((m) => m.speaker === "agent"),
     session?.duration || 0,
@@ -71,17 +73,17 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[#2A2A3E]">
             <div className="flex items-center gap-3">
-              {agent && (
+              {template && (
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ background: `${agent.accentColor}20` }}
+                  style={{ background: `${template?.accentColor || "#6366F1"}20` }}
                 >
-                  <Bot className="w-5 h-5" style={{ color: agent.accentColor }} />
+                  <Bot className="w-5 h-5" style={{ color: template?.accentColor || "#6366F1" }} />
                 </div>
               )}
               <div>
                 <h2 className="font-(family-name:--font-heading) font-bold text-lg text-white">
-                  {session?.title || agent?.name || session?.agentType || "Session"}
+                  {session?.title || agentName}
                 </h2>
                 {session && (
                   <span
@@ -155,7 +157,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
               </div>
 
               {/* Rating */}
-              {session.rating != null && session.rating > 0 && (
+              {typeof session.rating === "number" && session.rating > 0 && (
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-[#8888AA]">Rating:</span>
                   <div className="flex items-center gap-1">
@@ -186,6 +188,78 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                 </div>
               )}
 
+              {/* AI Analysis (from Claude) */}
+              {Boolean(session.sentiment || (session.topics && session.topics.length > 0) || session.actionItems) && (
+                <div className="bg-white/[0.03] rounded-xl p-4 border border-[#2A2A3E] space-y-3">
+                  <h3 className="text-sm font-semibold text-white">AI Analysis</h3>
+
+                  {/* Sentiment */}
+                  {session.sentiment && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[#8888AA]">Sentiment:</span>
+                      <span
+                        className="text-xs font-medium px-2 py-0.5 rounded-full capitalize"
+                        style={{
+                          backgroundColor:
+                            session.sentiment === "positive" ? "rgba(16,185,129,0.15)" :
+                            session.sentiment === "negative" ? "rgba(239,68,68,0.15)" :
+                            session.sentiment === "mixed" ? "rgba(255,184,0,0.15)" :
+                            "rgba(136,136,170,0.15)",
+                          color:
+                            session.sentiment === "positive" ? "#10B981" :
+                            session.sentiment === "negative" ? "#EF4444" :
+                            session.sentiment === "mixed" ? "#FFB800" :
+                            "#8888AA",
+                        }}
+                      >
+                        {String(session.sentiment)}
+                        {session.sentimentScore != null && ` (${(Number(session.sentimentScore) * 100).toFixed(0)}%)`}
+                      </span>
+                      {session.escalated && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/15 text-red-400">
+                          Escalation needed
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Topics */}
+                  {session.topics && session.topics.length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-[#8888AA]">Topics:</span>
+                      {session.topics.map((topic: string, i: number) => (
+                        <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-[#6366F1]/10 text-[#6366F1]">
+                          {String(topic)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Action Items */}
+                  {Array.isArray(session.actionItems) && (session.actionItems as { action: string; priority: string }[]).length > 0 && (
+                    <div>
+                      <span className="text-xs text-[#8888AA] block mb-1">Action Items:</span>
+                      <ul className="space-y-1">
+                        {(session.actionItems as { action: string; priority: string }[]).map((item, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs">
+                            <span
+                              className="mt-0.5 w-1.5 h-1.5 rounded-full shrink-0"
+                              style={{
+                                backgroundColor:
+                                  item.priority === "high" ? "#EF4444" :
+                                  item.priority === "medium" ? "#FFB800" :
+                                  "#10B981",
+                              }}
+                            />
+                            <span className="text-[#E0E0F0]">{item.action}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Transcript */}
               {transcript.length > 0 ? (
                 <div>
@@ -207,7 +281,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                             background:
                               msg.speaker === "user"
                                 ? "rgba(0,212,255,0.1)"
-                                : `${agent?.accentColor || "#6366F1"}20`,
+                                : `${template?.accentColor || "#6366F1"}20`,
                           }}
                         >
                           {msg.speaker === "user" ? (
@@ -215,7 +289,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                           ) : (
                             <Bot
                               className="w-3.5 h-3.5"
-                              style={{ color: agent?.accentColor || "#6366F1" }}
+                              style={{ color: template?.accentColor || "#6366F1" }}
                             />
                           )}
                         </div>

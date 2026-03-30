@@ -32,6 +32,8 @@ export class GeminiLiveSession {
   private listeners: SessionEventCallback[] = [];
   private agentType: string;
   private config: AgentConfig;
+  private prebuiltPrompt: string | null;
+  private prebuiltTools: unknown[] | null;
   private isConnected = false;
   private isDisconnecting = false;
   private isSetupComplete = false;
@@ -41,9 +43,15 @@ export class GeminiLiveSession {
   private nextPlayTime = 0;
   private activeSourceNodes: Set<AudioBufferSourceNode> = new Set();
 
-  constructor(agentType: string, config: AgentConfig) {
+  constructor(
+    agentType: string,
+    config: AgentConfig,
+    options?: { systemPrompt?: string; tools?: unknown[] },
+  ) {
     this.agentType = agentType;
     this.config = config;
+    this.prebuiltPrompt = options?.systemPrompt || null;
+    this.prebuiltTools = options?.tools || null;
   }
 
   on(callback: SessionEventCallback) {
@@ -72,8 +80,8 @@ export class GeminiLiveSession {
         );
       }
 
-      const systemInstruction = getAgentSystemPrompt(this.agentType, this.config);
-      const tools = getAgentTools(this.agentType);
+      const systemInstruction = this.prebuiltPrompt || getAgentSystemPrompt(this.agentType, this.config);
+      const tools = (this.prebuiltTools as import("@/types/gemini").GeminiToolDeclaration[]) || getAgentTools(this.agentType);
 
       console.log("[GeminiLive] Connecting with model: gemini-3.1-flash-live-preview");
       console.log("[GeminiLive] System instruction length:", systemInstruction.length);

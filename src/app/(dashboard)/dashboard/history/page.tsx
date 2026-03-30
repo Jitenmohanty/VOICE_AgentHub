@@ -97,7 +97,9 @@ export default function HistoryPage() {
         <>
           <div className="space-y-3">
             {sessions.map((session, i) => {
-              const agent = getAgentById(session.agentType);
+              const templateId = session.agent?.templateType || session.agentType;
+              const template = templateId ? getAgentById(templateId) : null;
+              const displayName = session.title || session.agent?.name || template?.name || "Session";
               const transcript =
                 (session.transcript as unknown as { speaker?: string; text: string }[]) || [];
               return (
@@ -114,9 +116,9 @@ export default function HistoryPage() {
                       <div className="flex items-center gap-3 mb-1">
                         <h3
                           className="font-semibold text-white"
-                          style={{ color: agent?.accentColor }}
+                          style={{ color: template?.accentColor }}
                         >
-                          {session.title || agent?.name || session.agentType}
+                          {displayName}
                         </h3>
                         <span
                           className="text-xs px-2 py-0.5 rounded-full"

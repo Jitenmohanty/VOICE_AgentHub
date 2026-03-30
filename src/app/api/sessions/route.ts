@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
+/** GET sessions for the current business owner (all their agents) */
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -14,16 +15,22 @@ export async function GET(request: Request) {
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10", 10)));
     const skip = (page - 1) * limit;
 
+    // Scope to sessions belonging to this owner's agents
+    const ownerFilter = {
+      agent: { business: { ownerId: session.user.id } },
+    };
+
     const [sessions, total] = await Promise.all([
       prisma.agentSession.findMany({
-        where: { userId: session.user.id },
+        where: ownerFilter,
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
+        include: {
+          agent: { select: { name: true, templateType: true } },
+        },
       }),
-      prisma.agentSession.count({
-        where: { userId: session.user.id },
-      }),
+      prisma.agentSession.count({ where: ownerFilter }),
     ]);
 
     return NextResponse.json({
@@ -34,35 +41,6 @@ export async function GET(request: Request) {
       totalPages: Math.ceil(total / limit),
     });
   } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { agentType, config } = await request.json();
-
-    const agentSession = await prisma.agentSession.create({
-      data: {
-        userId: session.user.id,
-        agentType,
-        config: config || {},
-      },
-    });
-
-    return NextResponse.json({ session: agentSession }, { status: 201 });
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
