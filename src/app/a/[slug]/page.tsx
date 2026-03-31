@@ -14,7 +14,6 @@ import { RatingModal } from "@/components/dashboard/RatingModal";
 import { ConnectionLoader } from "@/components/shared/LoadingStates";
 import type { TranscriptMessage } from "@/types/session";
 import type { ConnectionState } from "@/types/gemini";
-import type { GeminiToolDeclaration } from "@/types/gemini";
 
 interface AgentInfo {
   id: string;
@@ -40,7 +39,6 @@ export default function PublicAgentPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  // Session state
   const [connectionState, setConnectionState] = useState<ConnectionState>("disconnected");
   const [isAgentSpeaking, setAgentSpeaking] = useState(false);
   const [isMuted, setMuted] = useState(false);
@@ -57,30 +55,20 @@ export default function PublicAgentPage() {
   const savedRef = useRef(false);
   const partialIds = useRef<{ user?: string; agent?: string }>({});
 
-  // Fetch agent info
   useEffect(() => {
     if (!slug) return;
     fetch(`/api/public/agent/${slug}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Not found");
-        return res.json();
-      })
-      .then((data) => {
-        setAgentInfo(data.agent);
-        setBusinessInfo(data.business);
-      })
+      .then((res) => { if (!res.ok) throw new Error(); return res.json(); })
+      .then((data) => { setAgentInfo(data.agent); setBusinessInfo(data.business); })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [slug]);
 
   const { startCapture, stopCapture } = useAudioStream({
-    onAudioData: (b64) => {
-      if (activeRef.current) sessionRef.current?.sendAudio(b64);
-    },
+    onAudioData: (b64) => { if (activeRef.current) sessionRef.current?.sendAudio(b64); },
     onAnalyserReady: (node) => setAnalyserNode(node),
   });
 
-  // Timer
   useEffect(() => {
     if (connectionState === "connected") {
       timerRef.current = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
@@ -123,10 +111,8 @@ export default function PublicAgentPage() {
       });
       if (!res.ok) throw new Error("Failed to create session");
       const data = await res.json();
-
       setSessionId(data.sessionId);
 
-      // Use server-provided RAG-enhanced prompt and tools
       const session = new GeminiLiveSession(
         agentInfo.templateType,
         (data.agent?.config || {}) as Record<string, string | string[]>,
@@ -199,133 +185,233 @@ export default function PublicAgentPage() {
     setShowRating(true);
   }, [disconnect, saveSession]);
 
-  // Save on browser close
   useEffect(() => {
     const handler = () => { if (connectionState === "connected") saveSession(); };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [connectionState, saveSession]);
 
-  // Cleanup
   useEffect(() => {
     return () => { activeRef.current = false; stopCapture(); sessionRef.current?.disconnect(); };
   }, [stopCapture]);
 
-  const fmtTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+  const fmtTime = (s: number) =>
+    `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
+  // ── Loading ──
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F]">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-[#0A0A0F]">
         <div className="w-8 h-8 border-2 border-[#00D4FF]/30 border-t-[#00D4FF] rounded-full animate-spin" />
       </div>
     );
   }
 
+  // ── Not found ──
   if (notFound || !agentInfo || !businessInfo) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0A0A0F] text-center px-6">
-        <h1 className="text-2xl font-bold text-white mb-2">Agent Not Found</h1>
-        <p className="text-[#8888AA]">This agent link is invalid or has been deactivated.</p>
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-[#0A0A0F] text-center px-6">
+        <div className="w-16 h-16 rounded-full bg-[#2A2A3E] flex items-center justify-center mb-4">
+          <Phone className="w-7 h-7 text-[#8888AA]" />
+        </div>
+        <h1 className="text-xl font-bold text-white mb-2">Agent Not Found</h1>
+        <p className="text-sm text-[#8888AA] max-w-xs">
+          This link is invalid or the agent has been deactivated.
+        </p>
       </div>
     );
   }
 
   const isConnected = connectionState === "connected";
   const isDisconnected = connectionState === "disconnected";
+  const accentColor = agentInfo.accentColor;
 
   return (
     <div
-      className="min-h-screen flex flex-col"
-      style={{ background: `radial-gradient(ellipse at top, ${agentInfo.accentColor}08, #0A0A0F 60%)` }}
+      className="min-h-[100dvh] flex flex-col overflow-hidden"
+      style={{ background: `radial-gradient(ellipse at top, ${accentColor}06, #0A0A0F 50%)` }}
     >
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 md:p-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
+      {/* ── Header ── */}
+      <header className="shrink-0 flex items-center justify-center px-4 py-3 md:py-4 border-b border-white/[0.04]">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: `${accentColor}15` }}
+          >
+            <Zap className="w-4 h-4" style={{ color: accentColor }} />
           </div>
-          <span className="text-xs text-[#8888AA]">Powered by AgentHub</span>
+          <div className="text-center">
+            <p className="font-(family-name:--font-heading) font-semibold text-white text-sm leading-tight">
+              {businessInfo.name}
+            </p>
+            <p className="text-[10px] text-[#8888AA] leading-tight">{agentInfo.name}</p>
+          </div>
         </div>
-        <div className="text-center">
-          <h1 className="font-(family-name:--font-heading) font-semibold text-white text-sm">
-            {businessInfo.name}
-          </h1>
-          <p className="text-xs text-[#8888AA]">{agentInfo.name}</p>
-        </div>
-        <div className="w-16" />
       </header>
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-4 md:px-8 max-w-4xl mx-auto w-full">
+      {/* ── Main content ── */}
+      <main className="flex-1 flex flex-col min-h-0 w-full max-w-lg mx-auto px-4 py-4 md:py-6">
         <AnimatePresence mode="wait">
+
+          {/* ── Idle state ── */}
           {isDisconnected && !error && transcript.length === 0 && (
-            <motion.div key="start" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-6">
-              <AgentAvatar icon={agentInfo.icon} accentColor={agentInfo.accentColor} connectionState="disconnected" isSpeaking={false} />
-              <div className="text-center">
-                <h2 className="text-xl font-semibold text-white mb-2">{agentInfo.greeting || `Talk to ${agentInfo.name}`}</h2>
-                <p className="text-sm text-[#8888AA] max-w-md">Click the button below to start a voice conversation. No sign-up needed.</p>
+            <motion.div
+              key="idle"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex-1 flex flex-col items-center justify-center gap-6 text-center"
+            >
+              <AgentAvatar
+                icon={agentInfo.icon}
+                accentColor={accentColor}
+                connectionState="disconnected"
+                isSpeaking={false}
+              />
+              <div>
+                <h2 className="text-lg md:text-xl font-semibold text-white mb-2 px-4">
+                  {agentInfo.greeting || `Talk to ${agentInfo.name}`}
+                </h2>
+                <p className="text-sm text-[#8888AA] max-w-xs mx-auto">
+                  Tap the button below to start a voice conversation. No sign-up needed.
+                </p>
               </div>
-              <Button onClick={connect} className="px-8 py-3 text-white border-0 hover:opacity-90" style={{ background: `linear-gradient(135deg, ${agentInfo.accentColor}, ${agentInfo.accentColor}CC)` }}>
+              <Button
+                onClick={connect}
+                className="px-8 py-3 text-white border-0 hover:opacity-90 text-base"
+                style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
+              >
                 <Phone className="w-5 h-5 mr-2" /> Start Call
               </Button>
             </motion.div>
           )}
 
+          {/* ── Connecting ── */}
           {connectionState === "connecting" && (
-            <motion.div key="connecting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div
+              key="connecting"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex-1 flex items-center justify-center"
+            >
               <ConnectionLoader agentName={agentInfo.name} />
             </motion.div>
           )}
 
+          {/* ── Active call / Post-call transcript ── */}
           {(isConnected || (isDisconnected && transcript.length > 0)) && (
-            <motion.div key="active" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-6 w-full flex-1 min-h-0">
-              <AgentAvatar icon={agentInfo.icon} accentColor={agentInfo.accentColor} connectionState={connectionState} isSpeaking={isAgentSpeaking} />
-              <AudioVisualizer analyserNode={analyserNode} isActive={isConnected && (isAgentSpeaking || !isMuted)} accentColor={agentInfo.accentColor} />
-              <div className="w-full flex-1 min-h-0 max-h-64 glass rounded-2xl p-4 flex flex-col">
-                <TranscriptPanel messages={transcript} accentColor={agentInfo.accentColor} />
+            <motion.div
+              key="active"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex-1 flex flex-col min-h-0 gap-4"
+            >
+              {/* Top section: avatar + visualizer */}
+              <div className="shrink-0 flex flex-col items-center gap-3">
+                <AgentAvatar
+                  icon={agentInfo.icon}
+                  accentColor={accentColor}
+                  connectionState={connectionState}
+                  isSpeaking={isAgentSpeaking}
+                />
+                <div className="w-full max-w-sm">
+                  <AudioVisualizer
+                    analyserNode={analyserNode}
+                    isActive={isConnected && (isAgentSpeaking || !isMuted)}
+                    accentColor={accentColor}
+                  />
+                </div>
               </div>
 
+              {/* Transcript area — fills remaining space */}
+              <div className="flex-1 min-h-0 glass rounded-2xl p-3 md:p-4 flex flex-col">
+                <TranscriptPanel messages={transcript} accentColor={accentColor} />
+              </div>
+
+              {/* Controls */}
               {isConnected && (
-                <div className="flex items-center gap-4">
-                  <button onClick={() => setMuted(!isMuted)} className="w-12 h-12 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: isMuted ? "rgba(239,68,68,0.2)" : "rgba(255,255,255,0.05)" }}>
+                <div className="shrink-0 flex items-center justify-center gap-5 py-2">
+                  <button
+                    onClick={() => setMuted(!isMuted)}
+                    className="w-12 h-12 rounded-full flex items-center justify-center border transition-colors"
+                    style={{
+                      backgroundColor: isMuted ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.05)",
+                      borderColor: isMuted ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.08)",
+                    }}
+                  >
                     {isMuted ? <MicOff className="w-5 h-5 text-red-400" /> : <Mic className="w-5 h-5 text-white" />}
                   </button>
-                  <span className="flex items-center gap-1 text-sm text-[#8888AA]"><Clock className="w-3.5 h-3.5" />{fmtTime(elapsedSeconds)}</span>
-                  <button onClick={handleEndCall} className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-colors">
+
+                  <button
+                    onClick={handleEndCall}
+                    className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-colors shadow-lg shadow-red-500/20"
+                  >
                     <PhoneOff className="w-6 h-6 text-white" />
                   </button>
+
+                  <div className="w-12 h-12 flex items-center justify-center">
+                    <span className="flex items-center gap-1 text-sm text-[#8888AA] tabular-nums">
+                      <Clock className="w-3.5 h-3.5" />
+                      {fmtTime(elapsedSeconds)}
+                    </span>
+                  </div>
                 </div>
               )}
 
+              {/* Post-call actions */}
               {isDisconnected && transcript.length > 0 && (
-                <div className="flex gap-3">
-                  <Button onClick={connect} className="text-white border-0 hover:opacity-90" style={{ background: `linear-gradient(135deg, ${agentInfo.accentColor}, ${agentInfo.accentColor}CC)` }}>
-                    Call Again
+                <div className="shrink-0 flex justify-center gap-3 py-2">
+                  <Button
+                    onClick={connect}
+                    className="text-white border-0 hover:opacity-90"
+                    style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
+                  >
+                    <Phone className="w-4 h-4 mr-2" /> Call Again
                   </Button>
                 </div>
               )}
             </motion.div>
           )}
 
+          {/* ── Error state ── */}
           {error && (
-            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-                <span className="text-red-400 text-2xl">!</span>
+            <motion.div
+              key="error"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex-1 flex flex-col items-center justify-center text-center gap-4 px-4"
+            >
+              <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
+                <PhoneOff className="w-6 h-6 text-red-400" />
               </div>
-              <p className="text-red-400 mb-2 font-medium">Connection Error</p>
-              <p className="text-[#8888AA] text-sm mb-4 max-w-md">{error}</p>
-              <Button onClick={connect} className="text-white border-0 hover:opacity-90" style={{ background: `linear-gradient(135deg, ${agentInfo.accentColor}, ${agentInfo.accentColor}CC)` }}>
+              <div>
+                <p className="text-red-400 font-medium mb-1">Connection Error</p>
+                <p className="text-[#8888AA] text-sm max-w-xs mx-auto">{error}</p>
+              </div>
+              <Button
+                onClick={connect}
+                className="text-white border-0 hover:opacity-90"
+                style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
+              >
                 Retry
               </Button>
             </motion.div>
           )}
-        </AnimatePresence>
-      </div>
 
+        </AnimatePresence>
+      </main>
+
+      {/* ── Footer ── */}
+      <footer className="shrink-0 flex items-center justify-center py-2 text-[10px] text-[#666680]">
+        Powered by <span className="font-medium text-[#8888AA] ml-1">AgentHub</span>
+      </footer>
+
+      {/* ── Rating modal ── */}
       {showRating && sessionId && (
         <RatingModal
           agentName={agentInfo.name}
-          accentColor={agentInfo.accentColor}
+          accentColor={accentColor}
           sessionId={sessionId}
           apiUrl={`/api/public/agent/${slug}/session/${sessionId}`}
           onClose={() => setShowRating(false)}

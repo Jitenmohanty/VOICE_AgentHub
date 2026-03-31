@@ -28,7 +28,7 @@ export function Sidebar() {
     <motion.aside
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="hidden md:flex flex-col w-64 min-h-screen bg-[#0E0E16] border-r border-[#2A2A3E] p-4"
+      className="hidden md:flex flex-col w-64 h-screen sticky top-0 bg-[#0E0E16] border-r border-[#2A2A3E] p-4 overflow-y-auto"
     >
       <Link href="/business/dashboard" className="flex items-center gap-2 mb-8 px-2">
         <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
