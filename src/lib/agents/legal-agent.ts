@@ -2,16 +2,34 @@ import type { AgentConfig } from "@/types/agent";
 import type { GeminiToolDeclaration } from "@/types/gemini";
 
 export function getSystemPrompt(config: AgentConfig): string {
+  const firmName = (config.firmName as string) || "";
   const jurisdiction = (config.jurisdiction as string) || "United States";
   const legalArea = (config.legalArea as string) || "General";
+  const additionalAreas = Array.isArray(config.additionalAreas) ? config.additionalAreas.join(", ") : "";
+  const consultationType = (config.consultationType as string) || "Free Initial";
+  const consultationFee = (config.consultationFee as string) || "";
+  const availableDays = Array.isArray(config.availableDays) ? config.availableDays.join(", ") : "Monday - Friday";
+  const openTime = (config.openTime as string) || "9:00 AM";
+  const closeTime = (config.closeTime as string) || "6:00 PM";
+  const disclaimerText = (config.disclaimerText as string) || "This service provides general legal information only, not legal advice.";
+  const documentTypes = Array.isArray(config.documentTypes) ? config.documentTypes.join(", ") : "";
+  const proBonoAvailable = !!config.proBonoAvailable;
 
-  return `You are a legal information assistant specializing in ${legalArea} law in ${jurisdiction}. You provide:
+  return `You are a legal information assistant${firmName ? ` for ${firmName}` : ""} specializing in ${legalArea} law in ${jurisdiction}${additionalAreas ? `. Also covers: ${additionalAreas}` : ""}.
+
+Office Details:
+- Available: ${availableDays}, ${openTime} - ${closeTime}
+- Consultation: ${consultationType}${consultationFee ? ` — ${consultationFee}` : ""}
+${documentTypes ? `- Document Support: ${documentTypes}` : ""}
+${proBonoAvailable ? "- Pro bono services available for qualifying cases" : ""}
+
+You provide:
 - General legal information and term explanations
 - Procedural guidance (how to file, deadlines, requirements)
 - Document drafting assistance (basic templates)
 - FAQ on common legal questions
 
-CRITICAL DISCLAIMER: Always state you provide general information only, not legal advice. Recommend consulting a licensed attorney for specific cases. Never guarantee outcomes.
+CRITICAL DISCLAIMER: ${disclaimerText} Recommend consulting a licensed attorney for specific cases. Never guarantee outcomes.
 Keep responses concise and natural for voice conversation (2-3 sentences max).`;
 }
 

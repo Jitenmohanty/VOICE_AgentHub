@@ -71,7 +71,7 @@ export default function OnboardingPage() {
   const [agentName, setAgentName] = useState("");
   const [greeting, setGreeting] = useState("");
   const [personality, setPersonality] = useState("");
-  const [config, setConfig] = useState<Record<string, string | string[]>>({});
+  const [config, setConfig] = useState<Record<string, string | string[] | number | boolean>>({});
 
   // Knowledge quick-add
   const [faqs, setFaqs] = useState<{ title: string; content: string }[]>([]);
@@ -138,7 +138,7 @@ export default function OnboardingPage() {
           setPersonality(agent.personality || "");
           const tmpl = getTemplateById(industry);
           if (tmpl) {
-            const dc: Record<string, string | string[]> = {};
+            const dc: Record<string, string | string[] | number | boolean> = {};
             for (const f of tmpl.configFields) {
               if (f.defaultValue !== undefined) dc[f.id] = f.defaultValue;
             }
@@ -215,7 +215,7 @@ export default function OnboardingPage() {
     router.push("/business/dashboard");
   };
 
-  const updateConfig = (key: string, value: string | string[]) => {
+  const updateConfig = (key: string, value: string | string[] | number | boolean) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -348,33 +348,72 @@ export default function OnboardingPage() {
               <textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder={template.defaultPersonality} rows={2} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
             </div>
 
-            {/* Template-specific fields */}
-            {template.configFields.map((field) => (
-              <div key={field.id}>
-                <Label className="text-[#8888AA]">{field.label}</Label>
-                {field.type === "text" && (
-                  <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={typeof field.defaultValue === "string" ? field.defaultValue : ""} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
-                )}
-                {field.type === "select" && field.options && (
-                  <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-10 bg-white/5 border border-[#2A2A3E] rounded-lg px-3 text-sm text-white focus:outline-none focus:border-[#00D4FF]">
-                    <option value="" className="bg-[#1A1A2E]">Select...</option>
-                    {field.options.map((o) => <option key={o} value={o} className="bg-[#1A1A2E]">{o}</option>)}
-                  </select>
-                )}
-                {field.type === "multi-select" && field.options && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {field.options.map((o) => {
-                      const sel = ((config[field.id] as string[]) || []).includes(o);
-                      return (
-                        <button key={o} type="button" onClick={() => toggleMulti(field.id, o)} className="px-3 py-1.5 rounded-lg text-sm transition-all" style={{ backgroundColor: sel ? `${template.accentColor}20` : "rgba(255,255,255,0.05)", color: sel ? template.accentColor : "#8888AA", borderWidth: "1px", borderColor: sel ? `${template.accentColor}40` : "transparent" }}>
-                          {o}
+            {/* Template-specific fields grouped by section */}
+            {(() => {
+              const sections: { name: string; fields: typeof template.configFields }[] = [];
+              for (const field of template.configFields) {
+                const sectionName = field.section || "Details";
+                let section = sections.find((s) => s.name === sectionName);
+                if (!section) { section = { name: sectionName, fields: [] }; sections.push(section); }
+                section.fields.push(field);
+              }
+              return sections.map((section) => (
+                <div key={section.name} className="space-y-4">
+                  <p className="text-xs font-medium text-[#666680] uppercase tracking-wider pt-2 border-t border-[#2A2A3E]/50">{section.name}</p>
+                  {section.fields.map((field) => (
+                    <div key={field.id}>
+                      <Label className="text-[#8888AA]">{field.label}</Label>
+                      {field.description && <p className="text-xs text-[#666680] mt-0.5">{field.description}</p>}
+
+                      {field.type === "text" && (
+                        <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : "")} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
+                      )}
+
+                      {field.type === "number" && (
+                        <Input type="number" value={config[field.id] !== undefined ? String(config[field.id]) : ""} onChange={(e) => updateConfig(field.id, e.target.value === "" ? 0 : Number(e.target.value))} min={field.min} max={field.max} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white w-32" />
+                      )}
+
+                      {field.type === "time" && (
+                        <Input type="time" value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white w-40" />
+                      )}
+
+                      {field.type === "textarea" && (
+                        <textarea value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || ""} rows={3} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
+                      )}
+
+                      {field.type === "toggle" && (
+                        <button type="button" onClick={() => updateConfig(field.id, !config[field.id])} className="mt-1.5 flex items-center gap-2">
+                          <div className={`w-10 h-5 rounded-full transition-colors relative ${config[field.id] ? "bg-[#00D4FF]" : "bg-[#2A2A3E]"}`}>
+                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${config[field.id] ? "translate-x-5" : "translate-x-0.5"}`} />
+                          </div>
+                          <span className="text-sm text-[#8888AA]">{config[field.id] ? "Yes" : "No"}</span>
                         </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
+                      )}
+
+                      {field.type === "select" && field.options && (
+                        <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-10 bg-white/5 border border-[#2A2A3E] rounded-lg px-3 text-sm text-white focus:outline-none focus:border-[#00D4FF]">
+                          <option value="" className="bg-[#1A1A2E]">Select...</option>
+                          {field.options.map((o) => <option key={o} value={o} className="bg-[#1A1A2E]">{o}</option>)}
+                        </select>
+                      )}
+
+                      {field.type === "multi-select" && field.options && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {field.options.map((o) => {
+                            const sel = ((config[field.id] as string[]) || []).includes(o);
+                            return (
+                              <button key={o} type="button" onClick={() => toggleMulti(field.id, o)} className="px-3 py-1.5 rounded-lg text-sm transition-all" style={{ backgroundColor: sel ? `${template.accentColor}20` : "rgba(255,255,255,0.05)", color: sel ? template.accentColor : "#8888AA", borderWidth: "1px", borderColor: sel ? `${template.accentColor}40` : "transparent" }}>
+                                {o}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ));
+            })()}
           </motion.div>
         )}
 

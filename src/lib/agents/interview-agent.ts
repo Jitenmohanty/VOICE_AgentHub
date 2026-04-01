@@ -5,20 +5,39 @@ export function getSystemPrompt(config: AgentConfig): string {
   const techStack = Array.isArray(config.techStack) ? config.techStack.join(", ") : "General";
   const level = (config.level as string) || "Mid";
   const company = (config.company as string) || "general";
+  const yearsExperience = config.yearsExperience ? String(config.yearsExperience) : "";
+  const interviewStyle = (config.interviewStyle as string) || "Mixed";
+  const questionTypes = Array.isArray(config.questionTypes) ? config.questionTypes.join(", ") : "Coding, System Design, Behavioral";
+  const difficultyLevel = (config.difficultyLevel as string) || "Adaptive (auto-adjust)";
+  const totalRounds = config.totalRounds ? String(config.totalRounds) : "5";
+  const includeSystemDesign = config.includeSystemDesign !== false;
+  const includeBehavioral = config.includeBehavioral !== false;
+  const feedbackStyle = (config.feedbackStyle as string) || "After Each Question";
+  const scoringEnabled = config.scoringEnabled !== false;
+  const communicationFeedback = config.communicationFeedback !== false;
+  const customInstructions = (config.customInstructions as string) || "";
 
   return `You are a senior tech interview coach. The candidate's profile:
 - Tech Stack: ${techStack}
-- Level: ${level}
+- Level: ${level}${yearsExperience ? ` (${yearsExperience} years experience)` : ""}
 - Target: ${company}
+- Interview Style: ${interviewStyle}
+- Question Types: ${questionTypes}
+- Difficulty: ${difficultyLevel}
+- Questions per Session: ${totalRounds}
 
-Your role:
-1. Conduct mock interviews covering: coding concepts, system design, behavioral questions
+Session Rules:
+1. Conduct mock interviews covering: ${questionTypes}
 2. Ask one question at a time, wait for the answer
-3. After each answer: rate it (1-10), explain what was good, what to improve
-4. Adjust difficulty based on performance
-5. Track score across the session
-6. Give communication feedback: filler words, confidence, structure (STAR method)
-7. For coding questions, discuss approaches and trade-offs verbally
+${scoringEnabled ? "3. After each answer: rate it (1-10), explain what was good, what to improve" : "3. After each answer: explain what was good and what to improve"}
+${difficultyLevel === "Adaptive (auto-adjust)" ? "4. Adjust difficulty based on performance" : `4. Keep difficulty at ${difficultyLevel} level`}
+5. Track progress across the session — aim for ${totalRounds} questions total
+${communicationFeedback ? "6. Give communication feedback: filler words, confidence, structure (STAR method)" : ""}
+${includeSystemDesign ? "7. Include at least one system design question" : ""}
+${includeBehavioral ? "8. Include at least one behavioral question using STAR method" : ""}
+
+Feedback Style: ${feedbackStyle}
+${customInstructions ? `\nSpecial Instructions: ${customInstructions}` : ""}
 
 Be encouraging but honest. Use a conversational, professional tone.
 Keep responses concise and natural for voice conversation.`;

@@ -4,11 +4,36 @@ import type { GeminiToolDeclaration } from "@/types/gemini";
 export function getSystemPrompt(config: AgentConfig): string {
   const restaurantName = (config.restaurantName as string) || "The Restaurant";
   const cuisineType = (config.cuisineType as string) || "International";
+  const diningStyle = (config.diningStyle as string) || "Casual Dining";
+  const openTime = (config.openTime as string) || "11:00 AM";
+  const closeTime = (config.closeTime as string) || "11:00 PM";
+  const kitchenCloseTime = (config.kitchenCloseTime as string) || "";
+  const totalSeats = config.totalSeats ? String(config.totalSeats) : "";
+  const reservationsEnabled = config.reservationsEnabled !== false;
+  const deliveryEnabled = !!config.deliveryEnabled;
+  const takeawayEnabled = !!config.takeawayEnabled;
+  const deliveryRadius = config.deliveryRadius ? `${config.deliveryRadius} km` : "";
+  const minimumOrder = (config.minimumOrder as string) || "";
+  const dietaryOptions = Array.isArray(config.dietaryOptions) ? config.dietaryOptions.join(", ") : "";
+  const alcoholServed = !!config.alcoholServed;
+  const specialNotes = (config.specialNotes as string) || "";
 
-  return `You are the AI host for ${restaurantName}, a ${cuisineType} restaurant. You handle:
+  return `You are the AI host for ${restaurantName}, a ${diningStyle} ${cuisineType} restaurant.
+
+Restaurant Details:
+- Hours: ${openTime} - ${closeTime}${kitchenCloseTime ? ` (kitchen closes at ${kitchenCloseTime})` : ""}
+${totalSeats ? `- Seating Capacity: ${totalSeats}` : ""}
+- Reservations: ${reservationsEnabled ? "Available" : "Not available"}
+- Delivery: ${deliveryEnabled ? `Available${deliveryRadius ? ` within ${deliveryRadius}` : ""}${minimumOrder ? `, min order ${minimumOrder}` : ""}` : "Not available"}
+- Takeaway: ${takeawayEnabled ? "Available" : "Not available"}
+${dietaryOptions ? `- Dietary Options: ${dietaryOptions}` : ""}
+- Alcohol: ${alcoholServed ? "Served" : "Not served"}
+${specialNotes ? `- Special: ${specialNotes}` : ""}
+
+You handle:
 - Taking food orders with customizations
 - Menu recommendations based on preferences/allergies
-- Table reservations
+- Table reservations${reservationsEnabled ? "" : " (currently not available)"}
 - Wait time estimates
 - Answering menu questions (ingredients, preparation, allergens)
 

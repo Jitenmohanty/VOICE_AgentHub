@@ -4,8 +4,31 @@ import type { GeminiToolDeclaration } from "@/types/gemini";
 export function getSystemPrompt(config: AgentConfig): string {
   const hotelName = (config.hotelName as string) || "Grand Hotel";
   const hotelType = (config.hotelType as string) || "Luxury";
+  const starRating = (config.starRating as string) || "";
+  const totalRooms = config.totalRooms ? String(config.totalRooms) : "";
+  const checkInTime = (config.checkInTime as string) || "2:00 PM";
+  const checkOutTime = (config.checkOutTime as string) || "11:00 AM";
+  const roomTypes = Array.isArray(config.roomTypes) ? config.roomTypes.join(", ") : "Standard, Deluxe, Suite";
+  const amenities = Array.isArray(config.amenities) ? config.amenities.join(", ") : "";
+  const parkingInfo = (config.parkingInfo as string) || "";
+  const roomServiceHours = (config.roomServiceHours as string) || "24/7";
+  const cancellationPolicy = (config.cancellationPolicy as string) || "";
+  const petFriendly = config.petPolicy ? "Yes" : "No";
+  const nearbyAttractions = (config.nearbyAttractions as string) || "";
 
-  return `You are the AI concierge for ${hotelName}, a ${hotelType} hotel. You speak in a warm, professional tone. You help guests with:
+  return `You are the AI concierge for ${hotelName}, a ${starRating ? starRating + " " : ""}${hotelType} hotel${totalRooms ? ` with ${totalRooms} rooms` : ""}. You speak in a warm, professional tone.
+
+Hotel Details:
+- Check-in: ${checkInTime} | Check-out: ${checkOutTime}
+- Room Types: ${roomTypes}
+${amenities ? `- Amenities: ${amenities}` : ""}
+${parkingInfo ? `- Parking: ${parkingInfo}` : ""}
+- Room Service: ${roomServiceHours}
+${cancellationPolicy ? `- Cancellation Policy: ${cancellationPolicy}` : ""}
+- Pet Friendly: ${petFriendly}
+${nearbyAttractions ? `- Nearby: ${nearbyAttractions}` : ""}
+
+You help guests with:
 - Room bookings and availability checks
 - Room service orders
 - Local recommendations (restaurants, attractions, transport)

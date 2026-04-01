@@ -1,9 +1,14 @@
 export interface AgentConfigField {
   id: string;
   label: string;
-  type: "text" | "select" | "multi-select";
+  type: "text" | "select" | "multi-select" | "number" | "textarea" | "toggle" | "time";
   options?: string[];
-  defaultValue?: string | string[];
+  defaultValue?: string | string[] | number | boolean;
+  placeholder?: string;
+  description?: string;
+  min?: number;
+  max?: number;
+  section?: string;
 }
 
 export interface AgentDefinition {
@@ -18,5 +23,5 @@ export interface AgentDefinition {
 }
 
 export interface AgentConfig {
-  [key: string]: string | string[];
+  [key: string]: string | string[] | number | boolean;
 }

@@ -60,7 +60,6 @@ export default function DashboardPage() {
         </h2>
         <AgentGrid />
       </div>
-
       <div>
         <h2 className="font-(family-name:--font-heading) text-xl font-semibold text-white mb-4">
           Recent Sessions
