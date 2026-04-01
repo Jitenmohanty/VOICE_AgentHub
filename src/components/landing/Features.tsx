@@ -1,32 +1,73 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Globe, Mic2, Brain, Volume2 } from "lucide-react";
+import {
+  Globe,
+  Mic2,
+  Brain,
+  BarChart3,
+  FileText,
+  Link2,
+  Database,
+  Sparkles,
+} from "lucide-react";
 
 const features = [
   {
-    icon: Globe,
-    title: "90+ Languages",
-    description: "Speak naturally in any language. Our agents understand and respond fluently.",
-    color: "#00D4FF",
-  },
-  {
     icon: Mic2,
     title: "Real-time Voice",
-    description: "Natural, low-latency voice conversations powered by Gemini Live API.",
+    description:
+      "Natural, low-latency conversations via Gemini Live API. Speak and get instant voice responses.",
     color: "#FFB800",
   },
   {
     icon: Brain,
-    title: "Domain Expert",
-    description: "Each agent is specialized for its industry with deep domain knowledge.",
+    title: "Industry-Specific Agents",
+    description:
+      "Hotels, restaurants, clinics, law firms & interviews — each agent has deep domain knowledge.",
     color: "#6366F1",
   },
   {
-    icon: Volume2,
-    title: "Noise Filtering",
-    description: "Advanced audio processing ensures clear communication in any environment.",
+    icon: Database,
+    title: "Your Real Data",
+    description:
+      "Agents use your actual menus, room info, doctor rosters & FAQs — not generic scripts.",
     color: "#10B981",
+  },
+  {
+    icon: Sparkles,
+    title: "AI Post-Call Reports",
+    description:
+      "Every call is analyzed by Claude AI — summaries, sentiment, action items & scores, automatically.",
+    color: "#00D4FF",
+  },
+  {
+    icon: BarChart3,
+    title: "Interview Scoring",
+    description:
+      "5-round structured interviews with per-question scores, round breakdowns & detailed reports.",
+    color: "#EF4444",
+  },
+  {
+    icon: FileText,
+    title: "Resume Parsing",
+    description:
+      "Candidates upload a PDF resume. Claude extracts skills and personalizes interview questions.",
+    color: "#F97316",
+  },
+  {
+    icon: Link2,
+    title: "Shareable Public Links",
+    description:
+      "Every agent gets a public link — no login needed for callers. Share via QR, email, or embed.",
+    color: "#8B5CF6",
+  },
+  {
+    icon: Globe,
+    title: "90+ Languages",
+    description:
+      "Speak naturally in any language. Gemini understands and responds fluently worldwide.",
+    color: "#06B6D4",
   },
 ];
 
@@ -41,10 +82,10 @@ export function Features() {
           className="text-center mb-16"
         >
           <h2 className="font-(family-name:--font-heading) text-4xl md:text-5xl font-bold text-white mb-4">
-            Built for the Future of Voice
+            Everything You Need, Built In
           </h2>
-          <p className="text-[#8888AA] text-lg">
-            Enterprise-grade AI voice agents with cutting-edge capabilities.
+          <p className="text-[#8888AA] text-lg max-w-2xl mx-auto">
+            From onboarding to post-call analytics — a complete AI voice platform, not just a chatbot.
           </p>
         </motion.div>
 
@@ -55,7 +96,7 @@ export function Features() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.08 }}
               className="glass rounded-2xl p-6 text-center group hover:border-white/10 transition-all"
             >
               <div

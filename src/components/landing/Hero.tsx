@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Mic } from "lucide-react";
+import { ArrowRight, Mic, Sparkles, Link2, BarChart3 } from "lucide-react";
 
 export function Hero() {
   return (
@@ -24,31 +24,31 @@ export function Hero() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
             <Mic className="w-4 h-4 text-[#00D4FF]" />
-            <span className="text-sm text-[#8888AA]">Powered by Google Gemini</span>
+            <span className="text-sm text-[#8888AA]">Powered by Google Gemini Live API</span>
           </div>
 
           <h1 className="font-(family-name:--font-heading) text-5xl md:text-7xl font-bold leading-tight mb-6">
-            <span className="text-white">Your Business.</span>
+            <span className="text-white">Deploy a Voice AI Agent</span>
             <br />
             <span className="bg-linear-to-r from-[#00D4FF] to-[#6366F1] bg-clip-text text-transparent">
-              Your AI Agent.
+              for Any Business
             </span>
             <br />
-            <span className="text-white">Your Voice.</span>
+            <span className="text-white">in Minutes.</span>
           </h1>
 
           <p className="text-xl text-[#8888AA] max-w-2xl mx-auto mb-10">
-            Choose your industry. Get a specialized voice AI agent powered by Gemini.
-            Real-time conversations in 90+ languages.
+            Hotels, restaurants, clinics, law firms, and tech interviews — each agent speaks your domain,
+            handles real data, and delivers AI-powered reports after every call.
           </p>
 
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-4 mb-12">
             <Link href="/register">
               <Button
                 size="lg"
                 className="bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 text-lg px-8 py-6 hover:opacity-90"
               >
-                Get Started
+                Create Your Agent Free
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
@@ -58,10 +58,33 @@ export function Hero() {
                 variant="outline"
                 className="text-lg px-8 py-6 border-[#2A2A3E] text-[#8888AA] hover:text-white hover:border-[#00D4FF]/50"
               >
-                See Agents
+                See All Agents
               </Button>
             </a>
           </div>
+
+          {/* Quick proof points */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="flex flex-wrap items-center justify-center gap-6 text-sm text-[#8888AA]"
+          >
+            <span className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#FFB800]" />
+              AI post-call reports
+            </span>
+            <span className="hidden sm:inline text-[#2A2A3E]">•</span>
+            <span className="flex items-center gap-2">
+              <Link2 className="w-4 h-4 text-[#10B981]" />
+              Shareable public links
+            </span>
+            <span className="hidden sm:inline text-[#2A2A3E]">•</span>
+            <span className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-[#6366F1]" />
+              Session analytics & scoring
+            </span>
+          </motion.div>
         </motion.div>
       </div>
     </section>
