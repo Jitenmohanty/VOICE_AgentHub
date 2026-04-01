@@ -1,7 +1,7 @@
 import type { AgentConfig } from "@/types/agent";
 import type { GeminiToolDeclaration } from "@/types/gemini";
 
-export function getSystemPrompt(config: AgentConfig): string {
+export function getSystemPrompt(config: AgentConfig, _extra?: Record<string, string>): string {
   const firmName = (config.firmName as string) || "";
   const jurisdiction = (config.jurisdiction as string) || "United States";
   const legalArea = (config.legalArea as string) || "General";
@@ -72,7 +72,7 @@ export function getTools(): GeminiToolDeclaration[] {
   ];
 }
 
-export function handleToolCall(name: string, args: Record<string, unknown>): string {
+export function handleToolCall(name: string, args: Record<string, unknown>, _agentId?: string): string {
   switch (name) {
     case "getLegalTermDefinition":
       return JSON.stringify({ term: args.term, definition: "A legal concept referring to..." });

@@ -31,6 +31,7 @@ export class GeminiLiveSession {
   private audioContext: AudioContext | null = null;
   private listeners: SessionEventCallback[] = [];
   private agentType: string;
+  private agentSlug: string;
   private config: AgentConfig;
   private prebuiltPrompt: string | null;
   private prebuiltTools: unknown[] | null;
@@ -43,12 +44,18 @@ export class GeminiLiveSession {
   private nextPlayTime = 0;
   private activeSourceNodes: Set<AudioBufferSourceNode> = new Set();
 
+  // Interview score tracking (populated by scoreAnswer/advanceRound/endInterview tool calls)
+  private interviewScores: { round: number; questionNumber?: number; question?: string; answerSummary?: string; score: number; feedback?: string }[] = [];
+  private interviewRounds: { round: number; summary?: string }[] = [];
+  private interviewResult: { overallImpression?: string; overallFeedback?: string } | null = null;
+
   constructor(
     agentType: string,
     config: AgentConfig,
-    options?: { systemPrompt?: string; tools?: unknown[] },
+    options?: { systemPrompt?: string; tools?: unknown[]; agentSlug?: string },
   ) {
     this.agentType = agentType;
+    this.agentSlug = options?.agentSlug || "";
     this.config = config;
     this.prebuiltPrompt = options?.systemPrompt || null;
     this.prebuiltTools = options?.tools || null;
@@ -223,18 +230,39 @@ export class GeminiLiveSession {
       }
     }
 
-    // Handle tool calls
+    // Handle tool calls (async to allow DB lookups via the data API)
     if (message.toolCall?.functionCalls) {
-      for (const fc of message.toolCall.functionCalls) {
-        try {
-          console.log("[GeminiLive] Tool call:", fc.name);
-          const result = handleAgentToolCall(this.agentType, fc.name!, fc.args || {});
-          this.sendToolResponse(fc.id!, fc.name!, result);
-        } catch (toolErr) {
-          console.error("[GeminiLive] Tool call error:", fc.name, toolErr);
-          this.sendToolResponse(fc.id!, fc.name!, JSON.stringify({ error: "Tool execution failed" }));
+      void (async () => {
+        for (const fc of message.toolCall!.functionCalls!) {
+          try {
+            console.log("[GeminiLive] Tool call:", fc.name);
+            let result = handleAgentToolCall(this.agentType, fc.name!, fc.args || {});
+            // Track interview tool calls locally
+            if (fc.name === "scoreAnswer" && fc.args) {
+              this.interviewScores.push({
+                round: Number(fc.args.round) || 0,
+                questionNumber: fc.args.questionNumber != null ? Number(fc.args.questionNumber) : undefined,
+                question: fc.args.question as string | undefined,
+                answerSummary: fc.args.answerSummary as string | undefined,
+                score: Number(fc.args.score) || 0,
+                feedback: fc.args.feedback as string | undefined,
+              });
+            } else if (fc.name === "advanceRound" && fc.args) {
+              this.interviewRounds.push({ round: Number(fc.args.nextRound) || 0, summary: fc.args.summary as string | undefined });
+            } else if (fc.name === "endInterview" && fc.args) {
+              this.interviewResult = { overallImpression: fc.args.overallImpression as string, overallFeedback: fc.args.overallFeedback as string | undefined };
+            }
+            // For data-fetch tools, override with real data from the public API
+            if (this.agentSlug && (fc.name === "getMenu" || fc.name === "checkAvailability" || fc.name === "checkDoctorAvailability")) {
+              result = await this.fetchToolData(fc.name, fc.args || {});
+            }
+            this.sendToolResponse(fc.id!, fc.name!, result);
+          } catch (toolErr) {
+            console.error("[GeminiLive] Tool call error:", fc.name, toolErr);
+            this.sendToolResponse(fc.id!, fc.name!, JSON.stringify({ error: "Tool execution failed" }));
+          }
         }
-      }
+      })();
     }
 
     // Handle tool call cancellation
@@ -277,6 +305,46 @@ export class GeminiLiveSession {
     const startTime = Math.max(now, this.nextPlayTime);
     source.start(startTime);
     this.nextPlayTime = startTime + buffer.duration;
+  }
+
+  /** Fetch real business data for a tool call via the public data API */
+  private async fetchToolData(toolName: string, args: Record<string, unknown>): Promise<string> {
+    try {
+      const res = await fetch(`/api/public/agent/${this.agentSlug}/data`);
+      if (!res.ok) throw new Error("data fetch failed");
+      const payload = await res.json() as { templateType: string; data: { dataType: string; data: unknown }[] };
+
+      if (toolName === "getMenu") {
+        const menuEntry = payload.data.find((d) => d.dataType === "menu");
+        const items = (menuEntry?.data as { items?: unknown[] })?.items ?? [];
+        const category = typeof args.category === "string" ? args.category : null;
+        const filtered = category ? items.filter((i) => (i as Record<string, unknown>).category === category) : items;
+        return JSON.stringify({ items: filtered });
+      }
+
+      if (toolName === "checkAvailability") {
+        const roomEntry = payload.data.find((d) => d.dataType === "rooms");
+        const rooms = (roomEntry?.data as { rooms?: unknown[] })?.rooms ?? [];
+        return JSON.stringify({ available: rooms.length > 0, rooms });
+      }
+
+      if (toolName === "checkDoctorAvailability") {
+        const doctorEntry = payload.data.find((d) => d.dataType === "doctors");
+        const doctors = (doctorEntry?.data as { doctors?: unknown[] })?.doctors ?? [];
+        const day = typeof args.day === "string" ? args.day : null;
+        const filtered = day
+          ? doctors.filter((d) => {
+              const days = (d as Record<string, unknown>).availableDays;
+              return Array.isArray(days) && (days as string[]).includes(day);
+            })
+          : doctors;
+        return JSON.stringify({ doctors: filtered });
+      }
+    } catch {
+      // Fall through to default mock
+    }
+    // Fallback: return default mock via existing handler
+    return handleAgentToolCall(this.agentType, toolName, args);
   }
 
   private sendToolResponse(callId: string, functionName: string, result: string) {
@@ -391,5 +459,15 @@ export class GeminiLiveSession {
 
   getIsConnected() {
     return this.isConnected;
+  }
+
+  /** Get collected interview scores/rounds/result for session persistence */
+  getInterviewData() {
+    if (this.interviewScores.length === 0 && !this.interviewResult) return null;
+    return {
+      scores: this.interviewScores,
+      rounds: this.interviewRounds,
+      result: this.interviewResult,
+    };
   }
 }

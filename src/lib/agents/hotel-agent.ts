@@ -1,7 +1,7 @@
 import type { AgentConfig } from "@/types/agent";
 import type { GeminiToolDeclaration } from "@/types/gemini";
 
-export function getSystemPrompt(config: AgentConfig): string {
+export function getSystemPrompt(config: AgentConfig, _extra?: Record<string, string>): string {
   const hotelName = (config.hotelName as string) || "Grand Hotel";
   const hotelType = (config.hotelType as string) || "Luxury";
   const starRating = (config.starRating as string) || "";
@@ -80,7 +80,7 @@ export function getTools(): GeminiToolDeclaration[] {
   ];
 }
 
-export function handleToolCall(name: string, args: Record<string, unknown>): string {
+export function handleToolCall(name: string, args: Record<string, unknown>, _agentId?: string): string {
   switch (name) {
     case "checkAvailability":
       return JSON.stringify({ available: true, rooms: [{ type: args.roomType || "deluxe", price: "$250/night", count: 3 }] });

@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const slug = await generateUniqueSlug(businessName);
 
     // Build default config
-    const defaultConfig: Record<string, string | string[]> = {};
+    const defaultConfig: Record<string, string | string[] | number | boolean> = {};
     for (const field of template.configFields) {
       if (field.defaultValue !== undefined) {
         defaultConfig[field.id] = field.defaultValue;

@@ -122,3 +122,126 @@ Return: [{"title": "Section Title", "content": "section content..."}]`,
   },
   { name: "chunkDocument", run_type: "chain" },
 );
+/* ── Interview Report ─────────────────────────── */
+
+export interface InterviewScore {
+  round: number;
+  questionNumber?: number;
+  question?: string;
+  answerSummary?: string;
+  score: number;
+  feedback?: string;
+}
+
+export interface InterviewSessionData {
+  scores: InterviewScore[];
+  rounds: { round: number; summary?: string }[];
+  result: { overallImpression?: string; overallFeedback?: string } | null;
+}
+
+export interface InterviewCandidateContext {
+  name?: string;
+  techStack?: string;
+  level?: string;
+  targetRole?: string;
+}
+
+export interface InterviewReport {
+  overallScore: number; // 0-100
+  verdict: "strong" | "average" | "needs_work";
+  summary: string;
+  roundBreakdown: {
+    round: number;
+    roundName: string;
+    score: number;
+    comments: string;
+  }[];
+  communicationFeedback: string;
+  technicalStrengths: string[];
+  technicalWeaknesses: string[];
+  areasToImprove: string[];
+  recommendedResources: string[];
+}
+
+/** Generate a detailed interview report using Claude (traced via LangSmith) */
+export const generateInterviewReport = traceable(
+  async function generateInterviewReport(
+    transcript: TranscriptMessage[],
+    interviewData: InterviewSessionData,
+    candidateContext: InterviewCandidateContext,
+  ): Promise<InterviewReport> {
+    const formatted = transcript
+      .map((m) => `${m.speaker === "user" ? "Candidate" : "Interviewer"}: ${m.text}`)
+      .join("\n");
+
+    const scoresStr = interviewData.scores
+      .map((s) => `Round ${s.round}${s.questionNumber ? ` Q${s.questionNumber}` : ""}: ${s.score}/10${s.feedback ? ` — ${s.feedback}` : ""}`)
+      .join("\n");
+
+    const claude = getClient();
+    const response = await claude.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2048,
+      messages: [
+        {
+          role: "user",
+          content: `Analyze this mock technical interview and generate a detailed report. Return ONLY valid JSON (no markdown, no code fences).
+
+Candidate: ${candidateContext.name || "Unknown"}
+Tech Stack: ${candidateContext.techStack || "General"}
+Level: ${candidateContext.level || "Mid"}
+Target Role: ${candidateContext.targetRole || "Software Engineer"}
+
+Interview Scores (from AI interviewer):
+${scoresStr}
+
+Overall Impression: ${interviewData.result?.overallImpression || "not recorded"}
+Interviewer Feedback: ${interviewData.result?.overallFeedback || "none"}
+
+Full Transcript:
+${formatted.slice(0, 12000)}
+
+Return this exact JSON structure:
+{
+  "overallScore": <number 0-100>,
+  "verdict": "strong" | "average" | "needs_work",
+  "summary": "<2-3 sentence overall assessment>",
+  "roundBreakdown": [
+    {"round": 1, "roundName": "Introduction", "score": <1-10>, "comments": "<feedback>"},
+    {"round": 2, "roundName": "Core Language", "score": <1-10>, "comments": "<feedback>"}
+  ],
+  "communicationFeedback": "<feedback on clarity, confidence, filler words, pace>",
+  "technicalStrengths": ["strength 1", "strength 2"],
+  "technicalWeaknesses": ["weakness 1", "weakness 2"],
+  "areasToImprove": ["specific area 1", "specific area 2"],
+  "recommendedResources": ["resource or topic to study"]
+}`,
+        },
+      ],
+    });
+
+    const text =
+      response.content[0]?.type === "text" ? response.content[0].text : "";
+
+    try {
+      return JSON.parse(text) as InterviewReport;
+    } catch {
+      // Fallback: compute from raw scores
+      const avgScore = interviewData.scores.length > 0
+        ? interviewData.scores.reduce((s, q) => s + q.score, 0) / interviewData.scores.length
+        : 5;
+      return {
+        overallScore: Math.round(avgScore * 10),
+        verdict: avgScore >= 7 ? "strong" : avgScore >= 5 ? "average" : "needs_work",
+        summary: text || "Report generation encountered an issue. Please review the transcript manually.",
+        roundBreakdown: [],
+        communicationFeedback: "",
+        technicalStrengths: [],
+        technicalWeaknesses: [],
+        areasToImprove: [],
+        recommendedResources: [],
+      };
+    }
+  },
+  { name: "generateInterviewReport", run_type: "chain" },
+);

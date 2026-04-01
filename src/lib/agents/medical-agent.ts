@@ -1,7 +1,7 @@
 import type { AgentConfig } from "@/types/agent";
 import type { GeminiToolDeclaration } from "@/types/gemini";
 
-export function getSystemPrompt(config: AgentConfig): string {
+export function getSystemPrompt(config: AgentConfig, _extra?: Record<string, string>): string {
   const clinicName = (config.clinicName as string) || "Health Center";
   const specialty = (config.specialty as string) || "General Practice";
   const additionalSpecialties = Array.isArray(config.additionalSpecialties) ? config.additionalSpecialties.join(", ") : "";
@@ -79,7 +79,7 @@ export function getTools(): GeminiToolDeclaration[] {
   ];
 }
 
-export function handleToolCall(name: string, args: Record<string, unknown>): string {
+export function handleToolCall(name: string, args: Record<string, unknown>, _agentId?: string): string {
   switch (name) {
     case "checkDoctorAvailability":
       return JSON.stringify({ slots: [{ time: "10:00 AM", doctor: "Dr. Smith" }, { time: "2:30 PM", doctor: "Dr. Johnson" }] });

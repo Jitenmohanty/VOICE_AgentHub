@@ -9,9 +9,9 @@ import * as legalAgent from "@/lib/agents/legal-agent";
 const agentModules: Record<
   string,
   {
-    getSystemPrompt: (config: AgentConfig) => string;
+    getSystemPrompt: (config: AgentConfig, extra?: Record<string, string>) => string;
     getTools: () => GeminiToolDeclaration[];
-    handleToolCall: (name: string, args: Record<string, unknown>) => string;
+    handleToolCall: (name: string, args: Record<string, unknown>, agentId?: string) => string;
   }
 > = {
   hotel: hotelAgent,
@@ -30,10 +30,14 @@ Core behaviors:
 - If you cannot help, explain why and suggest alternatives
 `;
 
-export function getAgentSystemPrompt(agentType: string, config: AgentConfig): string {
+export function getAgentSystemPrompt(
+  agentType: string,
+  config: AgentConfig,
+  candidateContext?: Record<string, string>,
+): string {
   const mod = agentModules[agentType];
   if (!mod) throw new Error(`Unknown agent type: ${agentType}`);
-  return `${baseInstructions}\n\n${mod.getSystemPrompt(config)}`;
+  return `${baseInstructions}\n\n${mod.getSystemPrompt(config, candidateContext)}`;
 }
 
 export function getAgentTools(agentType: string): GeminiToolDeclaration[] {
@@ -42,8 +46,13 @@ export function getAgentTools(agentType: string): GeminiToolDeclaration[] {
   return mod.getTools();
 }
 
-export function handleAgentToolCall(agentType: string, name: string, args: Record<string, unknown>): string {
+export function handleAgentToolCall(
+  agentType: string,
+  name: string,
+  args: Record<string, unknown>,
+  agentId?: string,
+): string {
   const mod = agentModules[agentType];
   if (!mod) return JSON.stringify({ error: "Unknown agent type" });
-  return mod.handleToolCall(name, args);
+  return mod.handleToolCall(name, args, agentId);
 }

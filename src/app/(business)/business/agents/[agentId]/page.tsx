@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
 import { getTemplateById } from "@/lib/templates";
+import { MenuBuilder } from "@/components/business/MenuBuilder";
+import { DoctorRoster } from "@/components/business/DoctorRoster";
 import type { AgentConfigField } from "@/types/agent";
 
 interface AgentFullData {
@@ -339,6 +341,24 @@ export default function AgentConfigPage() {
               ));
             })()}
           </div>
+        )}
+
+        {/* ── Section 3b: Restaurant Menu Builder ── */}
+        {agent.templateType === "restaurant" && (
+          <MenuBuilder
+            businessId={businessId}
+            agentId={agentId}
+            accentColor={template?.accentColor}
+          />
+        )}
+
+        {/* ── Section 3c: Medical Doctor Roster ── */}
+        {agent.templateType === "medical" && (
+          <DoctorRoster
+            businessId={businessId}
+            agentId={agentId}
+            accentColor={template?.accentColor}
+          />
         )}
 
         {/* ── Section 4: Voice & Language ── */}

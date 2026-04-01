@@ -12,6 +12,10 @@ import { AudioVisualizer } from "@/components/agent/AudioVisualizer";
 import { TranscriptPanel } from "@/components/agent/TranscriptPanel";
 import { RatingModal } from "@/components/dashboard/RatingModal";
 import { ConnectionLoader } from "@/components/shared/LoadingStates";
+import { InterviewPreCallForm, type CandidateContext } from "@/components/agent/InterviewPreCallForm";
+import { RestaurantPreCall, type MenuItem } from "@/components/public/RestaurantPreCall";
+import { MedicalPreCall, type DoctorInfo } from "@/components/public/MedicalPreCall";
+import { LegalPreCall } from "@/components/public/LegalPreCall";
 import type { TranscriptMessage } from "@/types/session";
 import type { ConnectionState } from "@/types/gemini";
 
@@ -20,6 +24,7 @@ interface AgentInfo {
   name: string;
   greeting: string | null;
   templateType: string;
+  config: Record<string, unknown>;
   accentColor: string;
   icon: string;
 }
@@ -39,6 +44,11 @@ export default function PublicAgentPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // Template-specific pre-call state
+  const [publicData, setPublicData] = useState<{ templateType: string; data: { dataType: string; data: unknown }[] } | null>(null);
+  const [candidateContext, setCandidateContext] = useState<CandidateContext | null>(null);
+  const [preCallDone, setPreCallDone] = useState(false);
+
   const [connectionState, setConnectionState] = useState<ConnectionState>("disconnected");
   const [isAgentSpeaking, setAgentSpeaking] = useState(false);
   const [isMuted, setMuted] = useState(false);
@@ -57,9 +67,18 @@ export default function PublicAgentPage() {
 
   useEffect(() => {
     if (!slug) return;
-    fetch(`/api/public/agent/${slug}`)
-      .then((res) => { if (!res.ok) throw new Error(); return res.json(); })
-      .then((data) => { setAgentInfo(data.agent); setBusinessInfo(data.business); })
+    Promise.all([
+      fetch(`/api/public/agent/${slug}`)
+        .then((res) => { if (!res.ok) throw new Error(); return res.json(); }),
+      fetch(`/api/public/agent/${slug}/data`)
+        .then((res) => res.ok ? res.json() : null)
+        .catch(() => null),
+    ])
+      .then(([agentData, data]) => {
+        setAgentInfo(agentData.agent);
+        setBusinessInfo(agentData.business);
+        if (data) setPublicData(data);
+      })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [slug]);
@@ -82,20 +101,26 @@ export default function PublicAgentPage() {
     if (savedRef.current || !sessionId) return;
     savedRef.current = true;
     try {
+      // Collect interview scoring data if available
+      const interviewData = sessionRef.current?.getInterviewData();
+      const patchBody: Record<string, unknown> = {
+        duration: elapsedSeconds,
+        transcript: transcript.map((m) => ({ speaker: m.speaker, text: m.text, timestamp: m.timestamp })),
+        status: "completed",
+      };
+      if (interviewData) {
+        patchBody.interviewData = interviewData;
+      }
       await fetch(`/api/public/agent/${slug}/session/${sessionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          duration: elapsedSeconds,
-          transcript: transcript.map((m) => ({ speaker: m.speaker, text: m.text, timestamp: m.timestamp })),
-          status: "completed",
-        }),
+        body: JSON.stringify(patchBody),
         keepalive: true,
       });
     } catch { savedRef.current = false; }
   }, [sessionId, slug, elapsedSeconds, transcript]);
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (callContext?: string) => {
     if (!agentInfo) return;
     try {
       setConnectionState("connecting");
@@ -104,10 +129,14 @@ export default function PublicAgentPage() {
       setElapsedSeconds(0);
       savedRef.current = false;
 
+      const body: Record<string, unknown> = {};
+      if (candidateContext) body.candidateContext = candidateContext;
+      if (callContext) body.callContext = callContext;
+
       const res = await fetch(`/api/public/agent/${slug}/session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error("Failed to create session");
       const data = await res.json();
@@ -116,7 +145,7 @@ export default function PublicAgentPage() {
       const session = new GeminiLiveSession(
         agentInfo.templateType,
         (data.agent?.config || {}) as Record<string, string | string[]>,
-        { systemPrompt: data.systemPrompt, tools: data.tools },
+        { systemPrompt: data.systemPrompt, tools: data.tools, agentSlug: slug },
       );
 
       session.on((event) => {
@@ -260,29 +289,95 @@ export default function PublicAgentPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex-1 flex flex-col items-center justify-center gap-6 text-center"
+              className="flex-1 flex flex-col items-center justify-center gap-6 w-full"
             >
-              <AgentAvatar
-                icon={agentInfo.icon}
-                accentColor={accentColor}
-                connectionState="disconnected"
-                isSpeaking={false}
-              />
-              <div>
-                <h2 className="text-lg md:text-xl font-semibold text-white mb-2 px-4">
-                  {agentInfo.greeting || `Talk to ${agentInfo.name}`}
-                </h2>
-                <p className="text-sm text-[#8888AA] max-w-xs mx-auto">
-                  Tap the button below to start a voice conversation. No sign-up needed.
-                </p>
-              </div>
-              <Button
-                onClick={connect}
-                className="px-8 py-3 text-white border-0 hover:opacity-90 text-base"
-                style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
-              >
-                <Phone className="w-5 h-5 mr-2" /> Start Call
-              </Button>
+              {/* Interview: pre-call form */}
+              {agentInfo.templateType === "interview" && !preCallDone ? (
+                <InterviewPreCallForm
+                  agentName={agentInfo.name}
+                  accentColor={accentColor}
+                  ownerTechStack={
+                    Array.isArray(agentInfo.config?.techStack)
+                      ? (agentInfo.config.techStack as string[])
+                      : []
+                  }
+                  onSubmit={(ctx) => {
+                    setCandidateContext(ctx);
+                    setPreCallDone(true);
+                    connect();
+                  }}
+                />
+              ) : agentInfo.templateType === "restaurant" && !preCallDone ? (
+                /* Restaurant: menu preview */
+                <RestaurantPreCall
+                  agentName={agentInfo.name}
+                  businessName={businessInfo.name}
+                  accentColor={accentColor}
+                  menuItems={
+                    (publicData?.data.find((d) => d.dataType === "menu")?.data as { items?: MenuItem[] })?.items ?? []
+                  }
+                  onStartCall={(ctx) => {
+                    setPreCallDone(true);
+                    connect(ctx);
+                  }}
+                />
+              ) : agentInfo.templateType === "medical" && !preCallDone ? (
+                /* Medical: doctor roster + intent */
+                <MedicalPreCall
+                  agentName={agentInfo.name}
+                  businessName={businessInfo.name}
+                  accentColor={accentColor}
+                  doctors={
+                    (publicData?.data.find((d) => d.dataType === "doctors")?.data as { doctors?: DoctorInfo[] })?.doctors ?? []
+                  }
+                  onStartCall={(ctx) => {
+                    setPreCallDone(true);
+                    connect(ctx);
+                  }}
+                />
+              ) : agentInfo.templateType === "legal" && !preCallDone ? (
+                /* Legal: practice area selector */
+                <LegalPreCall
+                  agentName={agentInfo.name}
+                  businessName={businessInfo.name}
+                  accentColor={accentColor}
+                  practiceAreas={[
+                    ...(agentInfo.config?.legalArea ? [agentInfo.config.legalArea as string] : []),
+                    ...(Array.isArray(agentInfo.config?.additionalAreas)
+                      ? (agentInfo.config.additionalAreas as string[])
+                      : []),
+                  ]}
+                  onStartCall={(ctx) => {
+                    setPreCallDone(true);
+                    connect(ctx);
+                  }}
+                />
+              ) : (
+                /* Default / Hotel: direct call */
+                <>
+                  <AgentAvatar
+                    icon={agentInfo.icon}
+                    accentColor={accentColor}
+                    connectionState="disconnected"
+                    isSpeaking={false}
+                  />
+                  <div className="text-center">
+                    <h2 className="text-lg md:text-xl font-semibold text-white mb-2 px-4">
+                      {agentInfo.greeting || `Talk to ${agentInfo.name}`}
+                    </h2>
+                    <p className="text-sm text-[#8888AA] max-w-xs mx-auto">
+                      Tap the button below to start a voice conversation. No sign-up needed.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => connect()}
+                    className="px-8 py-3 text-white border-0 hover:opacity-90 text-base"
+                    style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
+                  >
+                    <Phone className="w-5 h-5 mr-2" /> Start Call
+                  </Button>
+                </>
+              )}
             </motion.div>
           )}
 
@@ -363,7 +458,7 @@ export default function PublicAgentPage() {
               {isDisconnected && transcript.length > 0 && (
                 <div className="shrink-0 flex justify-center gap-3 py-2">
                   <Button
-                    onClick={connect}
+                    onClick={() => { setPreCallDone(false); setCandidateContext(null); }}
                     className="text-white border-0 hover:opacity-90"
                     style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
                   >
@@ -390,7 +485,7 @@ export default function PublicAgentPage() {
                 <p className="text-[#8888AA] text-sm max-w-xs mx-auto">{error}</p>
               </div>
               <Button
-                onClick={connect}
+                onClick={() => { setError(null); setPreCallDone(false); setCandidateContext(null); }}
                 className="text-white border-0 hover:opacity-90"
                 style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
               >

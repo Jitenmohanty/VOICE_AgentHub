@@ -1,7 +1,7 @@
 import type { AgentConfig } from "@/types/agent";
 import type { GeminiToolDeclaration } from "@/types/gemini";
 
-export function getSystemPrompt(config: AgentConfig): string {
+export function getSystemPrompt(config: AgentConfig, _extra?: Record<string, string>): string {
   const restaurantName = (config.restaurantName as string) || "The Restaurant";
   const cuisineType = (config.cuisineType as string) || "International";
   const diningStyle = (config.diningStyle as string) || "Casual Dining";
@@ -84,7 +84,7 @@ export function getTools(): GeminiToolDeclaration[] {
   ];
 }
 
-export function handleToolCall(name: string, args: Record<string, unknown>): string {
+export function handleToolCall(name: string, args: Record<string, unknown>, _agentId?: string): string {
   switch (name) {
     case "getMenu":
       return JSON.stringify({ items: [{ name: "Chef's Special Pasta", price: "$18", description: "Fresh handmade pasta with truffle cream" }] });

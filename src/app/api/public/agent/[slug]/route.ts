@@ -44,6 +44,7 @@ export async function GET(
         greeting: agent.greeting,
         description: agent.description,
         templateType: agent.templateType,
+        config: agent.config || {},
         accentColor: template?.accentColor || "#00D4FF",
         icon: template?.icon || "Bot",
       },

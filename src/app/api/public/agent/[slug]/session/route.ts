@@ -31,12 +31,22 @@ export async function POST(
     const agent = business.agents[0]!;
     const agentConfig = (agent.config as Record<string, string | string[]>) || {};
 
+    // Parse body first so candidateContext is available for system prompt building
+    const body = await request.json().catch(() => ({}));
+    const candidateContext = (body.candidateContext as Record<string, string>) || undefined;
+    const callContext = (body.callContext as string) || undefined;
+
     // 1. Build base system prompt
     let systemPrompt: string;
     if (agent.systemPrompt) {
       systemPrompt = agent.systemPrompt;
     } else {
-      systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig);
+      systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, candidateContext);
+    }
+
+    // Inject caller's pre-call context (e.g., "ordering food" or "book appointment with Dr. Smith")
+    if (callContext) {
+      systemPrompt += `\n\nCaller Context: The caller selected "${callContext}" before starting the call. Address this intent immediately.`;
     }
 
     // 2. Inject personality and rules
@@ -72,21 +82,17 @@ export async function POST(
         systemPrompt += buildRAGContext(ragResults);
       }
     } catch (ragErr) {
-      // RAG is best-effort — don't fail the session if it errors
       console.warn("[RAG] Knowledge query failed:", ragErr);
     }
 
     const tools = getAgentTools(agent.templateType);
-
-    // Optional caller info
-    const body = await request.json().catch(() => ({}));
 
     // Create anonymous session
     const agentSession = await prisma.agentSession.create({
       data: {
         agentId: agent.id,
         title: `${agent.name} Session`,
-        callerName: body.callerName || null,
+        callerName: body.callerName || candidateContext?.name || null,
         callerPhone: body.callerPhone || null,
         status: "active",
       },
@@ -100,6 +106,7 @@ export async function POST(
     return NextResponse.json({
       apiKey,
       sessionId: agentSession.id,
+      agentId: agent.id,
       systemPrompt,
       tools,
       agent: {
@@ -107,6 +114,7 @@ export async function POST(
         name: agent.name,
         templateType: agent.templateType,
         greeting: agent.greeting,
+        config: agent.config,
       },
     });
   } catch (error) {

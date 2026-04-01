@@ -29,6 +29,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getTemplateById, type AgentTemplate } from "@/lib/templates";
+import { MenuBuilder } from "@/components/business/MenuBuilder";
+import { DoctorRoster } from "@/components/business/DoctorRoster";
 
 const INDUSTRY_OPTIONS = [
   { id: "hotel", name: "Hotel", icon: Hotel, color: "#F59E0B", desc: "Concierge, bookings, room service" },
@@ -414,6 +416,40 @@ export default function OnboardingPage() {
                 </div>
               ));
             })()}
+
+            {/* ── Restaurant: Menu Builder sub-step ── */}
+            {template.id === "restaurant" && business?.agents[0] && (
+              <div className="space-y-3 border-t border-[#2A2A3E]/50 pt-4">
+                <p className="text-xs font-medium text-[#666680] uppercase tracking-wider">
+                  Menu Items
+                </p>
+                <p className="text-xs text-[#8888AA] -mt-1">
+                  Add your menu items so the agent can read them out and take orders.
+                </p>
+                <MenuBuilder
+                  businessId={business.id}
+                  agentId={business.agents[0].id}
+                  accentColor={template.accentColor}
+                />
+              </div>
+            )}
+
+            {/* ── Medical: Doctor Roster sub-step ── */}
+            {template.id === "medical" && business?.agents[0] && (
+              <div className="space-y-3 border-t border-[#2A2A3E]/50 pt-4">
+                <p className="text-xs font-medium text-[#666680] uppercase tracking-wider">
+                  Doctor Roster
+                </p>
+                <p className="text-xs text-[#8888AA] -mt-1">
+                  Add doctors so the agent can answer availability and appointment questions.
+                </p>
+                <DoctorRoster
+                  businessId={business.id}
+                  agentId={business.agents[0].id}
+                  accentColor={template.accentColor}
+                />
+              </div>
+            )}
           </motion.div>
         )}
 
