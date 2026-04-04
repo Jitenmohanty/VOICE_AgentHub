@@ -11,7 +11,8 @@ export type SessionEventType =
   | "agent-speaking"
   | "agent-done"
   | "error"
-  | "interrupted";
+  | "interrupted"
+  | "session-expiring";
 
 export interface SessionEvent {
   type: SessionEventType;
@@ -270,9 +271,13 @@ export class GeminiLiveSession {
       console.log("[GeminiLive] Tool call cancelled:", message.toolCallCancellation.ids);
     }
 
-    // Handle go away (server will disconnect soon)
+    // Handle go away — server will close the WebSocket in ~60s (10-min session limit)
     if (message.goAway) {
-      console.warn("[GeminiLive] Server sent goAway, remaining time:", message.goAway.timeLeft);
+      const remaining = message.goAway.timeLeft;
+      console.warn("[GeminiLive] Server sent goAway, remaining time:", remaining);
+      // Emit a special event so the UI can save the session and end the call cleanly
+      // before the server forcibly drops the connection.
+      this.emit({ type: "session-expiring", data: { remainingMs: remaining } });
     }
   }
 

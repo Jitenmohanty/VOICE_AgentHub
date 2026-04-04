@@ -27,7 +27,7 @@ export const generateEmbedding = traceable(
     const ai = getClient();
     try {
       const result = await ai.models.embedContent({
-        model: "text-embedding-004",
+        model: "gemini-embedding-exp-03-07",
         contents: [text],
       });
 

@@ -53,7 +53,9 @@ export default function PublicAgentPage() {
   const [isAgentSpeaking, setAgentSpeaking] = useState(false);
   const [isMuted, setMuted] = useState(false);
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
+  const CALL_LIMIT_SECONDS = 9 * 60; // 9 min — 1 min buffer before Gemini's 10-min hard limit
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [showEndingWarning, setShowEndingWarning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -90,11 +92,23 @@ export default function PublicAgentPage() {
 
   useEffect(() => {
     if (connectionState === "connected") {
-      timerRef.current = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+      setElapsedSeconds(0);
+      setShowEndingWarning(false);
+      timerRef.current = setInterval(() => {
+        setElapsedSeconds((s) => {
+          const next = s + 1;
+          const rem = CALL_LIMIT_SECONDS - next;
+          if (rem === 60) setShowEndingWarning(true);
+          if (rem <= 0) void handleEndCall();
+          return next;
+        });
+      }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
+      setShowEndingWarning(false);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connectionState]);
 
   const saveSession = useCallback(async () => {
@@ -189,6 +203,11 @@ export default function PublicAgentPage() {
             setError(typeof event.data === "string" ? event.data : "Connection error");
             setConnectionState("error");
             break;
+          case "session-expiring":
+            // Gemini Live API 10-min limit reached — save the session and end the call
+            // cleanly before the server forcibly drops the WebSocket.
+            void handleEndCall();
+            break;
         }
       });
 
@@ -224,13 +243,14 @@ export default function PublicAgentPage() {
     return () => { activeRef.current = false; stopCapture(); sessionRef.current?.disconnect(); };
   }, [stopCapture]);
 
+  const remaining = Math.max(0, CALL_LIMIT_SECONDS - elapsedSeconds);
   const fmtTime = (s: number) =>
     `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   // ── Loading ──
   if (loading) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-[#0A0A0F]">
+      <div className="min-h-dvh flex items-center justify-center bg-[#0A0A0F]">
         <div className="w-8 h-8 border-2 border-[#00D4FF]/30 border-t-[#00D4FF] rounded-full animate-spin" />
       </div>
     );
@@ -239,7 +259,7 @@ export default function PublicAgentPage() {
   // ── Not found ──
   if (notFound || !agentInfo || !businessInfo) {
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-[#0A0A0F] text-center px-6">
+      <div className="min-h-dvh flex flex-col items-center justify-center bg-[#0A0A0F] text-center px-6">
         <div className="w-16 h-16 rounded-full bg-[#2A2A3E] flex items-center justify-center mb-4">
           <Phone className="w-7 h-7 text-[#8888AA]" />
         </div>
@@ -257,11 +277,11 @@ export default function PublicAgentPage() {
 
   return (
     <div
-      className="min-h-[100dvh] flex flex-col overflow-hidden"
+      className="min-h-dvh flex flex-col overflow-hidden"
       style={{ background: `radial-gradient(ellipse at top, ${accentColor}06, #0A0A0F 50%)` }}
     >
       {/* ── Header ── */}
-      <header className="shrink-0 flex items-center justify-center px-4 py-3 md:py-4 border-b border-white/[0.04]">
+      <header className="shrink-0 flex items-center justify-center px-4 py-3 md:py-4 border-b border-white/4">
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -280,7 +300,7 @@ export default function PublicAgentPage() {
 
       {/* ── Main content ── */}
       <main className="flex-1 flex flex-col min-h-0 w-full max-w-lg mx-auto px-4 py-4 md:py-6">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="sync">
 
           {/* ── Idle state ── */}
           {isDisconnected && !error && transcript.length === 0 && (
@@ -369,13 +389,16 @@ export default function PublicAgentPage() {
                       Tap the button below to start a voice conversation. No sign-up needed.
                     </p>
                   </div>
-                  <Button
-                    onClick={() => connect()}
-                    className="px-8 py-3 text-white border-0 hover:opacity-90 text-base"
-                    style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
-                  >
-                    <Phone className="w-5 h-5 mr-2" /> Start Call
-                  </Button>
+                  <div className="flex flex-col items-center gap-2">
+                    <Button
+                      onClick={() => connect()}
+                      className="px-8 py-3 text-white border-0 hover:opacity-90 text-base"
+                      style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
+                    >
+                      <Phone className="w-5 h-5 mr-2" /> Start Call
+                    </Button>
+                    <span className="text-xs text-[#8888AA]">Free · 9 min per call</span>
+                  </div>
                 </>
               )}
             </motion.div>
@@ -424,6 +447,18 @@ export default function PublicAgentPage() {
                 <TranscriptPanel messages={transcript} accentColor={accentColor} />
               </div>
 
+              {/* Ending-soon warning banner */}
+              {isConnected && showEndingWarning && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-medium"
+                >
+                  <Clock className="w-3.5 h-3.5" />
+                  Call ending in {fmtTime(remaining)}
+                </motion.div>
+              )}
+
               {/* Controls */}
               {isConnected && (
                 <div className="shrink-0 flex items-center justify-center gap-5 py-2">
@@ -446,9 +481,12 @@ export default function PublicAgentPage() {
                   </button>
 
                   <div className="w-12 h-12 flex items-center justify-center">
-                    <span className="flex items-center gap-1 text-sm text-[#8888AA] tabular-nums">
+                    <span
+                      className="flex items-center gap-1 text-sm tabular-nums transition-colors"
+                      style={{ color: remaining <= 60 ? "#f59e0b" : "#8888AA" }}
+                    >
                       <Clock className="w-3.5 h-3.5" />
-                      {fmtTime(elapsedSeconds)}
+                      {fmtTime(remaining)}
                     </span>
                   </div>
                 </div>

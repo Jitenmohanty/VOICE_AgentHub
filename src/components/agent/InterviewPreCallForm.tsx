@@ -15,6 +15,7 @@ export interface CandidateContext {
   level: string;
   targetRole: string;
   resumeSkills?: string;
+  resumeSummary?: string;
 }
 
 interface InterviewPreCallFormProps {
@@ -39,6 +40,7 @@ export function InterviewPreCallForm({
   const [targetRole, setTargetRole] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeSkills, setResumeSkills] = useState<string | null>(null);
+  const [resumeSummary, setResumeSummary] = useState<string | null>(null);
   const [uploadingResume, setUploadingResume] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,6 +61,9 @@ export function InterviewPreCallForm({
       if (res.ok) {
         const data = await res.json();
         if (data.skills) setResumeSkills(data.skills);
+        if (data.summary) setResumeSummary(data.summary);
+        // Auto-fill name if the field is still empty
+        if (data.name && !name.trim()) setName(data.name);
       }
     } catch {
       // Non-critical — interview works without resume
@@ -75,6 +80,7 @@ export function InterviewPreCallForm({
       level,
       targetRole: targetRole.trim(),
       ...(resumeSkills ? { resumeSkills } : {}),
+      ...(resumeSummary ? { resumeSummary } : {}),
     });
   };
 
@@ -210,7 +216,7 @@ export function InterviewPreCallForm({
               )}
               <button
                 type="button"
-                onClick={() => { setResumeFile(null); setResumeSkills(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                onClick={() => { setResumeFile(null); setResumeSkills(null); setResumeSummary(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
                 className="p-0.5 rounded hover:bg-white/10 text-[#8888AA]"
               >
                 <X className="w-3.5 h-3.5" />

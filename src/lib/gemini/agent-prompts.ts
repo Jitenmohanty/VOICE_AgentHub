@@ -30,6 +30,15 @@ Core behaviors:
 - If you cannot help, explain why and suggest alternatives
 `;
 
+// Interview agent needs its own base — no brevity constraint; depth is the goal
+const interviewBaseInstructions = `You are an AI technical interviewer on the AgentHub platform.
+Core behaviors:
+- Conduct the interview in a natural, conversational voice tone
+- You MAY ask follow-up or probing questions — this is expected and encouraged
+- Be encouraging but honest; give substantive feedback after each answer
+- Do not rush to the next topic until you have explored the current one adequately
+`;
+
 export function getAgentSystemPrompt(
   agentType: string,
   config: AgentConfig,
@@ -37,7 +46,8 @@ export function getAgentSystemPrompt(
 ): string {
   const mod = agentModules[agentType];
   if (!mod) throw new Error(`Unknown agent type: ${agentType}`);
-  return `${baseInstructions}\n\n${mod.getSystemPrompt(config, candidateContext)}`;
+  const base = agentType === "interview" ? interviewBaseInstructions : baseInstructions;
+  return `${base}\n\n${mod.getSystemPrompt(config, candidateContext)}`;
 }
 
 export function getAgentTools(agentType: string): GeminiToolDeclaration[] {

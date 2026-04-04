@@ -38,8 +38,14 @@ export async function POST(
 
     // 1. Build base system prompt
     let systemPrompt: string;
-    if (agent.systemPrompt) {
+    if (agent.systemPrompt && agent.templateType !== "interview") {
+      // Custom system prompt: use as-is for non-interview agents
       systemPrompt = agent.systemPrompt;
+    } else if (agent.systemPrompt && agent.templateType === "interview" && candidateContext) {
+      // Interview agent with custom prompt: still inject candidateContext so the
+      // agent knows who it's talking to (name, resume, stack, level)
+      systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, candidateContext);
+      systemPrompt += `\n\nAdditional Owner Instructions:\n${agent.systemPrompt}`;
     } else {
       systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, candidateContext);
     }
@@ -74,10 +80,15 @@ export async function POST(
       systemPrompt += buildBusinessDataContext(agent.businessData);
     }
 
-    // 5. RAG: query knowledge base with a broad greeting-based query
+    // 5. RAG: query knowledge base with a relevant seed query
     try {
-      const greeting = agent.greeting || `Help with ${agent.name}`;
-      const ragResults = await queryKnowledge(agent.id, greeting, 10);
+      // For interview agents, seed with the candidate's tech stack for better knowledge retrieval.
+      // For all others, use the agent greeting as a broad topic signal.
+      const ragSeed =
+        agent.templateType === "interview" && candidateContext?.techStack
+          ? `technical interview questions about ${candidateContext.techStack}`
+          : agent.greeting || `Help with ${agent.name}`;
+      const ragResults = await queryKnowledge(agent.id, ragSeed, 10);
       if (ragResults.length > 0) {
         systemPrompt += buildRAGContext(ragResults);
       }

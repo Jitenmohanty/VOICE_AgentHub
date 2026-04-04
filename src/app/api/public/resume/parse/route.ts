@@ -34,10 +34,10 @@ export async function POST(request: Request) {
 
     const claude = new Anthropic({ apiKey });
 
-    // Use Claude's PDF support (document type) to extract skills
+    // Use Claude's PDF support to extract a rich profile from the resume
     const response = await claude.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 512,
+      model: "claude-sonnet-4-5",
+      max_tokens: 1024,
       messages: [
         {
           role: "user",
@@ -48,17 +48,36 @@ export async function POST(request: Request) {
             },
             {
               type: "text",
-              text: `Extract the key technical skills, programming languages, frameworks, and tools from this resume. Return ONLY a comma-separated list of skills (nothing else). Example: "JavaScript, React, Node.js, Python, PostgreSQL, Docker, AWS"`,
+              text: `Analyze this resume and return a JSON object with exactly these fields:
+{
+  "name": "Full name of the candidate (string, or empty string if not found)",
+  "skills": "Comma-separated list of technical skills, languages, frameworks, tools",
+  "summary": "3-5 sentence professional summary covering: total years of experience, most recent role/company, notable projects or achievements, and primary tech stack. Write in third person (e.g. 'Alex has 4 years...'). Keep it factual and based only on what is in the resume."
+}
+Return ONLY valid JSON, no markdown, no explanation.`,
             },
           ],
         },
       ],
     });
 
-    const skills =
-      response.content[0]?.type === "text" ? response.content[0].text.trim() : "";
+    const raw = response.content[0]?.type === "text" ? response.content[0].text.trim() : "{}";
+    let parsed: { name?: string; skills?: string; summary?: string } = {};
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      // Fallback: treat entire text as skills list (backward compat)
+      parsed = { skills: raw };
+    }
 
-    return NextResponse.json({ skills });
+    // Cap summary at 600 chars to prevent system prompt bloat
+    const summary = (parsed.summary || "").slice(0, 600);
+
+    return NextResponse.json({
+      name: parsed.name || "",
+      skills: parsed.skills || "",
+      summary,
+    });
   } catch (error) {
     console.error("[Resume] Parse failed:", error);
     return NextResponse.json(
