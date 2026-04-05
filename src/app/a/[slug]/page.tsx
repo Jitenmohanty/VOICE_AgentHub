@@ -159,7 +159,13 @@ export default function PublicAgentPage() {
       const session = new GeminiLiveSession(
         agentInfo.templateType,
         (data.agent?.config || {}) as Record<string, string | string[]>,
-        { systemPrompt: data.systemPrompt, tools: data.tools, agentSlug: slug },
+        {
+          systemPrompt: data.systemPrompt,
+          tools: data.tools,
+          agentSlug: slug,
+          voiceName: data.voiceName ?? null,
+          language: data.language ?? "en",
+        },
       );
 
       session.on((event) => {

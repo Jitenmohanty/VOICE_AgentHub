@@ -110,7 +110,9 @@ export async function POST(
       console.warn("[RAG] Knowledge query failed:", ragErr);
     }
 
-    const tools = getAgentTools(agent.templateType);
+    // Filter tools to only those enabled by the business owner.
+    // An empty enabledTools array means "all tools allowed" (default / legacy).
+    const tools = getAgentTools(agent.templateType, agent.enabledTools);
 
     // Create anonymous session
     const agentSession = await prisma.agentSession.create({
@@ -134,6 +136,8 @@ export async function POST(
       agentId: agent.id,
       systemPrompt,
       tools,
+      voiceName: agent.voiceName || null,
+      language: agent.language || "en",
       agent: {
         id: agent.id,
         name: agent.name,

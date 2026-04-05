@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     // Use Claude's PDF support to extract a rich profile from the resume
     const response = await claude.messages.create({
-      model: "claude-sonnet-4-5",
+      model: "claude-sonnet-4-6",
       max_tokens: 1024,
       messages: [
         {

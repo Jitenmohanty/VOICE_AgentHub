@@ -50,16 +50,21 @@ export class GeminiLiveSession {
   private interviewRounds: { round: number; summary?: string }[] = [];
   private interviewResult: { overallImpression?: string; overallFeedback?: string } | null = null;
 
+  private voiceName: string | null;
+  private language: string;
+
   constructor(
     agentType: string,
     config: AgentConfig,
-    options?: { systemPrompt?: string; tools?: unknown[]; agentSlug?: string },
+    options?: { systemPrompt?: string; tools?: unknown[]; agentSlug?: string; voiceName?: string | null; language?: string },
   ) {
     this.agentType = agentType;
     this.agentSlug = options?.agentSlug || "";
     this.config = config;
     this.prebuiltPrompt = options?.systemPrompt || null;
     this.prebuiltTools = options?.tools || null;
+    this.voiceName = options?.voiceName ?? null;
+    this.language = options?.language || "en";
   }
 
   on(callback: SessionEventCallback) {
@@ -105,6 +110,18 @@ export class GeminiLiveSession {
           // Enable transcription for both input (user) and output (agent)
           inputAudioTranscription: {},
           outputAudioTranscription: {},
+          // Voice selection — uses business owner's configured voice or Gemini default
+          ...(this.voiceName ? {
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: this.voiceName },
+              },
+            },
+          } : {}),
+          // Language — sets the model's spoken output language
+          ...(this.language && this.language !== "en" ? {
+            systemLanguageCode: this.language,
+          } : {}),
         },
         callbacks: {
           onopen: () => {

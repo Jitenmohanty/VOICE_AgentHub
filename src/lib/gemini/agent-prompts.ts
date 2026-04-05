@@ -50,10 +50,17 @@ export function getAgentSystemPrompt(
   return `${base}\n\n${mod.getSystemPrompt(config, candidateContext)}`;
 }
 
-export function getAgentTools(agentType: string): GeminiToolDeclaration[] {
+/**
+ * Returns tool declarations for the given agent type.
+ * If enabledTools is non-empty, only tools whose name appears in the list are returned.
+ * An empty/undefined enabledTools means all tools are allowed (default).
+ */
+export function getAgentTools(agentType: string, enabledTools?: string[]): GeminiToolDeclaration[] {
   const mod = agentModules[agentType];
   if (!mod) return [];
-  return mod.getTools();
+  const all = mod.getTools();
+  if (!enabledTools || enabledTools.length === 0) return all;
+  return all.filter((t) => enabledTools.includes(t.name));
 }
 
 export function handleAgentToolCall(
