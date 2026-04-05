@@ -43,6 +43,62 @@ function getSessionLimiters(): { byIp: Ratelimit; bySlug: Ratelimit } | null {
 }
 
 /**
+ * Auth limiter (register, forgot-password, reset-password):
+ * - 5 attempts per IP per 15 minutes — blocks brute force & spam
+ */
+let authByIp: Ratelimit | null = null;
+
+function getAuthLimiter(): Ratelimit | null {
+  const r = getRedis();
+  if (!r) return null;
+  if (!authByIp) {
+    authByIp = new Ratelimit({
+      redis: r,
+      limiter: Ratelimit.slidingWindow(5, "15 m"),
+      prefix: "rl:auth:ip",
+      analytics: true,
+    });
+  }
+  return authByIp;
+}
+
+/**
+ * Check auth rate limit (register / forgot-password / reset-password).
+ * Returns a 429 Response if limited, null if allowed.
+ * Silently allows through if Upstash is not configured (dev fallback).
+ */
+export async function checkAuthRateLimit(
+  request: Request,
+): Promise<Response | null> {
+  const limiter = getAuthLimiter();
+  if (!limiter) return null;
+
+  const ip = getIp(request);
+  const result = await limiter.limit(ip);
+
+  if (!result.success) {
+    const retryAfter = Math.ceil((result.reset - Date.now()) / 1000);
+    return new Response(
+      JSON.stringify({
+        error: `Too many attempts. Please wait ${Math.ceil(retryAfter / 60)} minute(s) before trying again.`,
+      }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(retryAfter),
+          "X-RateLimit-Limit": String(result.limit),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": String(result.reset),
+        },
+      },
+    );
+  }
+
+  return null;
+}
+
+/**
  * Resume parse limiter:
  * - 5 parses per IP per minute (Claude PDF parsing is expensive)
  */

@@ -3,8 +3,12 @@ import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { ForgotPasswordSchema } from "@/lib/schemas";
+import { checkAuthRateLimit } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
+  const limited = await checkAuthRateLimit(request);
+  if (limited) return limited;
+
   try {
     const raw = await request.json().catch(() => ({}));
     const parse = ForgotPasswordSchema.safeParse(raw);

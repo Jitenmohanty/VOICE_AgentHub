@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { SessionProvider } from "next-auth/react";
+import { CookieConsent } from "@/components/shared/CookieConsent";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -48,6 +49,7 @@ export default function RootLayout({
         <SessionProvider>
           {children}
           <Toaster theme="dark" position="top-right" richColors />
+          <CookieConsent />
         </SessionProvider>
       </body>
     </html>

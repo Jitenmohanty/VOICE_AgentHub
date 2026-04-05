@@ -5,8 +5,12 @@ import { generateUniqueSlug } from "@/lib/slug";
 import { getTemplateById } from "@/lib/templates";
 import { RegisterSchema } from "@/lib/schemas";
 import { sendWelcomeEmail } from "@/lib/email";
+import { checkAuthRateLimit } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
+  const limited = await checkAuthRateLimit(request);
+  if (limited) return limited;
+
   try {
     const raw = await request.json().catch(() => ({}));
     const parse = RegisterSchema.safeParse(raw);

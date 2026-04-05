@@ -391,15 +391,10 @@ export default function TermsPage() {
 
         {/* Footer nav */}
         <div className="mt-16 pt-8 border-t border-[#2A2A3E] flex flex-wrap gap-6 text-sm text-[#8888AA]">
-          <Link href="/" className="hover:text-white transition-colors">
-            Home
-          </Link>
-          <Link
-            href="/legal/cookies"
-            className="hover:text-white transition-colors"
-          >
-            Cookie Policy
-          </Link>
+          <Link href="/" className="hover:text-white transition-colors">Home</Link>
+          <Link href="/legal/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+          <Link href="/legal/cookies" className="hover:text-white transition-colors">Cookie Policy</Link>
+          <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
           <span>© {new Date().getFullYear()} AgentHub</span>
         </div>
       </main>
