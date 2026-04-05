@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { generateUniqueSlug } from "@/lib/slug";
 import { getTemplateById } from "@/lib/templates";
 import { RegisterSchema } from "@/lib/schemas";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -74,6 +75,14 @@ export async function POST(request: Request) {
         enabledTools: template.capabilities,
       },
     });
+
+    // Fire-and-forget welcome email (don't block the response)
+    sendWelcomeEmail({
+      to: email,
+      name: name ?? "",
+      businessName,
+      industry,
+    }).catch((err) => console.error("Welcome email failed:", err));
 
     return NextResponse.json(
       {

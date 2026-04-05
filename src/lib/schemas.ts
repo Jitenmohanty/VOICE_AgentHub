@@ -102,6 +102,22 @@ export const RegisterSchema = z.object({
   }),
 });
 
+// ── Auth: POST /api/auth/forgot-password ────────────────────────────────────
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address").max(254),
+});
+
+// ── Auth: POST /api/auth/reset-password ─────────────────────────────────────
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1, "Token is required"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password too long"),
+});
+
 // ── Internal: POST /api/internal/post-call ──────────────────────────────────
 
 export const PostCallSchema = z.object({
