@@ -2,8 +2,15 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = "AgentHub <noreply@agenthub.ai>";
-const BASE_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+// Use Resend's shared domain in dev, your verified domain in production
+const FROM =
+  process.env.NODE_ENV === "development"
+    ? "AgentHub <onboarding@resend.dev>"
+    : "AgentHub <noreply@agenthub.ai>";
+const BASE_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:3000"
+    : process.env.NEXTAUTH_URL!;
 
 // ── Shared HTML shell ─────────────────────────────────────────────────────────
 
