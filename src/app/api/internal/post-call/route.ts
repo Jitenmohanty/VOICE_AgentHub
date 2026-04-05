@@ -2,20 +2,32 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { generatePostCallAnalysis, generateInterviewReport } from "@/lib/claude";
 import { flushTraces } from "@/lib/langsmith";
+import { PostCallSchema } from "@/lib/schemas";
 import type { TranscriptMessage } from "@/types/session";
 import type { InterviewSessionData, InterviewCandidateContext } from "@/lib/claude";
 
 /**
  * Internal endpoint: triggers Claude post-call analysis for a session.
- * Called fire-and-forget from session PATCH handlers.
+ * Protected by INTERNAL_API_SECRET — server-to-server only.
  * For interview sessions: generates a detailed interview report instead.
  */
 export async function POST(request: Request) {
   try {
-    const { sessionId } = await request.json();
-    if (!sessionId) {
-      return NextResponse.json({ error: "sessionId required" }, { status: 400 });
+    // Reject requests without the shared server secret
+    const secret = process.env.INTERNAL_API_SECRET;
+    if (secret) {
+      const authHeader = request.headers.get("x-internal-secret");
+      if (authHeader !== secret) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
+
+    const raw = await request.json().catch(() => ({}));
+    const parse = PostCallSchema.safeParse(raw);
+    if (!parse.success) {
+      return NextResponse.json({ error: parse.error.issues[0]?.message ?? "Invalid request" }, { status: 400 });
+    }
+    const { sessionId } = parse.data;
 
     const session = await prisma.agentSession.findUnique({
       where: { id: sessionId },

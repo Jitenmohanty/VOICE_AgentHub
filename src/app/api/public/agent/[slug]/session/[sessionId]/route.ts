@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { triggerPostCallAnalysis } from "@/lib/post-call";
+import { SessionPatchSchema } from "@/lib/schemas";
 
 /** PATCH — update anonymous session (transcript, rating). No auth. */
 export async function PATCH(
@@ -8,11 +9,25 @@ export async function PATCH(
   { params }: { params: Promise<{ slug: string; sessionId: string }> },
 ) {
   try {
-    const { sessionId } = await params;
-    const body = await request.json();
+    const { slug, sessionId } = await params;
 
-    const session = await prisma.agentSession.findUnique({
-      where: { id: sessionId },
+    // Validate body
+    const rawBody = await request.json().catch(() => ({}));
+    const parse = SessionPatchSchema.safeParse(rawBody);
+    if (!parse.success) {
+      return NextResponse.json(
+        { error: parse.error.issues[0]?.message ?? "Invalid request body" },
+        { status: 400 },
+      );
+    }
+    const body = parse.data;
+
+    // Ownership check: ensure the session belongs to the agent under this slug
+    const session = await prisma.agentSession.findFirst({
+      where: {
+        id: sessionId,
+        agent: { business: { slug } },
+      },
     });
 
     if (!session) {
@@ -36,12 +51,11 @@ export async function PATCH(
       // Calculate overall sentiment from interview result
       if (body.interviewData.result?.overallImpression) {
         const impression = body.interviewData.result.overallImpression;
-        updateData.sentiment = impression; // "strong" / "average" / "needs_work"
-        // Compute average score from all scoreAnswer calls
-        const scores = body.interviewData.scores as { score: number }[] | undefined;
+        updateData.sentiment = impression;
+        const scores = body.interviewData.scores;
         if (scores && scores.length > 0) {
-          const avg = scores.reduce((sum: number, s: { score: number }) => sum + s.score, 0) / scores.length;
-          updateData.sentimentScore = Math.round(avg * 10) / 10; // 1-10 scale
+          const avg = scores.reduce((sum, s) => sum + s.score, 0) / scores.length;
+          updateData.sentimentScore = Math.round(avg * 10) / 10;
         }
       }
     }

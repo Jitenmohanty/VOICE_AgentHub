@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { checkResumeRateLimit } from "@/lib/ratelimit";
 
 /**
  * POST /api/public/resume/parse
@@ -8,6 +9,10 @@ import Anthropic from "@anthropic-ai/sdk";
  */
 export async function POST(request: Request) {
   try {
+    // Rate limit: 5 parses/IP/min (Claude PDF parsing is expensive)
+    const limited = await checkResumeRateLimit(request);
+    if (limited) return limited;
+
     const formData = await request.formData();
     const file = formData.get("resume");
 

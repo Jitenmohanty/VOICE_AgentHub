@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAgentSystemPrompt, getAgentTools } from "@/lib/gemini/agent-prompts";
 import { queryKnowledge, buildRAGContext, buildBusinessDataContext } from "@/lib/rag";
+import { checkSessionRateLimit } from "@/lib/ratelimit";
+import { SessionCreateSchema } from "@/lib/schemas";
 
 /** POST — create anonymous session + return API key with RAG-enhanced prompt. No auth. */
 export async function POST(
@@ -10,6 +12,10 @@ export async function POST(
 ) {
   try {
     const { slug } = await params;
+
+    // Rate limit: 10 sessions/IP/min, 60 sessions/slug/hour
+    const limited = await checkSessionRateLimit(request, slug);
+    if (limited) return limited;
 
     const business = await prisma.business.findUnique({
       where: { slug },
@@ -31,10 +37,18 @@ export async function POST(
     const agent = business.agents[0]!;
     const agentConfig = (agent.config as Record<string, string | string[]>) || {};
 
-    // Parse body first so candidateContext is available for system prompt building
-    const body = await request.json().catch(() => ({}));
-    const candidateContext = (body.candidateContext as Record<string, string>) || undefined;
-    const callContext = (body.callContext as string) || undefined;
+    // Validate and parse request body
+    const rawBody = await request.json().catch(() => ({}));
+    const parse = SessionCreateSchema.safeParse(rawBody);
+    if (!parse.success) {
+      return NextResponse.json(
+        { error: parse.error.issues[0]?.message ?? "Invalid request body" },
+        { status: 400 },
+      );
+    }
+    const body = parse.data;
+    const candidateContext = body.candidateContext as Record<string, string> | undefined;
+    const callContext = body.callContext;
 
     // 1. Build base system prompt
     let systemPrompt: string;

@@ -3,25 +3,19 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { generateUniqueSlug } from "@/lib/slug";
 import { getTemplateById } from "@/lib/templates";
+import { RegisterSchema } from "@/lib/schemas";
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password, businessName, industry } =
-      await request.json();
-
-    if (!email || !password) {
+    const raw = await request.json().catch(() => ({}));
+    const parse = RegisterSchema.safeParse(raw);
+    if (!parse.success) {
       return NextResponse.json(
-        { error: "Email and password are required" },
+        { error: parse.error.issues[0]?.message ?? "Invalid request" },
         { status: 400 },
       );
     }
-
-    if (!businessName || !industry) {
-      return NextResponse.json(
-        { error: "Business name and industry are required" },
-        { status: 400 },
-      );
-    }
+    const { name, email, password, businessName, industry } = parse.data;
 
     const template = getTemplateById(industry);
     if (!template) {
