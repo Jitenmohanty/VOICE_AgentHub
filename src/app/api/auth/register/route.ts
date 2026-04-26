@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import { generateUniqueSlug } from "@/lib/slug";
 import { getTemplateById } from "@/lib/templates";
 import { RegisterSchema } from "@/lib/schemas";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendVerificationEmail } from "@/lib/email";
 import { checkAuthRateLimit } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
@@ -80,19 +81,28 @@ export async function POST(request: Request) {
       },
     });
 
-    // Fire-and-forget welcome email (don't block the response)
-    sendWelcomeEmail({
+    // Issue a verification token (24h) and email it. Login is blocked until consumed.
+    const token = crypto.randomBytes(32).toString("hex");
+    await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    sendVerificationEmail({
       to: email,
       name: name ?? "",
-      businessName,
-      industry,
-    }).catch((err) => console.error("Welcome email failed:", err));
+      token,
+    }).catch((err) => console.error("Verification email failed:", err));
 
     return NextResponse.json(
       {
         user: { id: user.id, name: user.name, email: user.email },
         business: { id: business.id, slug: business.slug },
         agent: { id: agent.id },
+        verificationRequired: true,
       },
       { status: 201 },
     );

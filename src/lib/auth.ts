@@ -1,10 +1,14 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import bcrypt from "bcryptjs";
+
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "email_not_verified";
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -42,6 +46,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!isValid) return null;
 
+        // Block credentials login until the email is verified.
+        // Surfaced to the client as `code: "email_not_verified"`.
+        if (!user.emailVerified) {
+          throw new EmailNotVerifiedError();
+        }
+
         return { id: user.id, name: user.name, email: user.email, image: user.image };
       },
     }),
@@ -49,6 +59,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
+  },
+  events: {
+    // OAuth providers (Google/GitHub) verify the email upstream — mark our user
+    // record verified the first time we see them so they aren't blocked on login.
+    async signIn({ user, account }) {
+      if (account?.provider !== "credentials" && user?.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { emailVerified: true },
+        });
+        if (dbUser && !dbUser.emailVerified) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerified: new Date() },
+          });
+        }
+      }
+    },
   },
   callbacks: {
     async jwt({ token, user }) {

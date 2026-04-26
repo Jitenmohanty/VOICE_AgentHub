@@ -78,19 +78,8 @@ export default function RegisterPage() {
         return;
       }
 
-      const signInRes = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (signInRes?.error) {
-        toast.error("Account created. Please sign in.");
-        router.push("/login");
-      } else {
-        toast.success("Welcome to AgentHub!");
-        router.push("/business/onboarding");
-      }
+      toast.success("Account created — check your inbox to verify your email.");
+      router.push(`/verify-email-sent?email=${encodeURIComponent(email)}`);
     } catch {
       toast.error("Something went wrong");
     } finally {

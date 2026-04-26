@@ -118,6 +118,18 @@ export const ResetPasswordSchema = z.object({
     .max(128, "Password too long"),
 });
 
+// ── Auth: POST /api/auth/verify-email ───────────────────────────────────────
+
+export const VerifyEmailSchema = z.object({
+  token: z.string().min(1, "Token is required"),
+});
+
+// ── Auth: POST /api/auth/resend-verification ────────────────────────────────
+
+export const ResendVerificationSchema = z.object({
+  email: z.string().email("Invalid email address").max(254),
+});
+
 // ── Internal: POST /api/internal/post-call ──────────────────────────────────
 
 export const PostCallSchema = z.object({

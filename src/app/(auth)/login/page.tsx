@@ -27,6 +27,11 @@ export default function LoginPage() {
         redirect: false,
       });
       if (res?.error) {
+        if (res.code === "email_not_verified") {
+          toast.error("Please verify your email before signing in.");
+          router.push(`/verify-email-sent?email=${encodeURIComponent(email)}`);
+          return;
+        }
         toast.error("Invalid email or password");
       } else {
         router.push("/business/dashboard");
