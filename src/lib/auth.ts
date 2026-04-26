@@ -8,6 +8,9 @@ import bcrypt from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  // Trust the host header so OAuth callbacks resolve to the actual deployment URL
+  // (Vercel preview/production), not a stale NEXTAUTH_URL pointing at localhost.
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,

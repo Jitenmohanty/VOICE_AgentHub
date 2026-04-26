@@ -1,4 +1,5 @@
 import { inngest } from "@/inngest/client";
+import { getAppUrl } from "@/lib/url";
 
 /**
  * Trigger post-call analysis via Inngest (durable, retried, observable).
@@ -13,9 +14,7 @@ export function triggerPostCallAnalysis(sessionId: string, baseUrl?: string): vo
 
       // Fallback: direct HTTP call (fire-and-forget, same as before)
       const secret = process.env.INTERNAL_API_SECRET;
-      const url = baseUrl
-        ? `${baseUrl}/api/internal/post-call`
-        : `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/internal/post-call`;
+      const url = `${baseUrl ?? getAppUrl()}/api/internal/post-call`;
 
       fetch(url, {
         method: "POST",

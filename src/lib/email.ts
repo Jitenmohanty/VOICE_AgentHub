@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { getAppUrl } from "@/lib/url";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -7,10 +8,7 @@ const FROM =
   process.env.NODE_ENV === "development"
     ? "AgentHub <onboarding@resend.dev>"
     : "AgentHub <noreply@agenthub.ai>";
-const BASE_URL =
-  process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : process.env.NEXTAUTH_URL!;
+const BASE_URL = getAppUrl();
 
 // ── Shared HTML shell ─────────────────────────────────────────────────────────
 
