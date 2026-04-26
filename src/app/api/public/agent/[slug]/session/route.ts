@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAgentSystemPrompt, getAgentTools } from "@/lib/gemini/agent-prompts";
 import { queryKnowledge, buildRAGContext, buildBusinessDataContext } from "@/lib/rag";
-import { checkSessionRateLimit } from "@/lib/ratelimit";
+import { checkSessionRateLimit, checkBusinessSpendCap } from "@/lib/ratelimit";
 import { SessionCreateSchema } from "@/lib/schemas";
 
 /** POST — create anonymous session + return API key with RAG-enhanced prompt. No auth. */
@@ -33,6 +33,11 @@ export async function POST(
     if (!business || !business.isActive || business.agents.length === 0) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
+
+    // Enforce per-business daily spend cap (caps total session minutes/day to
+    // protect the business owner's Gemini bill from abusive callers).
+    const overQuota = await checkBusinessSpendCap(business.id);
+    if (overQuota) return overQuota;
 
     const agent = business.agents[0]!;
     const agentConfig = (agent.config as Record<string, string | string[]>) || {};

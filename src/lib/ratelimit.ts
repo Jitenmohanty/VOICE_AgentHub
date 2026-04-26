@@ -125,6 +125,81 @@ export function getIp(request: Request): string {
   return request.headers.get("x-real-ip") ?? "unknown";
 }
 
+// ── Daily spend cap (per-business call-minute quota) ────────────────────────
+//
+// Stops a malicious caller from running up the business's Gemini bill by
+// chaining sessions all day. Stores cumulative seconds used per business per
+// UTC day in Redis with a 48h TTL.
+
+const DEFAULT_DAILY_MINUTES_CAP = 120;
+
+function dailyCapSeconds(): number {
+  const raw = process.env.DAILY_SESSION_MINUTES_CAP;
+  const parsed = raw ? parseInt(raw, 10) : NaN;
+  const minutes =
+    Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_DAILY_MINUTES_CAP;
+  return minutes * 60;
+}
+
+function quotaKey(businessId: string): string {
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+  return `quota:bus:${businessId}:${today}`;
+}
+
+/**
+ * Reject a new session if the business has already burned through its daily
+ * minute budget. Silently allows through if Upstash isn't configured.
+ */
+export async function checkBusinessSpendCap(
+  businessId: string,
+): Promise<Response | null> {
+  const r = getRedis();
+  if (!r) return null;
+
+  const cap = dailyCapSeconds();
+  const used = await r.get<number | string>(quotaKey(businessId));
+  const usedSeconds = typeof used === "string" ? parseInt(used, 10) || 0 : (used ?? 0);
+
+  if (usedSeconds >= cap) {
+    return new Response(
+      JSON.stringify({
+        error:
+          "This agent has reached its daily call quota. Please try again tomorrow.",
+      }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": "3600",
+          "X-Quota-Limit": String(cap),
+          "X-Quota-Used": String(usedSeconds),
+        },
+      },
+    );
+  }
+  return null;
+}
+
+/**
+ * Record session duration against the business's daily quota. Called on
+ * session completion (or any PATCH that reports duration). Fire-and-forget —
+ * the caller does not need to await this for correctness.
+ */
+export async function recordBusinessSessionUsage(
+  businessId: string,
+  seconds: number,
+): Promise<void> {
+  if (!Number.isFinite(seconds) || seconds <= 0) return;
+  const r = getRedis();
+  if (!r) return;
+
+  const key = quotaKey(businessId);
+  // INCRBY returns the new value; if the key didn't exist it's now > 0,
+  // so we set the TTL right after to keep it bounded.
+  await r.incrby(key, Math.floor(seconds));
+  await r.expire(key, 48 * 60 * 60);
+}
+
 /**
  * Check session creation rate limits.
  * Returns a 429 NextResponse if limited, null if allowed.

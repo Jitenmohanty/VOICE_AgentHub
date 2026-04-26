@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { triggerPostCallAnalysis } from "@/lib/post-call";
+import { recordBusinessSessionUsage } from "@/lib/ratelimit";
 import { SessionPatchSchema } from "@/lib/schemas";
 
 /** PATCH — update anonymous session (transcript, rating). No auth. */
@@ -27,6 +28,9 @@ export async function PATCH(
       where: {
         id: sessionId,
         agent: { business: { slug } },
+      },
+      include: {
+        agent: { select: { businessId: true } },
       },
     });
 
@@ -64,6 +68,20 @@ export async function PATCH(
       where: { id: sessionId },
       data: updateData,
     });
+
+    // Bill the session's elapsed seconds against the business's daily quota.
+    // We charge the *delta* so a single session reporting growing duration
+    // mid-call doesn't get double-counted.
+    if (
+      typeof body.duration === "number" &&
+      body.duration > (session.duration ?? 0) &&
+      session.agent?.businessId
+    ) {
+      const delta = body.duration - (session.duration ?? 0);
+      recordBusinessSessionUsage(session.agent.businessId, delta).catch(
+        (err) => console.warn("[Quota] Failed to record usage:", err),
+      );
+    }
 
     // Trigger Claude post-call analysis when session completes
     if (body.status === "completed" && body.transcript) {
