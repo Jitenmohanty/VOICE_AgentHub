@@ -356,11 +356,13 @@ export async function notifyQuotaThresholds(businessId: string): Promise<void> {
 // computed live from AgentSession.duration, and this function now triggers
 // threshold notifications.
 
-export async function recordBusinessSessionUsage(
-  businessId: string,
-  _seconds: number,
-): Promise<void> {
-  // Fire-and-forget — never block the PATCH response on email send.
+/**
+ * Hook called from the session PATCH route after a duration update. Usage is
+ * now computed live via SUM(AgentSession.duration) (Phase 3 replaced the old
+ * Redis daily counter), so the only remaining job is to surface threshold
+ * notifications to the owner.
+ */
+export async function recordBusinessSessionUsage(businessId: string): Promise<void> {
   void notifyQuotaThresholds(businessId);
 }
 

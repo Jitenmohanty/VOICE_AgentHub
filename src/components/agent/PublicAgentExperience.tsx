@@ -77,6 +77,11 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
   const savedRef = useRef(false);
   const partialIds = useRef<{ user?: string; agent?: string }>({});
   const updateTokenRef = useRef<string | null>(null);
+  // The session.on(...) handler and the call-limit interval are both
+  // registered ONCE at connect-time and never re-bound. They must call the
+  // *latest* handleEndCall, otherwise after 8+ minutes of conversation the
+  // stale closure would PATCH only the transcript snapshot from connect-time.
+  const handleEndCallRef = useRef<() => Promise<void> | void>(() => {});
 
   useEffect(() => {
     if (!slug) return;
@@ -110,7 +115,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
           const next = s + 1;
           const rem = CALL_LIMIT_SECONDS - next;
           if (rem === 60) setShowEndingWarning(true);
-          if (rem <= 0) void handleEndCall();
+          if (rem <= 0) void handleEndCallRef.current?.();
           return next;
         });
       }, 1000);
@@ -228,7 +233,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
             setConnectionState("error");
             break;
           case "session-expiring":
-            void handleEndCall();
+            void handleEndCallRef.current?.();
             break;
         }
       });
@@ -254,6 +259,12 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
     await saveSession();
     setShowRating(true);
   }, [disconnect, saveSession]);
+
+  // Keep the ref pointing at the freshest handleEndCall so the once-registered
+  // session.on listener and the timer both invoke the up-to-date version.
+  useEffect(() => {
+    handleEndCallRef.current = handleEndCall;
+  }, [handleEndCall]);
 
   useEffect(() => {
     const handler = () => { if (connectionState === "connected") saveSession(); };

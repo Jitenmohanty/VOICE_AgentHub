@@ -10,7 +10,8 @@
       "Bash(npm install:*)",
       "Bash(echo \"TSC_EXIT=$?\")",
       "Bash(npm run *)",
-      "Bash(echo \"EXIT=$?\")"
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(grep *)"
     ]
   }
 }

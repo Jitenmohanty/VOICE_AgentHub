@@ -122,7 +122,17 @@ export async function deliverLead(sessionId: string): Promise<LeadDeliveryResult
   if (!hasSignal) return { delivered: false, reason: "low-signal call (no lead, short transcript)" };
 
   const recipient = business.notificationEmail || business.owner?.email;
-  if (!recipient) return { delivered: false, reason: "no recipient email on business or owner" };
+  if (!recipient) {
+    // No notificationEmail set AND owner has no email on file. The lead is
+    // captured in the DB but cannot be delivered. Log loudly so Sentry/log
+    // aggregation surfaces it — a customer paying for the product should not
+    // silently lose leads.
+    console.error(
+      `[LeadDelivery] DROPPED — no recipient email`,
+      { sessionId, businessId: business.id, businessName: business.name },
+    );
+    return { delivered: false, reason: "no recipient email on business or owner" };
+  }
 
   const caller = {
     name: lead?.name || session.callerName,

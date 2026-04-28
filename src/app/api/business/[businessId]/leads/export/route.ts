@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getAppUrl } from "@/lib/url";
@@ -65,8 +66,10 @@ export async function GET(
           ? { leadStatus: statusParam }
           : {}),
         // Skip empty/abandoned calls — same gate as lead-delivery email.
+        // Json? columns: unset rows are DB NULL, so Prisma.DbNull is the
+        // correct sentinel ("the database NULL", not the JSON literal `null`).
         OR: [
-          { capturedLead: { not: null as never } },
+          { capturedLead: { not: Prisma.DbNull } },
           { summary: { not: null } },
         ],
       },

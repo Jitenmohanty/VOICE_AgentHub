@@ -100,16 +100,15 @@ export async function PATCH(
       data: updateData,
     });
 
-    // Bill the session's elapsed seconds against the business's daily quota.
-    // We charge the *delta* so a single session reporting growing duration
-    // mid-call doesn't get double-counted.
+    // Phase 3 moved usage tracking off Redis onto live SUM(duration). All
+    // this hook still does is fire the threshold-notification check after a
+    // duration update — fire-and-forget.
     if (
       typeof body.duration === "number" &&
       body.duration > (session.duration ?? 0) &&
       session.agent?.businessId
     ) {
-      const delta = body.duration - (session.duration ?? 0);
-      recordBusinessSessionUsage(session.agent.businessId, delta).catch(
+      recordBusinessSessionUsage(session.agent.businessId).catch(
         (err) => console.warn("[Quota] Failed to record usage:", err),
       );
     }
