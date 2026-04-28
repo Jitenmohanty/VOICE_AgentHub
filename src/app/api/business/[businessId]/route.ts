@@ -56,6 +56,19 @@ export async function PATCH(
       return NextResponse.json({ error: "Business not found" }, { status: 404 });
     }
 
+    // Validate webhook URL if provided — must be http(s) so we don't end up
+    // with surprise file:// or javascript: scheme writes.
+    if (typeof body.webhookUrl === "string" && body.webhookUrl.length > 0) {
+      try {
+        const u = new URL(body.webhookUrl);
+        if (!["http:", "https:"].includes(u.protocol)) {
+          return NextResponse.json({ error: "Webhook URL must use http or https" }, { status: 400 });
+        }
+      } catch {
+        return NextResponse.json({ error: "Invalid webhook URL" }, { status: 400 });
+      }
+    }
+
     const updated = await prisma.business.update({
       where: { id: businessId },
       data: {
@@ -65,6 +78,8 @@ export async function PATCH(
         ...(body.phone !== undefined && { phone: body.phone }),
         ...(body.address !== undefined && { address: body.address }),
         ...(body.logoUrl !== undefined && { logoUrl: body.logoUrl }),
+        ...(body.notificationEmail !== undefined && { notificationEmail: body.notificationEmail || null }),
+        ...(body.webhookUrl !== undefined && { webhookUrl: body.webhookUrl || null }),
       },
     });
 

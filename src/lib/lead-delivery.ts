@@ -1,5 +1,7 @@
+import { createHmac, randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { sendLeadCaptureEmail } from "@/lib/email";
+import { getAppUrl } from "@/lib/url";
 
 interface CapturedLeadShape {
   name?: string;
@@ -14,6 +16,74 @@ interface CapturedLeadShape {
 export interface LeadDeliveryResult {
   delivered: boolean;
   reason?: string;
+  webhook?: { attempted: boolean; ok?: boolean; status?: number; error?: string };
+}
+
+/**
+ * Lazily mint a webhook signing secret on the Business if the URL is set
+ * but no secret exists yet. The owner gets to read it from the settings
+ * page after first use.
+ */
+async function ensureWebhookSecret(businessId: string, current: string | null): Promise<string | null> {
+  if (current) return current;
+  const fresh = randomBytes(32).toString("hex");
+  await prisma.business.update({
+    where: { id: businessId },
+    data: { webhookSecret: fresh },
+  });
+  return fresh;
+}
+
+interface WebhookPayload {
+  event: "lead.captured";
+  deliveredAt: string;
+  business: { id: string; name: string; slug: string };
+  agent: { id: string; name: string; templateType: string };
+  session: {
+    id: string;
+    createdAt: string;
+    durationSeconds: number | null;
+    transcriptUrl: string;
+  };
+  caller: { name: string | null; phone: string | null; email: string | null };
+  lead: { intent: string; urgency?: string; notes?: string } | null;
+  analysis: {
+    summary: string | null;
+    sentiment: string | null;
+    sentimentScore: number | null;
+    topics: string[];
+    escalated: boolean;
+  };
+}
+
+async function deliverWebhook(
+  url: string,
+  secret: string,
+  payload: WebhookPayload,
+): Promise<NonNullable<LeadDeliveryResult["webhook"]>> {
+  const body = JSON.stringify(payload);
+  const signature = createHmac("sha256", secret).update(body).digest("hex");
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "AgentHub-Webhook/1.0",
+        "X-AgentHub-Event": payload.event,
+        "X-AgentHub-Signature": `sha256=${signature}`,
+      },
+      body,
+      // 10s ceiling — receivers should ack fast; long pauses are queueing tools' job.
+      signal: AbortSignal.timeout(10_000),
+    });
+    return { attempted: true, ok: res.ok, status: res.status };
+  } catch (err) {
+    return {
+      attempted: true,
+      ok: false,
+      error: err instanceof Error ? err.message : "fetch failed",
+    };
+  }
 }
 
 /**
@@ -54,6 +124,12 @@ export async function deliverLead(sessionId: string): Promise<LeadDeliveryResult
   const recipient = business.notificationEmail || business.owner?.email;
   if (!recipient) return { delivered: false, reason: "no recipient email on business or owner" };
 
+  const caller = {
+    name: lead?.name || session.callerName,
+    phone: lead?.phone || session.callerPhone,
+    email: lead?.email || session.callerEmail,
+  };
+
   await sendLeadCaptureEmail({
     to: recipient,
     ownerName: business.owner?.name || "",
@@ -62,11 +138,7 @@ export async function deliverLead(sessionId: string): Promise<LeadDeliveryResult
     sessionId: session.id,
     capturedAt: session.createdAt,
     durationSeconds: session.duration,
-    caller: {
-      name: lead?.name || session.callerName,
-      phone: lead?.phone || session.callerPhone,
-      email: lead?.email || session.callerEmail,
-    },
+    caller,
     lead: lead
       ? {
           intent: lead.intent,
@@ -82,12 +154,49 @@ export async function deliverLead(sessionId: string): Promise<LeadDeliveryResult
     },
   });
 
-  // Stamp idempotency marker AFTER successful send so a transient Resend
-  // failure leaves the row in "deliverable" state for the next retry.
+  // Stamp idempotency marker AFTER successful email send so a transient
+  // Resend failure leaves the row in "deliverable" state for the next retry.
+  // Webhook is delivered separately below — its outcome doesn't gate
+  // idempotency (we don't want to re-spam the email if only the webhook flapped).
   await prisma.agentSession.update({
     where: { id: sessionId },
     data: { leadDeliveredAt: new Date() },
   });
 
-  return { delivered: true };
+  // Optional outbound webhook (Slack/HubSpot/Zapier/etc).
+  let webhookResult: LeadDeliveryResult["webhook"] = { attempted: false };
+  if (business.webhookUrl) {
+    const secret = await ensureWebhookSecret(business.id, business.webhookSecret);
+    if (secret) {
+      webhookResult = await deliverWebhook(business.webhookUrl, secret, {
+        event: "lead.captured",
+        deliveredAt: new Date().toISOString(),
+        business: { id: business.id, name: business.name, slug: business.slug },
+        agent: { id: agent.id, name: agent.name, templateType: agent.templateType },
+        session: {
+          id: session.id,
+          createdAt: session.createdAt.toISOString(),
+          durationSeconds: session.duration,
+          transcriptUrl: `${getAppUrl()}/business/sessions/${session.id}`,
+        },
+        caller,
+        lead: lead ? { intent: lead.intent, urgency: lead.urgency, notes: lead.notes } : null,
+        analysis: {
+          summary: session.summary,
+          sentiment: session.sentiment,
+          sentimentScore: session.sentimentScore,
+          topics: session.topics,
+          escalated: session.escalated,
+        },
+      });
+      if (!webhookResult.ok) {
+        console.warn(
+          `[LeadDelivery] webhook ${business.webhookUrl} failed:`,
+          webhookResult.status ?? webhookResult.error,
+        );
+      }
+    }
+  }
+
+  return { delivered: true, webhook: webhookResult };
 }

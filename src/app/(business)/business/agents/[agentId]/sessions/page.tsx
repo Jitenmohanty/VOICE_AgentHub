@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Star, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Clock, Star, MessageSquare, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SessionDetailModal } from "@/components/dashboard/SessionDetailModal";
 import { formatIST } from "@/lib/format-date";
@@ -45,10 +45,23 @@ export default function AgentSessionsPage() {
         <Link href={`/business/agents/${agentId}?bid=${businessId}`} className="flex items-center gap-1 text-sm text-[#8888AA] hover:text-white mb-4">
           <ArrowLeft className="w-4 h-4" /> Back to Agent
         </Link>
-        <h1 className="font-(family-name:--font-heading) text-2xl font-bold text-white">Session History</h1>
-        <p className="text-sm text-[#8888AA]">
-          {total > 0 ? `${total} total conversations` : "No conversations yet"}
-        </p>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h1 className="font-(family-name:--font-heading) text-2xl font-bold text-white">Session History</h1>
+            <p className="text-sm text-[#8888AA]">
+              {total > 0 ? `${total} total conversations` : "No conversations yet"}
+            </p>
+          </div>
+          {businessId && total > 0 && (
+            <a
+              href={`/api/business/${businessId}/leads/export`}
+              download
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-white/5 hover:bg-white/10 border border-[#2A2A3E] text-white transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" /> Export CSV
+            </a>
+          )}
+        </div>
       </motion.div>
 
       {loading ? (

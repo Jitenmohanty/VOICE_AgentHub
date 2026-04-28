@@ -13,7 +13,9 @@ import {
   Bot,
   Target,
   Award,
+  UserCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 import { getAgentById } from "@/lib/agents";
 import { formatIST, formatISTTime } from "@/lib/format-date";
 import type { AgentSessionData, TranscriptMessage } from "@/types/session";
@@ -23,9 +25,21 @@ interface SessionDetailModalProps {
   onClose: () => void;
 }
 
+const LEAD_STATUSES = [
+  { value: "new", label: "New", color: "#00D4FF" },
+  { value: "contacted", label: "Contacted", color: "#6366F1" },
+  { value: "qualified", label: "Qualified", color: "#FFB800" },
+  { value: "won", label: "Won", color: "#10B981" },
+  { value: "lost", label: "Lost", color: "#EF4444" },
+  { value: "archived", label: "Archived", color: "#666680" },
+] as const;
+
+type LeadStatus = (typeof LEAD_STATUSES)[number]["value"];
+
 export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalProps) {
   const [session, setSession] = useState<AgentSessionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     fetch(`/api/sessions/${sessionId}`)
@@ -34,6 +48,29 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [sessionId]);
+
+  const updateLeadStatus = async (newStatus: LeadStatus) => {
+    if (!session || updatingStatus) return;
+    setUpdatingStatus(true);
+    // Optimistic update
+    const prev = session.leadStatus;
+    setSession({ ...session, leadStatus: newStatus });
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadStatus: newStatus }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(`Status: ${newStatus}`);
+    } catch {
+      // Revert on failure
+      setSession({ ...session, leadStatus: prev });
+      toast.error("Couldn't update status");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   const templateId = session?.agent?.templateType || session?.agentType;
   const template = templateId ? getAgentById(templateId) : null;
@@ -178,6 +215,89 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                     <span className="text-[#666680] italic ml-2">
                       &ldquo;{session.feedback}&rdquo;
                     </span>
+                  )}
+                </div>
+              )}
+
+              {/* Captured Lead + status workflow */}
+              {(session.capturedLead || session.callerName || session.callerPhone || session.callerEmail) && (
+                <div className="bg-white/[0.03] rounded-xl p-4 border border-[#2A2A3E] space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-[#10B981]" />
+                      Captured lead
+                    </h3>
+                    <select
+                      value={(session.leadStatus as LeadStatus) || "new"}
+                      onChange={(e) => updateLeadStatus(e.target.value as LeadStatus)}
+                      disabled={updatingStatus}
+                      className="text-xs h-7 bg-white/5 border border-[#2A2A3E] rounded-md px-2 text-white focus:outline-none focus:border-[#00D4FF]"
+                      style={{
+                        color: LEAD_STATUSES.find((s) => s.value === session.leadStatus)?.color ?? "#00D4FF",
+                      }}
+                    >
+                      {LEAD_STATUSES.map((s) => (
+                        <option key={s.value} value={s.value} className="bg-[#1A1A2E] text-white">
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {session.capturedLead?.intent && (
+                    <div>
+                      <p className="text-[11px] text-[#8888AA] uppercase tracking-wider">Intent</p>
+                      <p className="text-sm text-white mt-0.5">{session.capturedLead.intent}</p>
+                      {session.capturedLead.urgency && (
+                        <span
+                          className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider"
+                          style={{
+                            backgroundColor:
+                              session.capturedLead.urgency === "high" ? "rgba(239,68,68,0.15)" :
+                              session.capturedLead.urgency === "medium" ? "rgba(255,184,0,0.15)" :
+                              "rgba(16,185,129,0.15)",
+                            color:
+                              session.capturedLead.urgency === "high" ? "#EF4444" :
+                              session.capturedLead.urgency === "medium" ? "#FFB800" :
+                              "#10B981",
+                          }}
+                        >
+                          {session.capturedLead.urgency}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    {session.callerName && (
+                      <div>
+                        <p className="text-[10px] text-[#666680] uppercase tracking-wider">Name</p>
+                        <p className="text-white mt-0.5">{session.callerName}</p>
+                      </div>
+                    )}
+                    {session.callerPhone && (
+                      <div>
+                        <p className="text-[10px] text-[#666680] uppercase tracking-wider">Phone</p>
+                        <a href={`tel:${session.callerPhone}`} className="text-[#00D4FF] hover:underline mt-0.5 block">
+                          {session.callerPhone}
+                        </a>
+                      </div>
+                    )}
+                    {session.callerEmail && (
+                      <div>
+                        <p className="text-[10px] text-[#666680] uppercase tracking-wider">Email</p>
+                        <a href={`mailto:${session.callerEmail}`} className="text-[#00D4FF] hover:underline mt-0.5 block">
+                          {session.callerEmail}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {session.capturedLead?.notes && (
+                    <div>
+                      <p className="text-[11px] text-[#8888AA] uppercase tracking-wider">Notes</p>
+                      <p className="text-xs text-[#C0C0D8] mt-0.5 leading-relaxed">{session.capturedLead.notes}</p>
+                    </div>
                   )}
                 </div>
               )}

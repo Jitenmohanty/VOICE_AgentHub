@@ -21,6 +21,19 @@ export interface AgentSessionData {
   topics: string[];
   escalated: boolean;
   callerName: string | null;
+  callerPhone?: string | null;
+  callerEmail?: string | null;
+  capturedLead?: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    intent: string;
+    urgency?: "low" | "medium" | "high";
+    notes?: string;
+    capturedAt?: string;
+  } | null;
+  leadStatus?: "new" | "contacted" | "qualified" | "won" | "lost" | "archived";
+  leadDeliveredAt?: Date | string | null;
   createdAt: Date;
   updatedAt: Date;
 

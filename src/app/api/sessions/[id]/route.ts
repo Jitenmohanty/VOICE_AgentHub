@@ -53,6 +53,16 @@ export async function PATCH(request: Request, { params }: Params) {
     }
 
     const body = await request.json();
+
+    // Validate the workflow status if provided.
+    const ALLOWED_LEAD_STATUS = ["new", "contacted", "qualified", "won", "lost", "archived"] as const;
+    if (body.leadStatus !== undefined && !ALLOWED_LEAD_STATUS.includes(body.leadStatus)) {
+      return NextResponse.json(
+        { error: `leadStatus must be one of: ${ALLOWED_LEAD_STATUS.join(", ")}` },
+        { status: 400 },
+      );
+    }
+
     const updated = await prisma.agentSession.update({
       where: { id },
       data: {
@@ -63,6 +73,7 @@ export async function PATCH(request: Request, { params }: Params) {
         ...(body.rating !== undefined && { rating: body.rating }),
         ...(body.feedback !== undefined && { feedback: body.feedback }),
         ...(body.status !== undefined && { status: body.status }),
+        ...(body.leadStatus !== undefined && { leadStatus: body.leadStatus }),
       },
     });
 

@@ -86,6 +86,10 @@ model Business {
   address     String?
   // Where lead-capture emails are sent. Falls back to owner.email at delivery time.
   notificationEmail String?
+  // Optional outbound webhook for leads (Slack/HubSpot/Zapier/etc).
+  // Signed with HMAC-SHA256 using webhookSecret in X-AgentHub-Signature.
+  webhookUrl    String?
+  webhookSecret String?
   isActive    Boolean  @default(true)
   agents      Agent[]
   subscription Subscription?
@@ -249,6 +253,9 @@ model AgentSession {
   // Set when the lead notification email has been delivered to the business owner.
   // Used as an idempotency guard so retried Inngest runs don't double-send.
   leadDeliveredAt DateTime?
+  // Owner-managed lead state.
+  // new | contacted | qualified | won | lost | archived
+  leadStatus     String   @default("new")
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -256,4 +263,5 @@ model AgentSession {
   @@index([agentId])
   @@index([createdAt])
   @@index([status])
+  @@index([leadStatus])
 }
