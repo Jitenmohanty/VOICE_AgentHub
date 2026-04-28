@@ -29,65 +29,41 @@ ${cancellationPolicy ? `- Cancellation Policy: ${cancellationPolicy}` : ""}
 ${nearbyAttractions ? `- Nearby: ${nearbyAttractions}` : ""}
 
 You help guests with:
-- Room bookings and availability checks
-- Room service orders
-- Local recommendations (restaurants, attractions, transport)
-- Handling complaints with empathy
-- Providing hotel information (amenities, check-in/out times, policies)
+- Describing room types, prices, and amenities (use listRooms for the live list)
+- Explaining hotel policies (check-in/out, cancellation, pets)
+- General information about the hotel and surroundings
 
-Always greet guests warmly. If you don't know something specific, offer to connect them with human staff. Never make up information about the hotel.
+For ANY booking, room-service order, or reservation request, you must use captureLead — the front desk will follow up. Never confirm a booking yourself.
 Keep responses concise and natural for voice conversation (2-3 sentences max).`;
 }
 
 export function getTools(): GeminiToolDeclaration[] {
   return [
     {
-      name: "checkAvailability",
-      description: "Check room availability for given dates",
+      name: "listRooms",
+      description:
+        "List the rooms this hotel offers, including type, price, and amenities. " +
+        "Use this when the caller asks what rooms are available or what they cost. " +
+        "This does NOT check live availability for specific dates — only the catalog of rooms.",
       parameters: {
         type: "object",
         properties: {
-          checkIn: { type: "string", description: "Check-in date (YYYY-MM-DD)" },
-          checkOut: { type: "string", description: "Check-out date (YYYY-MM-DD)" },
-          roomType: { type: "string", description: "Type of room requested", enum: ["standard", "deluxe", "suite", "penthouse"] },
+          roomType: { type: "string", description: "Optional filter by room type (e.g. deluxe, suite)" },
         },
-        required: ["checkIn", "checkOut"],
-      },
-    },
-    {
-      name: "placeRoomServiceOrder",
-      description: "Place a room service order for a guest",
-      parameters: {
-        type: "object",
-        properties: {
-          roomNumber: { type: "string", description: "Guest room number" },
-          items: { type: "string", description: "Comma-separated list of items" },
-        },
-        required: ["roomNumber", "items"],
-      },
-    },
-    {
-      name: "getLocalRecommendations",
-      description: "Get local restaurant, attraction, or transport recommendations",
-      parameters: {
-        type: "object",
-        properties: {
-          category: { type: "string", description: "Type of recommendation", enum: ["restaurant", "attraction", "transport"] },
-        },
-        required: ["category"],
       },
     },
   ];
 }
 
-export function handleToolCall(name: string, args: Record<string, unknown>, _agentId?: string): string {
+export function handleToolCall(name: string, _args: Record<string, unknown>, _agentId?: string): string {
+  // Real data is overridden in live-session.ts via fetchToolData when an
+  // agentSlug is set. This default response is the offline fallback.
   switch (name) {
-    case "checkAvailability":
-      return JSON.stringify({ available: true, rooms: [{ type: args.roomType || "deluxe", price: "$250/night", count: 3 }] });
-    case "placeRoomServiceOrder":
-      return JSON.stringify({ orderId: `RS-${Date.now()}`, estimatedTime: "30 minutes", status: "confirmed" });
-    case "getLocalRecommendations":
-      return JSON.stringify({ recommendations: [{ name: "Le Bistro", rating: 4.5, distance: "0.5 km" }, { name: "City Park", rating: 4.8, distance: "1 km" }] });
+    case "listRooms":
+      return JSON.stringify({
+        rooms: [],
+        note: "No room catalog configured for this hotel. The team will share details on follow-up.",
+      });
     default:
       return JSON.stringify({ error: "Unknown tool" });
   }

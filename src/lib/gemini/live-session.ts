@@ -52,11 +52,21 @@ export class GeminiLiveSession {
 
   private voiceName: string | null;
   private language: string;
+  private sessionId: string | null;
+  private updateToken: string | null;
 
   constructor(
     agentType: string,
     config: AgentConfig,
-    options?: { systemPrompt?: string; tools?: unknown[]; agentSlug?: string; voiceName?: string | null; language?: string },
+    options?: {
+      systemPrompt?: string;
+      tools?: unknown[];
+      agentSlug?: string;
+      voiceName?: string | null;
+      language?: string;
+      sessionId?: string;
+      updateToken?: string;
+    },
   ) {
     this.agentType = agentType;
     this.agentSlug = options?.agentSlug || "";
@@ -65,6 +75,8 @@ export class GeminiLiveSession {
     this.prebuiltTools = options?.tools || null;
     this.voiceName = options?.voiceName ?? null;
     this.language = options?.language || "en";
+    this.sessionId = options?.sessionId ?? null;
+    this.updateToken = options?.updateToken ?? null;
   }
 
   on(callback: SessionEventCallback) {
@@ -269,9 +281,12 @@ export class GeminiLiveSession {
               this.interviewRounds.push({ round: Number(fc.args.nextRound) || 0, summary: fc.args.summary as string | undefined });
             } else if (fc.name === "endInterview" && fc.args) {
               this.interviewResult = { overallImpression: fc.args.overallImpression as string, overallFeedback: fc.args.overallFeedback as string | undefined };
+            } else if (fc.name === "captureLead" && fc.args) {
+              // Persist immediately so a mid-call disconnect doesn't lose the lead.
+              await this.persistCapturedLead(fc.args);
             }
             // For data-fetch tools, override with real data from the public API
-            if (this.agentSlug && (fc.name === "getMenu" || fc.name === "checkAvailability" || fc.name === "checkDoctorAvailability")) {
+            if (this.agentSlug && (fc.name === "getMenu" || fc.name === "listRooms" || fc.name === "listDoctors")) {
               result = await this.fetchToolData(fc.name, fc.args || {});
             }
             this.sendToolResponse(fc.id!, fc.name!, result);
@@ -344,13 +359,13 @@ export class GeminiLiveSession {
         return JSON.stringify({ items: filtered });
       }
 
-      if (toolName === "checkAvailability") {
+      if (toolName === "listRooms") {
         const roomEntry = payload.data.find((d) => d.dataType === "rooms");
         const rooms = (roomEntry?.data as { rooms?: unknown[] })?.rooms ?? [];
-        return JSON.stringify({ available: rooms.length > 0, rooms });
+        return JSON.stringify({ rooms });
       }
 
-      if (toolName === "checkDoctorAvailability") {
+      if (toolName === "listDoctors") {
         const doctorEntry = payload.data.find((d) => d.dataType === "doctors");
         const doctors = (doctorEntry?.data as { doctors?: unknown[] })?.doctors ?? [];
         const day = typeof args.day === "string" ? args.day : null;
@@ -367,6 +382,37 @@ export class GeminiLiveSession {
     }
     // Fallback: return default mock via existing handler
     return handleAgentToolCall(this.agentType, toolName, args);
+  }
+
+  /**
+   * Persist a captured lead to the session via the authenticated public PATCH.
+   * The agent calls captureLead any time the caller wants to book/order/schedule,
+   * so we write immediately rather than waiting for end-of-call to avoid losing
+   * the lead on a network drop.
+   */
+  private async persistCapturedLead(args: Record<string, unknown>): Promise<void> {
+    if (!this.sessionId || !this.updateToken || !this.agentSlug) {
+      console.warn("[GeminiLive] captureLead fired but session token/id not available; lead not persisted");
+      return;
+    }
+    try {
+      const res = await fetch(
+        `/api/public/agent/${this.agentSlug}/session/${this.sessionId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.updateToken}`,
+          },
+          body: JSON.stringify({ capturedLead: args }),
+        },
+      );
+      if (!res.ok) {
+        console.warn("[GeminiLive] Lead persist failed:", res.status, await res.text().catch(() => ""));
+      }
+    } catch (err) {
+      console.warn("[GeminiLive] Lead persist error:", err);
+    }
   }
 
   private sendToolResponse(callId: string, functionName: string, result: string) {

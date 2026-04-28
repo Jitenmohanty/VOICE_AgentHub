@@ -84,12 +84,56 @@ model Business {
   website     String?
   phone       String?
   address     String?
+  // Where lead-capture emails are sent. Falls back to owner.email at delivery time.
+  notificationEmail String?
   isActive    Boolean  @default(true)
   agents      Agent[]
+  subscription Subscription?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([ownerId])
+}
+
+// ── Billing ──────────────────────────────────────
+
+model BillingPlan {
+  // Stable string IDs ("free" | "starter" | "pro") so app code can reference
+  // them without an extra lookup. Stripe prices change; these don't.
+  id              String   @id
+  name            String
+  monthlyMinutes  Int      // included voice minutes per billing period
+  maxAgents       Int      // hard cap on agents per business
+  priceCents      Int      // monthly price in USD cents (0 for free)
+  stripePriceId   String?  // null for free tier
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  subscriptions   Subscription[]
+  createdAt       DateTime @default(now())
+}
+
+model Subscription {
+  id                    String      @id @default(cuid())
+  businessId            String      @unique
+  business              Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  planId                String
+  plan                  BillingPlan @relation(fields: [planId], references: [id])
+  // active | trialing | past_due | canceled | incomplete
+  status                String      @default("active")
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?     @unique
+  // Period window — month-to-date usage is computed against currentPeriodStart.
+  currentPeriodStart    DateTime    @default(now())
+  currentPeriodEnd      DateTime
+  cancelAtPeriodEnd     Boolean     @default(false)
+  // Idempotency for quota threshold emails: "none" | "80" | "95" | "100"
+  lastQuotaNotice       String      @default("none")
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@index([planId])
+  @@index([stripeCustomerId])
+  @@index([currentPeriodEnd])
 }
 
 model Agent {
@@ -134,6 +178,9 @@ model KnowledgeItem {
   category   String   // faq, policy, menu, service, general
   sourceType String   @default("TEXT") // TEXT, FAQ, DOCUMENT, URL
   embedding  Unsupported("vector(768)")? // Gemini embedding dimension
+  // pending | ready | failed — visibility for async embedding generation
+  embeddingStatus String @default("pending")
+  embeddingError  String? @db.Text
   metadata   Json?
   isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
@@ -141,6 +188,7 @@ model KnowledgeItem {
 
   @@index([agentId])
   @@index([category])
+  @@index([embeddingStatus])
 }
 
 model BusinessData {
@@ -179,6 +227,10 @@ model AgentSession {
   duration       Int?
   status         String   @default("active") // active, completed, cancelled
 
+  // Bearer token issued at creation, required on anonymous PATCH so callers
+  // can't forge or overwrite each other's transcripts using only the cuid.
+  updateToken    String?
+
   // Post-call intelligence (Claude)
   summary        String?  @db.Text
   sentiment      String?  // positive, neutral, negative, mixed
@@ -190,6 +242,13 @@ model AgentSession {
   // Customer rating
   rating         Int?
   feedback       String?
+
+  // Structured lead captured by the agent's captureLead tool during the call.
+  // Shape: { name?, phone?, email?, intent, urgency?, notes?, capturedAt }
+  capturedLead   Json?
+  // Set when the lead notification email has been delivered to the business owner.
+  // Used as an idempotency guard so retried Inngest runs don't double-send.
+  leadDeliveredAt DateTime?
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

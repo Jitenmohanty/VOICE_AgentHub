@@ -23,64 +23,27 @@ Office Details:
 ${documentTypes ? `- Document Support: ${documentTypes}` : ""}
 ${proBonoAvailable ? "- Pro bono services available for qualifying cases" : ""}
 
-You provide:
-- General legal information and term explanations
-- Procedural guidance (how to file, deadlines, requirements)
-- Document drafting assistance (basic templates)
-- FAQ on common legal questions
+You help callers with:
+- Explaining legal terms and procedures in plain language
+- Describing the firm's practice areas, hours, and consultation options
+- General orientation on legal processes (NOT advice on their specific case)
 
-CRITICAL DISCLAIMER: ${disclaimerText} Recommend consulting a licensed attorney for specific cases. Never guarantee outcomes.
+You DO NOT:
+- Schedule consultations yourself — use captureLead and an attorney will call back
+- Draft documents during the call — capture the lead with the document type
+- Provide case-specific legal advice or predict outcomes
+
+CRITICAL DISCLAIMER: ${disclaimerText} Always recommend consulting a licensed attorney for the caller's specific situation. Never guarantee outcomes. If the caller appears to have a time-sensitive matter (deadline, court date, arrest), capture the lead with high urgency.
 Keep responses concise and natural for voice conversation (2-3 sentences max).`;
 }
 
 export function getTools(): GeminiToolDeclaration[] {
-  return [
-    {
-      name: "getLegalTermDefinition",
-      description: "Get the definition of a legal term",
-      parameters: {
-        type: "object",
-        properties: {
-          term: { type: "string", description: "Legal term to define" },
-        },
-        required: ["term"],
-      },
-    },
-    {
-      name: "getFilingProcedure",
-      description: "Get filing procedure steps for a legal action",
-      parameters: {
-        type: "object",
-        properties: {
-          actionType: { type: "string", description: "Type of legal action" },
-          jurisdiction: { type: "string", description: "Jurisdiction" },
-        },
-        required: ["actionType"],
-      },
-    },
-    {
-      name: "getDraftTemplate",
-      description: "Get a basic document template",
-      parameters: {
-        type: "object",
-        properties: {
-          documentType: { type: "string", description: "Type of document", enum: ["nda", "contract", "letter", "complaint", "motion"] },
-        },
-        required: ["documentType"],
-      },
-    },
-  ];
+  // Legal info doesn't need data-fetch tools — the LLM can explain terms,
+  // procedures, and general orientation directly. The only tool needed is
+  // captureLead, which is appended universally in agent-prompts.ts.
+  return [];
 }
 
-export function handleToolCall(name: string, args: Record<string, unknown>, _agentId?: string): string {
-  switch (name) {
-    case "getLegalTermDefinition":
-      return JSON.stringify({ term: args.term, definition: "A legal concept referring to..." });
-    case "getFilingProcedure":
-      return JSON.stringify({ steps: ["Prepare documents", "File with clerk", "Serve opposing party", "Await response"] });
-    case "getDraftTemplate":
-      return JSON.stringify({ template: "Basic template for " + (args.documentType as string), note: "This is a general template. Consult an attorney." });
-    default:
-      return JSON.stringify({ error: "Unknown tool" });
-  }
+export function handleToolCall(_name: string, _args: Record<string, unknown>, _agentId?: string): string {
+  return JSON.stringify({ error: "Unknown tool" });
 }

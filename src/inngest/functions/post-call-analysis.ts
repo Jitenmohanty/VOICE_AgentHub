@@ -2,6 +2,7 @@ import { inngest } from "@/inngest/client";
 import { prisma } from "@/lib/db";
 import { generatePostCallAnalysis, generateInterviewReport } from "@/lib/claude";
 import { flushTraces } from "@/lib/langsmith";
+import { deliverLead } from "@/lib/lead-delivery";
 import type { TranscriptMessage } from "@/types/session";
 import type { InterviewSessionData, InterviewCandidateContext } from "@/lib/claude";
 
@@ -118,7 +119,17 @@ export const postCallAnalysis = inngest.createFunction(
       });
     });
 
+    // Step 4b: deliver lead notification to the business owner.
+    // Runs AFTER analysis so the email includes the summary.
+    // Idempotent via leadDeliveredAt — Inngest retries are safe.
+    const deliveryResult = await step.run("deliver-lead-email", () => deliverLead(sessionId));
+
     await flushTraces();
-    return { success: true, type: "generic", sentiment: analysis.sentiment };
+    return {
+      success: true,
+      type: "generic",
+      sentiment: analysis.sentiment,
+      leadDelivery: deliveryResult,
+    };
   },
 );

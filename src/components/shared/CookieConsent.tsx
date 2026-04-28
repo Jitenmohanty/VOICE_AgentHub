@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, X } from "lucide-react";
@@ -9,8 +10,13 @@ const STORAGE_KEY = "agenthub-cookie-consent";
 
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
+  const pathname = usePathname();
+  // Suppress on iframe-embed routes — the host site is responsible for its
+  // own consent, and a banner would obscure the agent UI in a small widget.
+  const suppress = pathname?.startsWith("/embed/");
 
   useEffect(() => {
+    if (suppress) return;
     // Only show if user hasn't made a choice yet
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -18,7 +24,9 @@ export function CookieConsent() {
     } catch {
       // localStorage unavailable (SSR guard already handled by useEffect, but just in case)
     }
-  }, []);
+  }, [suppress]);
+
+  if (suppress) return null;
 
   const accept = () => {
     try {

@@ -30,15 +30,16 @@ ${dietaryOptions ? `- Dietary Options: ${dietaryOptions}` : ""}
 - Alcohol: ${alcoholServed ? "Served" : "Not served"}
 ${specialNotes ? `- Special: ${specialNotes}` : ""}
 
-You handle:
-- Taking food orders with customizations
-- Menu recommendations based on preferences/allergies
-- Table reservations${reservationsEnabled ? "" : " (currently not available)"}
-- Wait time estimates
-- Answering menu questions (ingredients, preparation, allergens)
+You help diners with:
+- Describing the menu (use getMenu) — items, prices, ingredients, allergens
+- Explaining hours, dining style, dietary options, delivery/takeaway availability
+- Answering questions about the restaurant
 
-Be friendly, know the menu well. Repeat orders back for confirmation.
-Handle dietary restrictions carefully.
+You DO NOT:
+- Place orders yourself — use captureLead and the kitchen will call back
+- Confirm reservations yourself — use captureLead with the party size, date, time
+
+Be friendly and know the menu well. Handle dietary restrictions carefully — when in doubt, capture the lead and tell them a host will confirm what's safe.
 Keep responses concise and natural for voice conversation (2-3 sentences max).`;
 }
 
@@ -46,52 +47,32 @@ export function getTools(): GeminiToolDeclaration[] {
   return [
     {
       name: "getMenu",
-      description: "Get the restaurant menu or specific category",
+      description:
+        "List the restaurant's menu items, optionally filtered by category. " +
+        "Use this when the caller asks what's on the menu, what something costs, or what's in a dish.",
       parameters: {
         type: "object",
         properties: {
-          category: { type: "string", description: "Menu category", enum: ["appetizers", "mains", "desserts", "drinks", "specials"] },
+          category: {
+            type: "string",
+            description: "Menu category",
+            enum: ["appetizers", "mains", "desserts", "drinks", "specials"],
+          },
         },
-      },
-    },
-    {
-      name: "placeOrder",
-      description: "Place a food order",
-      parameters: {
-        type: "object",
-        properties: {
-          items: { type: "string", description: "Comma-separated list of items" },
-          specialRequests: { type: "string", description: "Dietary or special requests" },
-          tableNumber: { type: "string", description: "Table number" },
-        },
-        required: ["items"],
-      },
-    },
-    {
-      name: "makeReservation",
-      description: "Make a table reservation",
-      parameters: {
-        type: "object",
-        properties: {
-          name: { type: "string", description: "Name for reservation" },
-          date: { type: "string", description: "Reservation date" },
-          time: { type: "string", description: "Reservation time" },
-          partySize: { type: "string", description: "Number of guests" },
-        },
-        required: ["name", "date", "time", "partySize"],
       },
     },
   ];
 }
 
-export function handleToolCall(name: string, args: Record<string, unknown>, _agentId?: string): string {
+export function handleToolCall(name: string, _args: Record<string, unknown>, _agentId?: string): string {
   switch (name) {
     case "getMenu":
-      return JSON.stringify({ items: [{ name: "Chef's Special Pasta", price: "$18", description: "Fresh handmade pasta with truffle cream" }] });
-    case "placeOrder":
-      return JSON.stringify({ orderId: `ORD-${Date.now()}`, estimatedTime: "25 minutes", status: "confirmed" });
-    case "makeReservation":
-      return JSON.stringify({ reservationId: `RES-${Date.now()}`, confirmed: true, details: args });
+      // Real menu is overridden in live-session.ts via fetchToolData when an
+      // agentSlug is set. This default response is the offline fallback.
+      return JSON.stringify({
+        items: [],
+        note: "No menu configured for this restaurant. The team will share details on follow-up.",
+      });
     default:
       return JSON.stringify({ error: "Unknown tool" });
   }

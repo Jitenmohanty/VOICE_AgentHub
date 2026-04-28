@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { generateEmbedding } from "@/lib/embeddings";
-import { storeEmbedding } from "@/lib/rag";
+import { generateAndStoreEmbedding } from "@/lib/rag";
 
 type Params = { params: Promise<{ businessId: string; agentId: string }> };
 
@@ -62,13 +61,13 @@ export async function POST(request: Request, { params }: Params) {
         category: body.category,
         sourceType: body.sourceType || "TEXT",
         metadata: body.metadata || null,
+        embeddingStatus: "pending",
       },
     });
 
-    // Generate embedding and store via pgvector (fire-and-forget)
-    generateEmbedding(`${body.title}: ${body.content}`)
-      .then((embedding) => storeEmbedding(item.id, embedding))
-      .catch((err) => console.error("[Knowledge] Embedding failed:", err));
+    // Async — failures land on the row as embeddingStatus="failed" so the
+    // dashboard can show a retry button instead of silently dropping the item.
+    void generateAndStoreEmbedding(item.id, `${body.title}: ${body.content}`);
 
     return NextResponse.json({ item }, { status: 201 });
   } catch {

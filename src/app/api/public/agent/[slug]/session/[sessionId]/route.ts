@@ -1,8 +1,22 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { triggerPostCallAnalysis } from "@/lib/post-call";
 import { recordBusinessSessionUsage } from "@/lib/ratelimit";
 import { SessionPatchSchema } from "@/lib/schemas";
+
+function tokensMatch(provided: string, expected: string): boolean {
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
+function extractToken(request: Request): string | null {
+  const auth = request.headers.get("authorization");
+  if (auth?.startsWith("Bearer ")) return auth.slice(7);
+  return request.headers.get("x-session-token");
+}
 
 /** PATCH — update anonymous session (transcript, rating). No auth. */
 export async function PATCH(
@@ -38,6 +52,13 @@ export async function PATCH(
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
+    // Require the per-session bearer token issued at creation.
+    // Sessions without a token (legacy rows) cannot be updated via this route.
+    const provided = extractToken(request);
+    if (!session.updateToken || !provided || !tokensMatch(provided, session.updateToken)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     // Build update data
     const updateData: Record<string, unknown> = {
       ...(body.title !== undefined && { title: body.title }),
@@ -48,6 +69,16 @@ export async function PATCH(
       ...(body.feedback !== undefined && { feedback: body.feedback }),
       ...(body.status !== undefined && { status: body.status }),
     };
+
+    // Lead captured by the agent's captureLead tool. Stamp capturedAt server-side.
+    if (body.capturedLead) {
+      updateData.capturedLead = { ...body.capturedLead, capturedAt: new Date().toISOString() };
+      // Mirror name/phone/email onto top-level columns so existing dashboards
+      // and the post-call analyzer can read them without re-parsing JSON.
+      if (body.capturedLead.name) updateData.callerName = body.capturedLead.name;
+      if (body.capturedLead.phone) updateData.callerPhone = body.capturedLead.phone;
+      if (body.capturedLead.email) updateData.callerEmail = body.capturedLead.email;
+    }
 
     // Persist interview scoring data in actionItems if provided
     if (body.interviewData) {

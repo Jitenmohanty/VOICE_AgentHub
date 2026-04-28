@@ -2,7 +2,19 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async headers() {
+    return [
+      {
+        // Allow third-party sites to iframe ONLY the embed widget. The rest
+        // of the app stays default (browsers block framing without an
+        // explicit allowance via CSP frame-ancestors).
+        source: "/embed/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: "frame-ancestors *;" },
+        ],
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {

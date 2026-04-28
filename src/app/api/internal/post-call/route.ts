@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { generatePostCallAnalysis, generateInterviewReport } from "@/lib/claude";
 import { flushTraces } from "@/lib/langsmith";
+import { deliverLead } from "@/lib/lead-delivery";
 import { PostCallSchema } from "@/lib/schemas";
 import type { TranscriptMessage } from "@/types/session";
 import type { InterviewSessionData, InterviewCandidateContext } from "@/lib/claude";
@@ -13,13 +14,15 @@ import type { InterviewSessionData, InterviewCandidateContext } from "@/lib/clau
  */
 export async function POST(request: Request) {
   try {
-    // Reject requests without the shared server secret
+    // Server misconfiguration — refuse rather than silently allow open access.
     const secret = process.env.INTERNAL_API_SECRET;
-    if (secret) {
-      const authHeader = request.headers.get("x-internal-secret");
-      if (authHeader !== secret) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
+    if (!secret) {
+      console.error("[PostCall] INTERNAL_API_SECRET is not set — refusing request");
+      return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+    }
+    const authHeader = request.headers.get("x-internal-secret");
+    if (authHeader !== secret) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const raw = await request.json().catch(() => ({}));
@@ -117,8 +120,15 @@ export async function POST(request: Request) {
 
     console.log(`[PostCall] Session ${sessionId} analyzed: ${analysis.sentiment}, ${analysis.topics.length} topics`);
 
+    // Deliver the lead email (idempotent via leadDeliveredAt — safe if Inngest
+    // also fires this for the same session).
+    const deliveryResult = await deliverLead(sessionId).catch((err) => {
+      console.error("[PostCall] Lead delivery failed:", err);
+      return { delivered: false, reason: err instanceof Error ? err.message : "delivery error" };
+    });
+
     await flushTraces();
-    return NextResponse.json({ success: true, analysis });
+    return NextResponse.json({ success: true, analysis, leadDelivery: deliveryResult });
   } catch (error) {
     console.error("[PostCall] Analysis failed:", error);
     await flushTraces();

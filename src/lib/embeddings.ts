@@ -7,7 +7,9 @@ function getClient(): GoogleGenAI {
   if (!client) {
     const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
     if (!apiKey) throw new Error("GOOGLE_GEMINI_API_KEY is not set");
-    client = new GoogleGenAI({ apiKey, httpOptions: { apiVersion: "v1" } });
+    // Default API version (v1beta) is required for gemini-embedding-001 +
+    // outputDimensionality. The v1 endpoint does not yet expose this model.
+    client = new GoogleGenAI({ apiKey });
   }
   return client;
 }
@@ -27,8 +29,11 @@ export const generateEmbedding = traceable(
     const ai = getClient();
     try {
       const result = await ai.models.embedContent({
-        model: "gemini-embedding-exp-03-07",
+        model: "gemini-embedding-001",
         contents: [text],
+        // 768-dim to match the pgvector(768) column on KnowledgeItem.embedding.
+        // The model defaults to 3072; we explicitly truncate via the API.
+        config: { outputDimensionality: 768 },
       });
 
       const embedding = result.embeddings?.[0];

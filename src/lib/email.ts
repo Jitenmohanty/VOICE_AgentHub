@@ -201,6 +201,216 @@ export async function sendVerificationEmail(opts: {
   });
 }
 
+// ── Plan quota threshold email ────────────────────────────────────────────────
+
+export interface QuotaWarningEmailOpts {
+  to: string;
+  ownerName: string;
+  businessName: string;
+  planId: string;
+  threshold: 80 | 95 | 100;
+  usedMinutes: number;
+  monthlyMinutes: number;
+}
+
+export async function sendQuotaWarningEmail(opts: QuotaWarningEmailOpts) {
+  const billingUrl = `${BASE_URL}/business/billing`;
+  const isMaxed = opts.threshold === 100;
+
+  const headline = isMaxed
+    ? `${opts.businessName} has hit its monthly call quota`
+    : `${opts.businessName} is at ${opts.threshold}% of its monthly call quota`;
+
+  const body = emailShell(`
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#FFFFFF;letter-spacing:-0.4px;">
+      ${headline}
+    </h1>
+    <p style="margin:0 0 20px;font-size:14px;color:#8888AA;line-height:1.6;">
+      Hi ${opts.ownerName || "there"} — heads up on your AgentHub usage.
+    </p>
+
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:12px;border:1px solid #2A2A3E;margin:0 0 20px;">
+      <tr>
+        <td style="padding:20px 24px;">
+          <p style="margin:0;font-size:13px;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">${opts.planId} plan</p>
+          <p style="margin:6px 0 0;font-size:24px;font-weight:700;color:${isMaxed ? "#EF4444" : "#F59E0B"};">
+            ${opts.usedMinutes} / ${opts.monthlyMinutes} min
+          </p>
+          <p style="margin:6px 0 0;font-size:13px;color:#C0C0D8;">
+            ${
+              isMaxed
+                ? "New caller sessions are being rejected with a 429 until you upgrade or the period rolls over."
+                : `${opts.monthlyMinutes - opts.usedMinutes} min remaining in this billing period.`
+            }
+          </p>
+        </td>
+      </tr>
+    </table>
+
+    ${primaryButton(billingUrl, isMaxed ? "Upgrade now →" : "View plans →")}
+
+    <p style="margin:24px 0 0;font-size:12px;color:#555577;line-height:1.6;">
+      You'll only get one email per threshold (80% / 95% / 100%) per billing period.
+    </p>
+  `);
+
+  const subject = isMaxed
+    ? `Quota reached — ${opts.businessName} calls are being declined`
+    : `${opts.threshold}% of monthly quota — ${opts.businessName}`;
+
+  return resend.emails.send({
+    from: FROM,
+    to: opts.to,
+    subject,
+    html: body,
+  });
+}
+
+// ── Lead capture email ────────────────────────────────────────────────────────
+
+export interface LeadCaptureEmailOpts {
+  to: string;
+  ownerName: string;
+  businessName: string;
+  agentName: string;
+  sessionId: string;
+  capturedAt: Date;
+  durationSeconds: number | null;
+  caller: {
+    name?: string | null;
+    phone?: string | null;
+    email?: string | null;
+  };
+  lead?: {
+    intent: string;
+    urgency?: "low" | "medium" | "high";
+    notes?: string;
+  } | null;
+  analysis?: {
+    summary?: string | null;
+    sentiment?: string | null;
+    topics?: string[];
+    escalated?: boolean;
+  } | null;
+}
+
+export async function sendLeadCaptureEmail(opts: LeadCaptureEmailOpts) {
+  const sessionUrl = `${BASE_URL}/business/sessions/${opts.sessionId}`;
+  const urgencyColor =
+    opts.lead?.urgency === "high"
+      ? "#EF4444"
+      : opts.lead?.urgency === "medium"
+        ? "#F59E0B"
+        : "#10B981";
+  const escalatedBanner = opts.analysis?.escalated
+    ? `<div style="margin:0 0 16px;padding:12px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;color:#FCA5A5;font-size:13px;font-weight:600;">⚠ Call flagged for escalation</div>`
+    : "";
+
+  const fmtRow = (label: string, value: string | null | undefined) =>
+    value
+      ? `<tr><td style="padding:6px 0;font-size:13px;color:#8888AA;width:90px;">${label}</td><td style="padding:6px 0;font-size:14px;color:#F0F0F5;">${value}</td></tr>`
+      : "";
+
+  const callerHasContact = opts.caller.name || opts.caller.phone || opts.caller.email;
+  const minutes = opts.durationSeconds ? Math.floor(opts.durationSeconds / 60) : 0;
+  const seconds = opts.durationSeconds ? opts.durationSeconds % 60 : 0;
+  const durationStr = opts.durationSeconds ? `${minutes}m ${seconds}s` : "—";
+
+  const body = emailShell(`
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#FFFFFF;letter-spacing:-0.4px;">
+      New lead from ${opts.agentName}
+    </h1>
+    <p style="margin:0 0 20px;font-size:14px;color:#8888AA;line-height:1.6;">
+      Hi ${opts.ownerName || "there"} — your AI agent for <strong style="color:#F0F0F5;">${opts.businessName}</strong> just took a call. Here's what to act on:
+    </p>
+
+    ${escalatedBanner}
+
+    ${
+      opts.lead
+        ? `
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:12px;border:1px solid #2A2A3E;margin:0 0 16px;">
+      <tr>
+        <td style="padding:18px 22px;">
+          <p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">
+            What they want
+            ${opts.lead.urgency ? `<span style="display:inline-block;margin-left:10px;padding:2px 8px;background:${urgencyColor}20;color:${urgencyColor};border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.3px;">${opts.lead.urgency.toUpperCase()}</span>` : ""}
+          </p>
+          <p style="margin:0;font-size:15px;color:#F0F0F5;line-height:1.5;">${opts.lead.intent}</p>
+          ${opts.lead.notes ? `<p style="margin:10px 0 0;font-size:13px;color:#C0C0D8;line-height:1.5;">${opts.lead.notes}</p>` : ""}
+        </td>
+      </tr>
+    </table>`
+        : ""
+    }
+
+    ${
+      callerHasContact
+        ? `
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:12px;border:1px solid #2A2A3E;margin:0 0 16px;">
+      <tr>
+        <td style="padding:18px 22px;">
+          <p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">
+            Caller
+          </p>
+          <table cellpadding="0" cellspacing="0">
+            ${fmtRow("Name", opts.caller.name)}
+            ${fmtRow("Phone", opts.caller.phone)}
+            ${fmtRow("Email", opts.caller.email)}
+          </table>
+        </td>
+      </tr>
+    </table>`
+        : ""
+    }
+
+    ${
+      opts.analysis?.summary
+        ? `
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:12px;border:1px solid #2A2A3E;margin:0 0 16px;">
+      <tr>
+        <td style="padding:18px 22px;">
+          <p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">
+            Call summary${opts.analysis.sentiment ? ` · ${opts.analysis.sentiment}` : ""}
+          </p>
+          <p style="margin:0;font-size:14px;color:#F0F0F5;line-height:1.6;">${opts.analysis.summary}</p>
+          ${
+            opts.analysis.topics && opts.analysis.topics.length > 0
+              ? `<p style="margin:10px 0 0;font-size:12px;color:#8888AA;">Topics: ${opts.analysis.topics.join(", ")}</p>`
+              : ""
+          }
+        </td>
+      </tr>
+    </table>`
+        : ""
+    }
+
+    <p style="margin:0 0 16px;font-size:12px;color:#555577;">
+      Call placed ${opts.capturedAt.toUTCString()} · Duration ${durationStr}
+    </p>
+
+    ${primaryButton(sessionUrl, "View full transcript →")}
+
+    <p style="margin:24px 0 0;font-size:12px;color:#555577;line-height:1.6;">
+      You're receiving this because someone called your AgentHub voice agent. To change where these go, update the notification email in your business settings.
+    </p>
+  `);
+
+  const subjectIntent = opts.lead?.intent
+    ? opts.lead.intent.length > 60
+      ? opts.lead.intent.slice(0, 57) + "..."
+      : opts.lead.intent
+    : "new caller";
+  const callerLabel = opts.caller.name || "anonymous caller";
+
+  return resend.emails.send({
+    from: FROM,
+    to: opts.to,
+    subject: `New lead from ${opts.agentName} — ${callerLabel}: ${subjectIntent}`,
+    html: body,
+  });
+}
+
 // ── Password reset email ──────────────────────────────────────────────────────
 
 export async function sendPasswordResetEmail(opts: {

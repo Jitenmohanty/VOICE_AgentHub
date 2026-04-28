@@ -6,6 +6,64 @@ import * as interviewAgent from "@/lib/agents/interview-agent";
 import * as restaurantAgent from "@/lib/agents/restaurant-agent";
 import * as legalAgent from "@/lib/agents/legal-agent";
 
+/**
+ * Universal lead-capture tool exposed by all SMB-facing agents (everything
+ * except interview). The agent calls this whenever the caller wants to do
+ * something transactional — booking, ordering, scheduling — that the agent
+ * cannot complete itself. The tool persists the lead and the business owner
+ * is notified by email after the call.
+ */
+export const captureLeadTool: GeminiToolDeclaration = {
+  name: "captureLead",
+  description:
+    "Record the caller's contact details and intent so the business owner can follow up. " +
+    "MUST be called any time the caller wants to book, order, schedule, reserve, or otherwise transact — " +
+    "you cannot complete those actions yourself.",
+  parameters: {
+    type: "object",
+    properties: {
+      name: { type: "string", description: "Caller's name" },
+      phone: { type: "string", description: "Caller's phone number, digits only or with + and dashes" },
+      email: { type: "string", description: "Caller's email address (optional)" },
+      intent: {
+        type: "string",
+        description:
+          "What the caller wants. Be specific. " +
+          "Examples: 'book a deluxe room for May 3-5', 'schedule consultation with Dr. Smith next Tuesday morning', " +
+          "'order family-size pizza for delivery to 12 Park Lane'",
+      },
+      urgency: {
+        type: "string",
+        enum: ["low", "medium", "high"],
+        description: "How time-sensitive the request is",
+      },
+      notes: { type: "string", description: "Any additional context, preferences, or constraints mentioned" },
+    },
+    required: ["intent"],
+  },
+};
+
+/**
+ * Hard rule appended to every SMB agent's system prompt. Phrased so the model
+ * treats it as inviolable — booking claims have been the #1 hallucination
+ * failure mode in voice agents.
+ */
+export const leadCaptureRule = `
+## CRITICAL: You are an information agent, not a booking agent
+
+You CANNOT book, order, schedule, reserve, modify, or cancel anything yourself.
+The pre-call screen and your tools provide INFORMATION about what the business offers — they do not transact.
+
+When the caller wants any of the above:
+1. Acknowledge their request clearly.
+2. Call the captureLead tool with their name, phone, and a specific intent describing what they want.
+3. Tell them: "I've passed your details to the team — they'll call you back shortly to confirm."
+
+NEVER say "your booking is confirmed", "your appointment is scheduled", "your order is placed", or anything implying you completed a transaction. If the caller pushes you to confirm, gently repeat that the team will call them back to finalize.
+
+If you don't have their phone number yet, ask for it before calling captureLead.
+`;
+
 const agentModules: Record<
   string,
   {
@@ -47,7 +105,9 @@ export function getAgentSystemPrompt(
   const mod = agentModules[agentType];
   if (!mod) throw new Error(`Unknown agent type: ${agentType}`);
   const base = agentType === "interview" ? interviewBaseInstructions : baseInstructions;
-  return `${base}\n\n${mod.getSystemPrompt(config, candidateContext)}`;
+  // Interview agents are a different product (B2C scoring), no lead capture.
+  const tail = agentType === "interview" ? "" : leadCaptureRule;
+  return `${base}\n\n${mod.getSystemPrompt(config, candidateContext)}${tail}`;
 }
 
 /**
@@ -58,9 +118,14 @@ export function getAgentSystemPrompt(
 export function getAgentTools(agentType: string, enabledTools?: string[]): GeminiToolDeclaration[] {
   const mod = agentModules[agentType];
   if (!mod) return [];
-  const all = mod.getTools();
+  const moduleTools = mod.getTools();
+  // Append the universal captureLead tool for every SMB agent. Interview
+  // agents have their own scoring tools and don't capture leads.
+  const all = agentType === "interview" ? moduleTools : [...moduleTools, captureLeadTool];
   if (!enabledTools || enabledTools.length === 0) return all;
-  return all.filter((t) => enabledTools.includes(t.name));
+  // captureLead is non-removable — owners can disable info tools but not the
+  // handoff path, otherwise the agent has no way to comply with the prompt.
+  return all.filter((t) => t.name === "captureLead" || enabledTools.includes(t.name));
 }
 
 export function handleAgentToolCall(
@@ -69,6 +134,14 @@ export function handleAgentToolCall(
   args: Record<string, unknown>,
   agentId?: string,
 ): string {
+  // captureLead is universal across SMB agents. Persistence is done by the
+  // live-session caller; this just acks back to the model so it can continue.
+  if (name === "captureLead") {
+    return JSON.stringify({
+      captured: true,
+      message: "Lead recorded. Tell the caller someone will follow up shortly.",
+    });
+  }
   const mod = agentModules[agentType];
   if (!mod) return JSON.stringify({ error: "Unknown agent type" });
   return mod.handleToolCall(name, args, agentId);

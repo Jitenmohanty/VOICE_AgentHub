@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AgentHub embed — cross-origin test</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #f5f5f7;
+      color: #111;
+      padding: 40px 20px;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    p { color: #555; margin: 0 0 24px; line-height: 1.5; }
+    .frame-row { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+    iframe {
+      border: 0;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+      max-width: 100%;
+    }
+    .label { font-size: 13px; color: #888; margin-top: 8px; }
+    code { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>AgentHub iframe embed test</h1>
+    <p>
+      Open this file directly via <code>file://</code> (or serve it on a different port) — that creates a
+      cross-origin context for the iframe below. You should see the agent UI render. Click "Start Call"
+      and grant microphone access; the call should connect and the captureLead PATCH should succeed even
+      from this third-party origin.
+    </p>
+
+    <div class="frame-row">
+      <div>
+        <iframe
+          src="http://localhost:3000/embed/test-user-s-business-4fj4"
+          width="380"
+          height="640"
+          allow="microphone"
+        ></iframe>
+        <div class="label">380×640 (default widget size)</div>
+      </div>
+
+      <div>
+        <iframe
+          src="http://localhost:3000/embed/test-user-s-business-4fj4"
+          width="320"
+          height="560"
+          allow="microphone"
+        ></iframe>
+        <div class="label">320×560 (mobile)</div>
+      </div>
+    </div>
+
+    <p style="margin-top: 32px; font-size: 13px; color: #888;">
+      If the iframe shows the AgentHub 404 page, the slug is wrong — replace
+      <code>test-user-s-business-4fj4</code> in this file with one of your live agents.
+    </p>
+  </div>
+</body>
+</html>

@@ -11,10 +11,12 @@ interface RatingModalProps {
   sessionId: string;
   /** Override the API endpoint for public (no-auth) pages */
   apiUrl?: string;
+  /** Per-session bearer token for the public PATCH route */
+  updateToken?: string | null;
   onClose: () => void;
 }
 
-export function RatingModal({ agentName, accentColor, sessionId, apiUrl, onClose }: RatingModalProps) {
+export function RatingModal({ agentName, accentColor, sessionId, apiUrl, updateToken, onClose }: RatingModalProps) {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -23,9 +25,11 @@ export function RatingModal({ agentName, accentColor, sessionId, apiUrl, onClose
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (updateToken) headers.Authorization = `Bearer ${updateToken}`;
       await fetch(apiUrl || `/api/sessions/${sessionId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ rating, feedback, status: "completed" }),
       });
     } catch {

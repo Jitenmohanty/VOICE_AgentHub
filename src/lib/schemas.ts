@@ -38,6 +38,15 @@ const TranscriptMessageSchema = z.object({
   timestamp: z.string().optional(),
 });
 
+export const CapturedLeadSchema = z.object({
+  name: safeString(100).optional(),
+  phone: z.string().max(30).regex(/^[+\d\s\-()]*$/, "Invalid phone format").optional(),
+  email: z.string().email().max(254).optional().or(z.literal("")),
+  intent: safeString(1000),
+  urgency: z.enum(["low", "medium", "high"]).optional(),
+  notes: safeString(1000).optional(),
+});
+
 export const SessionPatchSchema = z.object({
   title: safeString(200).optional(),
   transcript: z.array(TranscriptMessageSchema).max(500).optional(),
@@ -46,6 +55,7 @@ export const SessionPatchSchema = z.object({
   rating: z.number().int().min(1).max(5).optional(),
   feedback: safeString(1000).optional(),
   status: z.enum(["active", "completed", "cancelled"]).optional(),
+  capturedLead: CapturedLeadSchema.optional(),
   interviewData: z
     .object({
       scores: z

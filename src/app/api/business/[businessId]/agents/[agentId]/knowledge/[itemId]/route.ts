@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { generateEmbedding } from "@/lib/embeddings";
-import { storeEmbedding } from "@/lib/rag";
+import { generateAndStoreEmbedding } from "@/lib/rag";
 
 type Params = { params: Promise<{ businessId: string; agentId: string; itemId: string }> };
 
@@ -35,6 +34,7 @@ export async function PATCH(request: Request, { params }: Params) {
     }
 
     const body = await request.json();
+    const contentChanged = body.content !== undefined || body.title !== undefined;
     const updated = await prisma.knowledgeItem.update({
       where: { id: itemId },
       data: {
@@ -42,14 +42,14 @@ export async function PATCH(request: Request, { params }: Params) {
         ...(body.content !== undefined && { content: body.content }),
         ...(body.category !== undefined && { category: body.category }),
         ...(body.isActive !== undefined && { isActive: body.isActive }),
+        // Mark stale immediately so reads during re-embed don't show "ready"
+        // pointing at the previous vector.
+        ...(contentChanged && { embeddingStatus: "pending", embeddingError: null }),
       },
     });
 
-    // Re-generate embedding if content or title changed
-    if (body.content !== undefined || body.title !== undefined) {
-      generateEmbedding(`${updated.title}: ${updated.content}`)
-        .then((embedding) => storeEmbedding(itemId, embedding))
-        .catch((err) => console.error("[Knowledge] Re-embedding failed:", err));
+    if (contentChanged) {
+      void generateAndStoreEmbedding(itemId, `${updated.title}: ${updated.content}`);
     }
 
     return NextResponse.json({ item: updated });

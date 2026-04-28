@@ -27,51 +27,46 @@ ${consultationFee ? `- Consultation Fee: ${consultationFee}` : ""}
 - Emergency Services: ${hasEmergencyServices ? "Available on-site" : "Not available on-site"}
 
 You help with:
-- Scheduling and managing appointments
-- Basic symptom pre-screening (NOT diagnosis)
-- Medication reminder information
-- Insurance and billing FAQs
-- Clinic information
+- Describing the clinic's doctors and their hours (use listDoctors)
+- Sharing services offered, hours, fees, and accepted insurance
+- General clinic information
 
-IMPORTANT: Always clarify you are an AI assistant, not a doctor. Emergency protocol: ${emergencyProtocol}. Never diagnose conditions.
+You DO NOT:
+- Schedule appointments yourself — use captureLead so the front desk can call back
+- Diagnose conditions or interpret symptoms
+- Recommend medications or dosages
+
+CRITICAL RULES:
+- Always clarify you are an AI assistant, not a doctor.
+- For potential emergencies, immediately use flagEmergency and stop the rest of the conversation: ${emergencyProtocol}
+- If the caller describes symptoms, do NOT diagnose — capture the lead with high urgency and tell them the clinic will call back.
 Keep responses concise and natural for voice conversation (2-3 sentences max).`;
 }
 
 export function getTools(): GeminiToolDeclaration[] {
   return [
     {
-      name: "checkDoctorAvailability",
-      description: "Check available appointment slots",
+      name: "listDoctors",
+      description:
+        "List the doctors at this clinic and their available days/hours. " +
+        "Use this when the caller asks who's available or which doctors specialize in what. " +
+        "This does NOT book or hold a slot — only lists who's on the roster.",
       parameters: {
         type: "object",
         properties: {
-          date: { type: "string", description: "Preferred date (YYYY-MM-DD)" },
-          doctorName: { type: "string", description: "Preferred doctor name" },
+          day: { type: "string", description: "Optional filter by day of week (e.g. Monday)" },
         },
-        required: ["date"],
-      },
-    },
-    {
-      name: "scheduleAppointment",
-      description: "Schedule an appointment for the patient",
-      parameters: {
-        type: "object",
-        properties: {
-          patientName: { type: "string", description: "Patient name" },
-          date: { type: "string", description: "Appointment date" },
-          time: { type: "string", description: "Appointment time" },
-          reason: { type: "string", description: "Reason for visit" },
-        },
-        required: ["patientName", "date", "time"],
       },
     },
     {
       name: "flagEmergency",
-      description: "Flag an emergency and provide emergency instructions",
+      description:
+        "Use ONLY for medical emergencies (chest pain, stroke symptoms, severe bleeding, breathing trouble, " +
+        "loss of consciousness, suicide risk, severe injury). Returns the local emergency instructions.",
       parameters: {
         type: "object",
         properties: {
-          symptoms: { type: "string", description: "Reported symptoms" },
+          symptoms: { type: "string", description: "Reported symptoms or situation" },
         },
         required: ["symptoms"],
       },
@@ -79,14 +74,22 @@ export function getTools(): GeminiToolDeclaration[] {
   ];
 }
 
-export function handleToolCall(name: string, args: Record<string, unknown>, _agentId?: string): string {
+export function handleToolCall(name: string, _args: Record<string, unknown>, _agentId?: string): string {
   switch (name) {
-    case "checkDoctorAvailability":
-      return JSON.stringify({ slots: [{ time: "10:00 AM", doctor: "Dr. Smith" }, { time: "2:30 PM", doctor: "Dr. Johnson" }] });
-    case "scheduleAppointment":
-      return JSON.stringify({ appointmentId: `APT-${Date.now()}`, confirmed: true, date: args.date, time: args.time });
+    case "listDoctors":
+      // Real data is overridden in live-session.ts via fetchToolData when an
+      // agentSlug is set. This default response is the offline fallback.
+      return JSON.stringify({
+        doctors: [],
+        note: "No doctor roster configured. The clinic will share details on follow-up.",
+      });
     case "flagEmergency":
-      return JSON.stringify({ action: "EMERGENCY", message: "Please call 911 immediately. Stay on the line if possible." });
+      return JSON.stringify({
+        action: "EMERGENCY",
+        message:
+          "This sounds like an emergency. Please call your local emergency number (911 in the US, 108 in India) " +
+          "or go to the nearest emergency room immediately. Do not wait for a callback.",
+      });
     default:
       return JSON.stringify({ error: "Unknown tool" });
   }

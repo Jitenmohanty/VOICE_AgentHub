@@ -15,6 +15,7 @@ import Link from "next/link";
 import { getTemplateById } from "@/lib/templates";
 import { MenuBuilder } from "@/components/business/MenuBuilder";
 import { DoctorRoster } from "@/components/business/DoctorRoster";
+import { EmbedInstallCard } from "@/components/business/EmbedInstallCard";
 import type { AgentConfigField } from "@/types/agent";
 
 interface AgentFullData {
@@ -209,6 +210,9 @@ export default function AgentConfigPage() {
       </div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+
+        {/* ── Section 0: Install on customer's website ── */}
+        <EmbedInstallCard slug={agent.business.slug} accentColor={template?.accentColor} />
 
         {/* ── Section 1: Business Location & Contact ── */}
         <div className="glass rounded-2xl p-6 space-y-5">

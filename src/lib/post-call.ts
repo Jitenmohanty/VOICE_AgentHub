@@ -12,15 +12,19 @@ export function triggerPostCallAnalysis(sessionId: string, baseUrl?: string): vo
     .catch((err) => {
       console.warn("[PostCall] Inngest send failed, falling back to direct call:", err);
 
-      // Fallback: direct HTTP call (fire-and-forget, same as before)
+      // Fallback: direct HTTP call (fire-and-forget). Requires INTERNAL_API_SECRET.
       const secret = process.env.INTERNAL_API_SECRET;
+      if (!secret) {
+        console.error("[PostCall] INTERNAL_API_SECRET not set — cannot fall back to HTTP. Session will not be analyzed:", sessionId);
+        return;
+      }
       const url = `${baseUrl ?? getAppUrl()}/api/internal/post-call`;
 
       fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(secret ? { "x-internal-secret": secret } : {}),
+          "x-internal-secret": secret,
         },
         body: JSON.stringify({ sessionId }),
       }).catch((fetchErr) => {

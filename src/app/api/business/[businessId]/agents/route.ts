@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getTemplateById } from "@/lib/templates";
+import { enforceAgentLimit } from "@/lib/ratelimit";
 
 export async function GET(
   _request: Request,
@@ -61,6 +62,10 @@ export async function POST(
     if (!template) {
       return NextResponse.json({ error: "Invalid template type" }, { status: 400 });
     }
+
+    // Plan-aware cap: free=1 agent, starter=3, pro=10. Returns 403 when over.
+    const overCap = await enforceAgentLimit(businessId);
+    if (overCap) return overCap;
 
     const agent = await prisma.agent.create({
       data: {

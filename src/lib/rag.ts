@@ -2,6 +2,34 @@ import { prisma } from "@/lib/db";
 import { generateEmbedding } from "@/lib/embeddings";
 import { traceable } from "langsmith/traceable";
 
+/**
+ * Generate the embedding for a knowledge item and persist both the vector and
+ * a status field so the dashboard can show pending/ready/failed.
+ *
+ * Awaits internally — callers should NOT await this if they want a fast HTTP
+ * response. When called fire-and-forget, success and failure are still
+ * recorded on the row, which is the whole point of having this helper.
+ */
+export async function generateAndStoreEmbedding(itemId: string, text: string): Promise<void> {
+  try {
+    const embedding = await generateEmbedding(text);
+    await storeEmbedding(itemId, embedding);
+    await prisma.knowledgeItem.update({
+      where: { id: itemId },
+      data: { embeddingStatus: "ready", embeddingError: null },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[Knowledge] Embedding failed for ${itemId}:`, message);
+    await prisma.knowledgeItem
+      .update({
+        where: { id: itemId },
+        data: { embeddingStatus: "failed", embeddingError: message.slice(0, 500) },
+      })
+      .catch((updateErr) => console.error("[Knowledge] Status write also failed:", updateErr));
+  }
+}
+
 interface KnowledgeResult {
   title: string;
   content: string;

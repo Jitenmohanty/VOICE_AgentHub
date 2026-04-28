@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Building2, Bot, MessageSquare, ExternalLink, Copy, Check } from "lucide-react";
+import { Building2, Bot, MessageSquare, ExternalLink, Copy, Check, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -23,12 +23,21 @@ interface BusinessData {
   }[];
 }
 
+interface UsageSnapshot {
+  planId: string;
+  monthlyMinutes: number;
+  usedMinutes: number;
+  remainingMinutes: number;
+  percentUsed: number;
+}
+
 export default function BusinessDashboardPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [businesses, setBusinesses] = useState<BusinessData[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [usage, setUsage] = useState<UsageSnapshot | null>(null);
 
   useEffect(() => {
     fetch("/api/business")
@@ -36,10 +45,15 @@ export default function BusinessDashboardPage() {
       .then((data) => {
         const biz = data.businesses || [];
         setBusinesses(biz);
-        // Redirect to onboarding if no business (e.g., Google OAuth first login)
         if (biz.length === 0) {
           router.replace("/business/onboarding");
+          return;
         }
+        // Pull plan + month-to-date usage for the gauge.
+        fetch(`/api/business/${biz[0].id}/usage`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => d?.usage && setUsage(d.usage))
+          .catch(() => {});
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -119,6 +133,50 @@ export default function BusinessDashboardPage() {
               </div>
             </div>
           </motion.div>
+
+          {/* Plan & usage */}
+          {usage && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="glass rounded-2xl p-6"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#00D4FF]/10 flex items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-[#00D4FF]" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white capitalize">{usage.planId} plan</h3>
+                    <p className="text-xs text-[#8888AA]">
+                      {usage.usedMinutes} of {usage.monthlyMinutes} min used this month
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/business/billing"
+                  className="text-xs px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-[#2A2A3E] text-white"
+                >
+                  {usage.percentUsed >= 80 ? "Upgrade" : "Manage"}
+                </Link>
+              </div>
+              <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className="h-full transition-all"
+                  style={{
+                    width: `${usage.percentUsed}%`,
+                    background:
+                      usage.percentUsed >= 100
+                        ? "#EF4444"
+                        : usage.percentUsed >= 80
+                          ? "#F59E0B"
+                          : "linear-gradient(90deg, #00D4FF, #6366F1)",
+                  }}
+                />
+              </div>
+            </motion.div>
+          )}
 
           {/* Agent Card */}
           {agent && (

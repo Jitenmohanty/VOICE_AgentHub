@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { getAgentSystemPrompt, getAgentTools } from "@/lib/gemini/agent-prompts";
 import { queryKnowledge, buildRAGContext, buildBusinessDataContext } from "@/lib/rag";
-import { checkSessionRateLimit, checkBusinessSpendCap } from "@/lib/ratelimit";
+import { checkSessionRateLimit, checkBusinessPlanQuota } from "@/lib/ratelimit";
 import { SessionCreateSchema } from "@/lib/schemas";
 
 /** POST — create anonymous session + return API key with RAG-enhanced prompt. No auth. */
@@ -34,9 +35,9 @@ export async function POST(
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
 
-    // Enforce per-business daily spend cap (caps total session minutes/day to
-    // protect the business owner's Gemini bill from abusive callers).
-    const overQuota = await checkBusinessSpendCap(business.id);
+    // Enforce the business's monthly plan quota (free/starter/pro). Returns
+    // 429 + an upgrade hint when month-to-date minutes exceed plan.monthlyMinutes.
+    const overQuota = await checkBusinessPlanQuota(business.id);
     if (overQuota) return overQuota;
 
     const agent = business.agents[0]!;
@@ -119,6 +120,10 @@ export async function POST(
     // An empty enabledTools array means "all tools allowed" (default / legacy).
     const tools = getAgentTools(agent.templateType, agent.enabledTools);
 
+    // Per-session bearer token. Required on subsequent PATCH so anonymous
+    // callers can't overwrite each other's transcripts using only the cuid.
+    const updateToken = randomBytes(32).toString("hex");
+
     // Create anonymous session
     const agentSession = await prisma.agentSession.create({
       data: {
@@ -127,6 +132,7 @@ export async function POST(
         callerName: body.callerName || candidateContext?.name || null,
         callerPhone: body.callerPhone || null,
         status: "active",
+        updateToken,
       },
     });
 
@@ -138,6 +144,7 @@ export async function POST(
     return NextResponse.json({
       apiKey,
       sessionId: agentSession.id,
+      updateToken,
       agentId: agent.id,
       systemPrompt,
       tools,
