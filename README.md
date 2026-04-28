@@ -1,46 +1,58 @@
 # AgentHub — Multi-Tenant Voice AI Platform
 
-> Build, deploy, and manage AI voice agents for any business. Powered by Gemini Live API, Claude AI, and RAG.
+> Build, deploy, and monetize AI voice agents for any small business. Powered by Gemini Live, Claude, RAG, and Stripe.
 
-AgentHub lets **business owners** create AI voice agents trained on their own data — menus, room inventory, policies, FAQs — and share them with **customers** via a link, embed widget, or QR code. No AI expertise required.
+AgentHub lets **business owners** create AI voice agents trained on their own data — menus, room inventory, policies, FAQs — and embed them into their existing website as a widget. Visitors talk to the AI; the AI answers from real business data; captured leads land in the owner's inbox (or Slack, or Zapier) within seconds. No AI expertise required.
+
+> 📄 Read **[`PRODUCT_FLOW.md`](./PRODUCT_FLOW.md)** for the full end-to-end runtime walkthrough — what fires when a caller clicks "Start Call," how the lead reaches the owner, how billing enforces quotas.
 
 ---
 
 ## How It Works
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                  END CUSTOMER                        │
-│  (voice call via shared link / embed / QR code)      │
-└────────────────────────┬────────────────────────────┘
-                         │
-                         ▼
-┌──────────────────────────────────────────────────────┐
-│            GEMINI LIVE API (Real-time Voice)          │
-│     System prompt built from business data + RAG     │
-│     Tool calls → business-specific functions          │
-└──────────┬─────────────────────────────┬─────────────┘
-           │                             │
-           ▼                             ▼
-┌─────────────────────┐   ┌────────────────────────────┐
-│  VECTOR DB           │   │  CLAUDE API (Smart Layer)  │
-│  (pgvector / Neon)   │   │  - Summarize conversations │
-│  Business knowledge, │   │  - Extract action items    │
-│  FAQs, policies      │   │  - Sentiment analysis      │
-└─────────────────────┘   └────────────────────────────┘
-           │                             │
-           └─────────────┬───────────────┘
-                         ▼
-┌──────────────────────────────────────────────────────┐
-│              POSTGRESQL (Neon)                         │
-│  Businesses, Agents, Knowledge, Sessions, Analytics   │
-└──────────────────────────────────────────────────────┘
-                         │
-                         ▼
-┌──────────────────────────────────────────────────────┐
-│            LANGSMITH (Observability)                   │
-│  Trace conversations, latency, token usage, errors    │
-└──────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                  CALLER (anonymous)                              │
+│  Clicks the embedded widget on the owner's website               │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│       /embed/{slug}  ←  iframe with frame-ancestors *            │
+│       Same UI as /a/{slug}, no header chrome                     │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│            GEMINI LIVE API  (real-time WebSocket voice)          │
+│  System prompt = template + business data + RAG context          │
+│  Tools = info getters (listRooms, getMenu, …) + captureLead      │
+└──────────┬──────────────────────────────────┬───────────────────┘
+           │                                   │
+           ▼                                   ▼
+┌─────────────────────┐         ┌────────────────────────────────┐
+│  pgvector (Neon)     │         │  POST /session/{id} PATCH      │
+│  KnowledgeItem.      │         │  capturedLead → DB             │
+│  embedding(768)      │         │  (mid-call, not at end)        │
+└──────────────────────┘         └────────────────────────────────┘
+                                                  │
+                            Call ends, status=completed PATCH
+                                                  │
+                                                  ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Inngest:  post-call-analysis (3 retries, dedupe, durable)       │
+│    1. Claude Sonnet 4 → summary, sentiment, action items         │
+│    2. deliverLead → Resend email to owner                        │
+│    3. deliverLead → signed JSON webhook (HMAC-SHA256)            │
+└─────────────────────────────────────────────────────────────────┘
+                                                  │
+                                                  ▼
+┌─────────────────────────────────────────────────────────────────┐
+│   OWNER DASHBOARD (/business/*)                                  │
+│   - Captured lead block + status workflow (new → won)            │
+│   - Usage gauge + Stripe billing portal                          │
+│   - CSV export                                                    │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -49,147 +61,82 @@ AgentHub lets **business owners** create AI voice agents trained on their own da
 
 | Role | What they do |
 |------|-------------|
-| **Business Owner** | Registers, configures their AI agent via guided onboarding, adds FAQs/knowledge, shares public link with customers |
-| **End Customer** | Calls the business's agent via shared link, embed widget, or QR code — **no login required** |
+| **Business Owner** | Sign up → onboarding wizard → embed `<iframe>` on their site → pick a plan |
+| **Caller (end customer)** | Clicks the widget, talks to the AI — **no login required** |
 
 ---
 
-## Business Owner Onboarding Flow
+## What's shipped
 
-After signup, business owners complete a **4-step guided wizard** before reaching the dashboard.
-
-### Credentials Registration (`/register`)
-```
-/register
-  → POST /api/auth/register
-      Creates: User + Business + Agent (defaults from industry template)
-  → Redirect: /business/onboarding
-```
-
-### Google / GitHub OAuth
-```
-OAuth provider callback
-  → Creates: User only (no business yet)
-  → Redirect: /business/onboarding
-```
-
----
-
-### Onboarding Wizard (`/business/onboarding`)
-
-#### Step 1 — Business Details
-- Business name, industry picker (5 cards: Hotel / Restaurant / Medical / Legal / Interview)
-- Description, phone, website, address
-- **OAuth users:** full business creation here
-- **Credentials users:** review & complete details (business + agent already created at register)
-- Saves to `Business` table
-
-#### Step 2 — Configure Agent
-- Agent name, greeting message, personality & tone
-- **Dynamic industry fields:**
-  - Hotel → Hotel name, hotel type
-  - Restaurant → Restaurant name, cuisine
-  - Interview → Tech stack, level, company
-  - Medical → Clinic name, specialty
-  - Legal → Jurisdiction, legal area
-- Saves to `Agent` table (`config` JSON + `greeting` / `personality`)
-
-#### Step 3 — Add FAQs
-- Industry-specific suggestion chips (click to pre-fill):
-  - Hotel: check-in time, parking, cancellation, Wi-Fi, room service
-  - Restaurant: hours, reservations, dietary options, delivery
-  - Medical: appointment booking, insurance, emergency contact
-  - Legal: consultation fees, case types, jurisdiction
-- Add question + answer inline
-- "Skip & Finish" available
-- Saves to `KnowledgeItem` table (with vector embedding for RAG)
-
-#### Step 4 — Go Live!
-- Public link: `agenthub.com/a/{business-slug}`
-- Copy link button
-- "Test Your Agent" → opens `/a/{slug}` in new tab
-- "Go to Dashboard" → `/dashboard`
-
----
-
-### End Customer Flow
-
-1. Visit shared link / scan QR / click embed widget — **no login required**
-2. Click "Start Call"
-3. Talk to the business's AI agent (answers from real business FAQs and data)
-4. Optionally rate the experience
+| Phase | What | Status |
+|---|---|---|
+| **Phase 0** — Security | Mandatory `INTERNAL_API_SECRET`; per-session bearer token on PATCH; `KnowledgeItem.embeddingStatus` field | ✅ |
+| **Phase 1** — Honest agents + lead delivery | Universal `captureLead` tool; transactional mock tools removed; hard "no booking lies" rule injected into every prompt; Resend email lands in owner's inbox after Claude analysis | ✅ |
+| **Phase 2** — Distribution | `/embed/{slug}` widget + `frame-ancestors *` CSP scoped to `/embed/*` only; copy-paste install snippet UI; embedding model upgraded to `gemini-embedding-001` (768-dim) | ✅ |
+| **Phase 3** — Monetization | `BillingPlan` + `Subscription` models (Free / Starter / Pro); plan-aware monthly quota; Stripe checkout/portal/webhook; usage gauge; 80%/95%/100% threshold emails | ✅ |
+| **Phase 4** — Polish | Outbound webhook with HMAC-SHA256 signing; lead status workflow (new → contacted → qualified → won / lost / archived); CSV export; settings UI for notification email + webhook URL | ✅ |
+| **Phase 5+** — Future | Per-agent webhook overrides; metered overage billing; transcript audio recording; multi-business per owner; dedicated webhook retry queue with dead-letter UI; richer analytics dashboard | Planned |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 (App Router, Turbopack) |
-| Language | TypeScript 5 |
-| Voice AI | Gemini Live API (`gemini-3.1-flash-live-preview`) via `@google/genai` SDK |
-| Smart Layer | Claude API (summaries, knowledge processing, fallback) |
-| Database | PostgreSQL on Neon (serverless) |
-| ORM | Prisma 7 with `@prisma/adapter-neon` |
-| Vector Search | pgvector on Neon (RAG for business knowledge) |
-| Auth | NextAuth v5 (JWT strategy, Prisma adapter) |
-| State | Zustand |
-| UI | Tailwind CSS 4, shadcn/ui, Framer Motion, Lucide icons |
-| Observability | LangSmith (tracing, monitoring) |
-| Audio | Web Audio API, AudioWorklet (16kHz PCM capture, 24kHz PCM playback) |
+| Layer | Technology | Entry point |
+|-------|------------|-------------|
+| Framework | Next.js 16 App Router (Turbopack), TypeScript strict | `next.config.ts` |
+| Voice AI | Gemini 3.1 Flash Live (`@google/genai`) | `src/lib/gemini/live-session.ts` |
+| Post-call AI | Claude Sonnet 4 (`@anthropic-ai/sdk`) | `src/lib/claude.ts` |
+| Embeddings + RAG | `gemini-embedding-001` (768d) + pgvector | `src/lib/embeddings.ts`, `src/lib/rag.ts` |
+| Database | PostgreSQL on Neon, Prisma 7.6 + `@prisma/adapter-neon` | `src/lib/db.ts` |
+| Auth | NextAuth v5 — JWT, Google OAuth + Credentials | `src/lib/auth.ts` |
+| Background jobs | Inngest (durable retries for Claude analysis + lead delivery) | `src/inngest/` |
+| Email | Resend | `src/lib/email.ts` |
+| Billing | Stripe (Checkout, Customer Portal, webhooks) | `src/lib/stripe.ts` |
+| Rate limit | Upstash Redis (sliding window) | `src/lib/ratelimit.ts` |
+| Observability | LangSmith tracing + Sentry | `src/lib/langsmith.ts`, `sentry.*.config.ts` |
+| State (client) | Zustand | `src/stores/` |
+| UI | Tailwind CSS 4 + shadcn/ui + Framer Motion + Lucide | `src/components/ui/` |
+| Audio | Web Audio API + AudioWorklet (16 kHz mic capture, 24 kHz playback) | `public/audio-capture-worklet.js` |
 
 ---
 
 ## Database Schema
 
 ```
-User
-├── id, name, email, password (nullable for OAuth)
-├── role: BUSINESS_OWNER | ADMIN
-├── accounts[] → Account (OAuth providers)
-└── businesses[] → Business
+User (NextAuth — credentials + OAuth)
+ └── Business
+      ├── slug (unique, used in /a/{slug} and /embed/{slug})
+      ├── notificationEmail        ← lead-delivery destination (defaults to owner email)
+      ├── webhookUrl               ← optional outbound webhook
+      ├── webhookSecret            ← HMAC-SHA256 signing key (auto-generated)
+      ├── Subscription (1:1)
+      │     ├── planId             → BillingPlan (free | starter | pro)
+      │     ├── status             active | trialing | past_due | canceled
+      │     ├── stripeCustomerId / stripeSubscriptionId
+      │     ├── currentPeriodStart / End
+      │     └── lastQuotaNotice    none | 80 | 95 | 100  (threshold idempotency)
+      └── Agent (one per business in v1, schema supports many)
+           ├── templateType        hotel | medical | restaurant | legal | interview
+           ├── config (JSON)       template-specific fields (hotelName, cuisineType, …)
+           ├── KnowledgeItem
+           │     ├── embedding     vector(768)
+           │     └── embeddingStatus  pending | ready | failed
+           ├── BusinessData        rooms / menu / doctors etc, JSON keyed by dataType
+           └── AgentSession        ← anonymous callers, no User FK
+                ├── updateToken    32-byte hex bearer token issued at creation
+                ├── transcript     JSON (Phase 0/1)
+                ├── capturedLead   JSON  { name, phone, email, intent, urgency, notes }
+                ├── leadStatus     new | contacted | qualified | won | lost | archived
+                ├── leadDeliveredAt    idempotency marker for email + webhook
+                ├── summary, sentiment, sentimentScore, topics[], escalated  (Claude)
+                └── rating, feedback   (caller's own rating)
 
-Business (tenant)
-├── id, name, slug (unique, used in public URL)
-├── ownerId → User
-├── industry (hotel/restaurant/medical/legal/interview)
-├── description, phone, website, address, logoUrl
-├── isActive
-└── agents[] → Agent
-
-Agent (one per business, expandable)
-├── id, businessId → Business
-├── templateType (matches industry)
-├── name, description, greeting, personality, rules
-├── systemPrompt (auto-generated, editable)
-├── config (JSON — industry-specific fields)
-├── enabledTools[] (tool function names)
-├── voiceName, language
-├── knowledgeItems[] → KnowledgeItem
-├── businessData[] → BusinessData
-└── agentSessions[] → AgentSession
-
-KnowledgeItem (RAG source — FAQs, documents)
-├── id, agentId → Agent
-├── title, content, category
-├── sourceType: TEXT | DOCUMENT | STRUCTURED
-├── embedding (pgvector 768-dim — for semantic search)
-├── metadata (JSON)
-└── isActive
-
-BusinessData (structured operational data)
-├── id, agentId → Agent
-├── dataType (rooms/menu/services/policies/pricing)
-└── data (JSON — flexible per industry)
-       unique per [agentId, dataType]
-
-AgentSession (conversation record — anonymous callers)
-├── id, agentId → Agent
-├── callerName, callerPhone, callerEmail (optional)
-├── title, transcript (JSON), duration, status
-├── summary, sentiment, sentimentScore (AI-generated)
-├── actionItems (JSON), topics[], escalated
-└── rating, feedback
+BillingPlan
+ ├── id              free | starter | pro
+ ├── monthlyMinutes  30 | 200 | 800
+ ├── maxAgents       1 | 3 | 10
+ ├── priceCents      0 | 2900 | 9900
+ └── stripePriceId   nullable; set via env on seeding
 ```
 
 ---
@@ -199,46 +146,58 @@ AgentSession (conversation record — anonymous callers)
 ```
 src/
 ├── app/
-│   ├── (agents)/agent/[agentType]/   # Voice agent interface (public)
-│   ├── (auth)/
-│   │   ├── login/                    # Login page
-│   │   └── register/                 # Registration + business/industry form
-│   ├── (dashboard)/dashboard/        # Owner dashboard, history, settings
-│   ├── business/
-│   │   └── onboarding/               # 4-step guided onboarding wizard
+│   ├── (auth)/                  Login / Register / verify-email
+│   ├── (business)/business/     Owner dashboard (auth required)
+│   │   ├── dashboard/           Overview + usage gauge
+│   │   ├── agents/[agentId]/    Agent config, knowledge, data, sessions
+│   │   ├── billing/             Plan picker + Stripe portal
+│   │   ├── settings/            Profile + lead-delivery (email + webhook)
+│   │   └── onboarding/          4-step guided wizard
+│   ├── a/[slug]/                Public voice agent — full-page (anonymous)
+│   ├── embed/[slug]/            Iframe widget — same UI, no chrome (anonymous)
 │   └── api/
-│       ├── auth/
-│       │   ├── [...nextauth]/        # NextAuth handler
-│       │   └── register/             # Credentials registration (creates User+Business+Agent)
-│       ├── gemini/session/           # Issues API key + creates AgentSession
-│       └── sessions/                 # AgentSession CRUD + [id]/ detail
+│       ├── auth/                NextAuth + register + verify-email + reset-password
+│       ├── billing/             checkout / portal / webhook
+│       ├── business/[id]/       Owner-protected: agent config, knowledge, sessions, usage, leads/export
+│       ├── public/              No-auth: agent metadata, session POST/PATCH
+│       ├── sessions/            Owner-protected: session CRUD (status workflow)
+│       └── internal/            Server-to-server: post-call (signed)
 ├── components/
-│   ├── agent/                        # VoiceInterface, AudioVisualizer, TranscriptPanel, ControlBar
-│   ├── dashboard/                    # AgentGrid, AgentCard, SessionHistory, UserStats, ConfigModal, RatingModal
-│   ├── landing/                      # Hero, Features, AgentShowcase, CTA
-│   ├── shared/                       # Navbar, Sidebar, ErrorBoundary, LoadingStates
-│   └── ui/                           # shadcn/ui primitives (button, card, dialog, etc.)
+│   ├── agent/                   PublicAgentExperience, AgentAvatar, TranscriptPanel, AudioVisualizer
+│   ├── business/                EmbedInstallCard, MenuBuilder, DoctorRoster
+│   ├── dashboard/               SessionDetailModal (with status workflow), RatingModal, BillingActions
+│   ├── public/                  Per-template pre-call screens (Restaurant/Medical/Legal pre-call forms)
+│   └── ui/                      shadcn/ui primitives
 ├── hooks/
-│   ├── useGeminiLive.ts              # Voice session lifecycle (connect, send audio, disconnect)
-│   ├── useAudioStream.ts             # Microphone capture via AudioWorklet (16kHz PCM)
-│   ├── useTranscript.ts              # Transcript state management
-│   └── useAgent.ts                   # Agent config fetching
+│   ├── useGeminiLive.ts         Voice session lifecycle
+│   └── useAudioStream.ts        Mic capture via AudioWorklet
+├── inngest/
+│   ├── client.ts
+│   └── functions/post-call-analysis.ts    Claude analysis + deliverLead steps
 ├── lib/
-│   ├── gemini/
-│   │   ├── live-session.ts           # Gemini Live WebSocket session class
-│   │   ├── audio-utils.ts            # PCM conversion, sequential audio playback
-│   │   ├── agent-prompts.ts          # System prompt builder + tool definitions
-│   │   └── client.ts                 # GoogleGenAI client factory
-│   ├── agents/                       # Industry-specific agent configs (hotel, restaurant, etc.)
-│   ├── auth.ts                       # NextAuth config (Google, GitHub, Credentials)
-│   ├── db.ts                         # Prisma client (Neon HTTP adapter)
-│   ├── slug.ts                       # Unique slug generator for businesses
-│   └── templates.ts                  # Industry template definitions (fields, defaults, tools)
-├── stores/
-│   ├── agent-store.ts                # Agent config state (Zustand)
-│   └── session-store.ts             # Voice session + transcript state (Zustand)
-├── types/                            # TypeScript types (agent, session, gemini)
-└── proxy.ts                          # Next.js middleware (renamed for Next.js 16 compatibility)
+│   ├── agents/                  Per-template prompt + tool definitions
+│   ├── gemini/                  live-session, audio-utils, agent-prompts (universal captureLead tool)
+│   ├── auth.ts                  NextAuth config
+│   ├── claude.ts                Post-call analyzer + interview report generator
+│   ├── db.ts                    Prisma (Neon HTTP adapter)
+│   ├── embeddings.ts            gemini-embedding-001, 768-dim
+│   ├── rag.ts                   pgvector cosine search + generateAndStoreEmbedding
+│   ├── ratelimit.ts             Upstash limiters + plan-aware quota + threshold notifications
+│   ├── stripe.ts                Stripe SDK + plan-id ↔ price-id mapping
+│   ├── lead-delivery.ts         Email + webhook orchestrator (idempotent)
+│   ├── email.ts                 Resend templates (welcome, verify, lead, quota warning)
+│   ├── post-call.ts             Inngest trigger + HTTP fallback
+│   ├── templates.ts             Industry template definitions
+│   └── url.ts                   getAppUrl()
+├── stores/                      Zustand stores
+└── types/                       TypeScript types
+prisma/
+├── schema.prisma                Single source of truth
+└── seed-plans.mjs               Idempotent plan upsert (Free / Starter / Pro)
+public/
+└── audio-capture-worklet.js     16 kHz PCM resampler (don't import as a module)
+scripts/
+└── embed-test.html              Manual cross-origin iframe test page
 ```
 
 ---
@@ -246,136 +205,96 @@ src/
 ## Getting Started
 
 ### Prerequisites
-
 - Node.js 20+
-- A [Neon](https://neon.tech) PostgreSQL database
-- A [Google AI Studio](https://aistudio.google.com) API key (for Gemini)
+- A [Neon](https://neon.tech) PostgreSQL database (with pgvector extension enabled)
+- A [Google AI Studio](https://aistudio.google.com) API key for Gemini
 
 ### Setup
 
 ```bash
-# Clone and install
 git clone <repo-url>
 cd agenthub
 npm install
 
-# Configure environment
-cp .env.example .env.local
+cp .env.example .env.local      # then fill in the keys (see below)
+
+npx prisma generate
+npx prisma db push              # creates all tables
+node prisma/seed-plans.mjs       # seeds Free / Starter / Pro
+
+npm run dev                      # http://localhost:3000
 ```
 
-Add your keys to `.env.local`:
+---
+
+## Required Environment Variables
 
 ```env
-# Database (Neon PostgreSQL)
-DATABASE_URL="postgresql://..."
+# ── Database ──────────────────────────────────
+DATABASE_URL=                    # Neon Postgres connection string
 
-# Auth
-AUTH_SECRET="your-random-secret"
-NEXTAUTH_URL="http://localhost:3000"
+# ── Auth ──────────────────────────────────────
+NEXTAUTH_SECRET=                 # `openssl rand -hex 32`
+NEXTAUTH_URL=http://localhost:3000
 
-# OAuth providers
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-GITHUB_CLIENT_ID="your-github-client-id"
-GITHUB_CLIENT_SECRET="your-github-client-secret"
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
 
-# Gemini Live API (Voice AI)
-GOOGLE_GEMINI_API_KEY="your-gemini-api-key"
+# ── AI ────────────────────────────────────────
+GOOGLE_GEMINI_API_KEY=           # Voice + embeddings (gemini-embedding-001, 768d)
+ANTHROPIC_API_KEY=               # Post-call analysis (Claude Sonnet 4)
 
-# Claude API (Smart layer — Phase 5+)
-ANTHROPIC_API_KEY="your-anthropic-api-key"
+# ── Internal server-to-server ─────────────────
+INTERNAL_API_SECRET=             # MANDATORY. `openssl rand -hex 32`. Falls closed if unset.
 
-# LangSmith (Observability — Phase 8)
-LANGSMITH_API_KEY="your-langsmith-key"
+# ── Email (Resend) ────────────────────────────
+RESEND_API_KEY=                  # Lead notifications, quota warnings, verify-email
+
+# ── Rate limiting (Upstash Redis) ─────────────
+UPSTASH_REDIS_REST_URL=          # Optional in dev — silently allows through if unset
+UPSTASH_REDIS_REST_TOKEN=
+
+# ── Background jobs (Inngest) ─────────────────
+INNGEST_EVENT_KEY=               # Optional in dev — falls back to direct HTTP post-call
+INNGEST_SIGNING_KEY=
+
+# ── Billing (Stripe) ──────────────────────────
+STRIPE_SECRET_KEY=               # If unset: billing routes return 503, Free tier still works
+STRIPE_WEBHOOK_SECRET=
+STRIPE_PRICE_STARTER=            # Stripe Price ID for the Starter plan
+STRIPE_PRICE_PRO=                # Stripe Price ID for the Pro plan
+
+# ── Observability ─────────────────────────────
+LANGSMITH_API_KEY=               # Optional
+LANGSMITH_TRACING_V2=true
+SENTRY_ORG=                      # Optional, source-map upload only
+SENTRY_PROJECT=
+SENTRY_AUTH_TOKEN=
 ```
 
-```bash
-# Set up database
-npx prisma generate
-npx prisma db push
-
-# Run development server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
----
-
-## Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | Neon PostgreSQL connection string |
-| `AUTH_SECRET` | Yes | Random secret for NextAuth session encryption |
-| `NEXTAUTH_URL` | Yes | App URL (`http://localhost:3000` in dev) |
-| `GOOGLE_CLIENT_ID` | OAuth | Google Cloud Console OAuth 2.0 client ID |
-| `GOOGLE_CLIENT_SECRET` | OAuth | Google Cloud Console OAuth 2.0 client secret |
-| `GITHUB_CLIENT_ID` | OAuth | GitHub OAuth App client ID |
-| `GITHUB_CLIENT_SECRET` | OAuth | GitHub OAuth App client secret |
-| `GOOGLE_GEMINI_API_KEY` | Yes | Google AI Studio API key for Gemini Live |
-| `ANTHROPIC_API_KEY` | Phase 5+ | Claude API key for summaries & knowledge processing |
-| `LANGSMITH_API_KEY` | Phase 8 | LangSmith key for observability |
-
-> **Google OAuth redirect URI:** Add `http://localhost:3000/api/auth/callback/google` in Google Cloud Console → Credentials → Authorized redirect URIs.
-
----
-
-## Implementation Roadmap
-
-| Phase | What | Status |
-|-------|------|--------|
-| **Phase 1** | Multi-tenant foundation — User + Business + Agent schema, credentials/OAuth auth, guided 4-step onboarding wizard | ✅ Done |
-| **Phase 2** | Business knowledge base — FAQ upload, pgvector embeddings, semantic RAG retrieval | 🔄 In Progress |
-| **Phase 3** | Dynamic agent prompts — system prompt built from real business data + RAG context at call time | Planned |
-| **Phase 4** | Public agent links — shareable `/a/{slug}`, embed widget, QR code, no-auth customer access | Planned |
-| **Phase 5** | Claude post-call intelligence — AI summary, sentiment analysis, action item extraction | Planned |
-| **Phase 6** | Business dashboard — analytics, session review, knowledge management UI | Planned |
-| **Phase 7** | LangGraph workflows — multi-step booking/ordering flows with state machines | Planned |
-| **Phase 8** | LangSmith observability — conversation tracing, latency, token usage, error monitoring | Planned |
-
-### What's Built (Phase 1)
-
-- **Auth** — Email/password registration + Google/GitHub OAuth (NextAuth v5)
-- **Multi-tenant schema** — `User → Business → Agent → KnowledgeItem / BusinessData / AgentSession`
-- **Guided onboarding wizard** — 4-step flow for both OAuth and credentials users
-  - Step 1: Business details + industry selection
-  - Step 2: Agent configuration with industry-specific fields
-  - Step 3: FAQ entry with suggestion chips per industry
-  - Step 4: Go live with shareable link
-- **Voice interface** — Real-time bidirectional voice via Gemini Live API (WebSocket)
-- **Audio pipeline** — 16kHz PCM capture (AudioWorklet) + 24kHz sequential playback
-- **Transcription** — SDK-level input/output transcription displayed live
-- **5 industry templates** — Hotel, Restaurant, Medical, Legal, Interview (each with custom fields, tools, and defaults)
-- **Session recording** — AgentSession created per call with transcript and metadata
-
----
-
-## Key Components
-
-### Voice Pipeline
-
-1. **Microphone capture** → AudioWorklet resamples to 16kHz mono PCM
-2. **Gemini Live API** → Real-time bidirectional voice over WebSocket
-3. **Audio playback** → Sequential scheduling at 24kHz, prevents chunk overlap
-4. **Transcription** → SDK-level input/output transcription for transcript panel
-
-### Agent System
-
-Each industry template defines:
-- **System prompt** — personality, knowledge domain, response style
-- **Tool declarations** — business-specific functions (check availability, place order, etc.)
-- **Tool handlers** — execute tool calls and return structured results
+> **Production checklist**:
+> - Set `INTERNAL_API_SECRET` in your hosting env (Vercel) or post-call analysis will 500.
+> - Set the four Stripe vars in your Vercel env, then **re-run** `node prisma/seed-plans.mjs` so the plans pick up the price IDs.
+> - Add `https://your-domain/api/billing/webhook` to your Stripe dashboard, listening for `checkout.session.completed`, `customer.subscription.{created,updated,deleted}`, `invoice.payment_failed`.
+> - Add `https://your-domain/api/auth/callback/google` to Google OAuth's authorized redirect URIs.
 
 ---
 
 ## Scripts
 
 ```bash
-npm run dev      # Start dev server (Turbopack)
-npm run build    # Production build
-npm run start    # Start production server
-npm run lint     # Run ESLint
+npm run dev                # Next.js dev (Turbopack)
+npm run build              # Production build
+npm run lint               # ESLint
+npm run start              # Production server
+
+npx prisma db push         # Push schema to Neon (no migration files)
+npx prisma generate        # Regenerate Prisma client after schema changes
+npx prisma studio          # GUI for inspecting the database
+
+node prisma/seed-plans.mjs # Upsert the three billing plans (idempotent)
 ```
 
 ---
