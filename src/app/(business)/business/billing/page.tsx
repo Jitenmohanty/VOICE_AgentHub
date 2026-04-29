@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getBusinessUsageSnapshot } from "@/lib/ratelimit";
 import { isStripeConfigured } from "@/lib/stripe";
+import { isRazorpayConfigured } from "@/lib/razorpay";
 import { BillingActions } from "./BillingActions";
 
 export const dynamic = "force-dynamic";
@@ -26,10 +27,15 @@ export default async function BillingPage() {
   ]);
 
   const stripeReady = isStripeConfigured();
+  const razorpayReady = isRazorpayConfigured();
   const periodLabel = snapshot.periodStart.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
   });
+
+  // Format helpers — currency depends on which provider is configured.
+  const fmtUsd = (cents: number) => `$${(cents / 100).toFixed(0)}`;
+  const fmtInr = (paise: number) => `₹${(paise / 100).toLocaleString("en-IN")}`;
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 space-y-8">
@@ -99,8 +105,15 @@ export default async function BillingPage() {
                   )}
                 </div>
                 <p className="text-2xl font-bold text-white">
-                  ${(plan.priceCents / 100).toFixed(0)}
-                  <span className="text-sm font-normal text-[#8888AA]"> / mo</span>
+                  {plan.priceCents > 0 ? fmtUsd(plan.priceCents) : "Free"}
+                  {plan.priceInrPaise && plan.priceInrPaise > 0 && (
+                    <span className="text-sm font-normal text-[#8888AA] ml-2">
+                      / {fmtInr(plan.priceInrPaise)}
+                    </span>
+                  )}
+                  {plan.priceCents > 0 && (
+                    <span className="text-sm font-normal text-[#8888AA]"> / mo</span>
+                  )}
                 </p>
                 <ul className="text-sm text-[#C0C0D8] mt-4 space-y-1.5">
                   <li>• {plan.monthlyMinutes} call minutes / month</li>
@@ -108,14 +121,16 @@ export default async function BillingPage() {
                   <li>• Email lead delivery</li>
                   <li>• Embed widget</li>
                 </ul>
-                <div className="mt-5">
+                <div className="mt-5 space-y-2">
                   <BillingActions
                     businessId={business.id}
                     planId={plan.id}
                     isCurrent={isCurrent}
                     isFree={plan.priceCents === 0}
                     stripeReady={stripeReady && !!plan.stripePriceId}
-                    hasSubscription={!!sub?.stripeCustomerId}
+                    razorpayReady={razorpayReady && !!plan.razorpayPlanId}
+                    hasSubscription={!!sub?.stripeCustomerId || !!sub?.razorpayCustomerId}
+                    paymentProvider={sub?.paymentProvider ?? null}
                   />
                 </div>
               </div>
@@ -124,10 +139,10 @@ export default async function BillingPage() {
         </div>
       </section>
 
-      {!stripeReady && (
+      {!stripeReady && !razorpayReady && (
         <p className="text-xs text-[#666680] text-center">
-          Stripe is not configured on this server — paid plans are visible but cannot be purchased.
-          Set <code className="text-[#00D4FF]">STRIPE_SECRET_KEY</code> + per-plan price IDs to enable checkout.
+          No payment provider is configured on this server — paid plans are visible but cannot be purchased.
+          Set <code className="text-[#00D4FF]">STRIPE_SECRET_KEY</code> (or <code className="text-[#00D4FF]">RAZORPAY_KEY_ID</code> + secret) plus per-plan IDs to enable checkout.
         </p>
       )}
 

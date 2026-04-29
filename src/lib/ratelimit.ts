@@ -101,6 +101,54 @@ export async function checkAuthRateLimit(
 }
 
 /**
+ * In-call RAG search limiter:
+ * - 30 searches per IP per minute. The endpoint is auth-gated by a per-session
+ *   bearer token, but a compromised token shouldn't be able to hammer the
+ *   embedding API. 30/min is well above any honest agent's tool-call rate
+ *   while well below abuse territory.
+ */
+let searchKnowledgeByIp: Ratelimit | null = null;
+
+function getSearchKnowledgeLimiter(): Ratelimit | null {
+  const r = getRedis();
+  if (!r) return null;
+  if (!searchKnowledgeByIp) {
+    searchKnowledgeByIp = new Ratelimit({
+      redis: r,
+      limiter: Ratelimit.slidingWindow(30, "1 m"),
+      prefix: "rl:search:ip",
+      analytics: true,
+    });
+  }
+  return searchKnowledgeByIp;
+}
+
+export async function checkSearchKnowledgeRateLimit(
+  request: Request,
+): Promise<Response | null> {
+  const limiter = getSearchKnowledgeLimiter();
+  if (!limiter) return null; // Upstash not configured — allow through
+
+  const ip = getIp(request);
+  const result = await limiter.limit(ip);
+  if (!result.success) {
+    return new Response(
+      JSON.stringify({ error: "Too many knowledge searches. Please slow down." }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(Math.ceil((result.reset - Date.now()) / 1000)),
+          "X-RateLimit-Limit": String(result.limit),
+          "X-RateLimit-Remaining": "0",
+        },
+      },
+    );
+  }
+  return null;
+}
+
+/**
  * Resume parse limiter:
  * - 5 parses per IP per minute (Claude PDF parsing is expensive)
  */

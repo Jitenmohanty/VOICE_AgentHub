@@ -5,6 +5,7 @@ import { traceable } from "langsmith/traceable";
 import { prisma } from "@/lib/db";
 import { queryKnowledge } from "@/lib/rag";
 import { flushTraces } from "@/lib/langsmith";
+import { checkSearchKnowledgeRateLimit } from "@/lib/ratelimit";
 
 /**
  * Traceable wrapper so the in-call tool dispatch is grouped with the inner
@@ -59,6 +60,12 @@ export async function POST(
 ) {
   try {
     const { slug } = await params;
+
+    // Rate limit: 30/min/IP. The auth check below proves caller is in a real
+    // session; this prevents a compromised token from being used to drain
+    // the embedding API.
+    const limited = await checkSearchKnowledgeRateLimit(request);
+    if (limited) return limited;
 
     const parse = BodySchema.safeParse(await request.json().catch(() => ({})));
     if (!parse.success) {

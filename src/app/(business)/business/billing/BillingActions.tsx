@@ -10,23 +10,48 @@ interface Props {
   isCurrent: boolean;
   isFree: boolean;
   stripeReady: boolean;
+  razorpayReady: boolean;
   hasSubscription: boolean;
+  /** "stripe" | "razorpay" | null — used to route the Manage button correctly */
+  paymentProvider: string | null;
 }
 
-export function BillingActions({ businessId, planId, isCurrent, isFree, stripeReady, hasSubscription }: Props) {
-  const [busy, setBusy] = useState(false);
+type Provider = "stripe" | "razorpay";
 
+export function BillingActions({
+  businessId,
+  planId,
+  isCurrent,
+  isFree,
+  stripeReady,
+  razorpayReady,
+  hasSubscription,
+  paymentProvider,
+}: Props) {
+  const [busy, setBusy] = useState<Provider | "portal" | null>(null);
+
+  // ── Current plan ────────────────────────────────────────────────────
   if (isCurrent) {
     if (isFree) {
       return <p className="text-xs text-center text-[#666680]">You&apos;re on the free plan</p>;
+    }
+    // Stripe has a customer portal we can redirect to. Razorpay does not —
+    // owners manage Razorpay subscriptions from the email confirmation or
+    // their Razorpay-side account. Surface a hint instead of a broken button.
+    if (paymentProvider !== "stripe") {
+      return (
+        <p className="text-xs text-center text-[#666680]">
+          Active on Razorpay — manage from your Razorpay account
+        </p>
+      );
     }
     return (
       <Button
         variant="outline"
         className="w-full border-[#2A2A3E] text-white"
-        disabled={busy || !hasSubscription}
+        disabled={busy !== null || !hasSubscription}
         onClick={async () => {
-          setBusy(true);
+          setBusy("portal");
           try {
             const res = await fetch("/api/billing/portal", {
               method: "POST",
@@ -38,24 +63,26 @@ export function BillingActions({ businessId, planId, isCurrent, isFree, stripeRe
             window.location.href = data.url;
           } catch (err) {
             toast.error(err instanceof Error ? err.message : "Portal failed");
-            setBusy(false);
+            setBusy(null);
           }
         }}
       >
-        {busy ? "Opening..." : "Manage subscription"}
+        {busy === "portal" ? "Opening..." : "Manage subscription"}
       </Button>
     );
   }
 
+  // ── Free plan card (when on a paid plan) ────────────────────────────
   if (isFree) {
-    // Downgrading to free isn't a checkout action — direct to portal where
-    // the user cancels their paid subscription. Disabled if no portal yet.
     return (
-      <p className="text-xs text-center text-[#666680]">Cancel a paid plan from its &ldquo;Manage&rdquo; button</p>
+      <p className="text-xs text-center text-[#666680]">
+        Cancel a paid plan from its &ldquo;Manage&rdquo; button
+      </p>
     );
   }
 
-  if (!stripeReady) {
+  // ── Paid plan, neither provider configured ─────────────────────────
+  if (!stripeReady && !razorpayReady) {
     return (
       <Button disabled className="w-full" variant="outline">
         Not available
@@ -63,28 +90,56 @@ export function BillingActions({ businessId, planId, isCurrent, isFree, stripeRe
     );
   }
 
+  const startCheckout = async (provider: Provider) => {
+    setBusy(provider);
+    try {
+      const url =
+        provider === "stripe"
+          ? "/api/billing/checkout"
+          : "/api/billing/razorpay/checkout";
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ businessId, planId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Checkout failed");
+      window.location.href = data.url;
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Checkout failed");
+      setBusy(null);
+    }
+  };
+
+  // ── Paid plan, providers available ─────────────────────────────────
   return (
-    <Button
-      className="w-full bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 hover:opacity-90"
-      disabled={busy}
-      onClick={async () => {
-        setBusy(true);
-        try {
-          const res = await fetch("/api/billing/checkout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ businessId, planId }),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || "Checkout failed");
-          window.location.href = data.url;
-        } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Checkout failed");
-          setBusy(false);
-        }
-      }}
-    >
-      {busy ? "Loading..." : "Upgrade"}
-    </Button>
+    <>
+      {stripeReady && (
+        <Button
+          className="w-full bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 hover:opacity-90"
+          disabled={busy !== null}
+          onClick={() => startCheckout("stripe")}
+        >
+          {busy === "stripe"
+            ? "Loading..."
+            : razorpayReady
+              ? "Pay with Stripe (USD)"
+              : "Upgrade"}
+        </Button>
+      )}
+      {razorpayReady && (
+        <Button
+          className="w-full bg-linear-to-r from-[#0B5CFF] to-[#3395FF] text-white border-0 hover:opacity-90"
+          disabled={busy !== null}
+          onClick={() => startCheckout("razorpay")}
+        >
+          {busy === "razorpay"
+            ? "Loading..."
+            : stripeReady
+              ? "Pay with Razorpay (INR)"
+              : "Upgrade with Razorpay"}
+        </Button>
+      )}
+    </>
   );
 }

@@ -103,13 +103,18 @@ model Business {
 
 model BillingPlan {
   // Stable string IDs ("free" | "starter" | "pro") so app code can reference
-  // them without an extra lookup. Stripe prices change; these don't.
+  // them without an extra lookup. Provider IDs change; these don't.
   id              String   @id
   name            String
   monthlyMinutes  Int      // included voice minutes per billing period
   maxAgents       Int      // hard cap on agents per business
+  // Pricing in two denominations: USD cents for Stripe and INR paise for
+  // Razorpay. Both are nullable; a plan may be offered through one provider
+  // only, or both. Free tier sets both to 0.
   priceCents      Int      // monthly price in USD cents (0 for free)
-  stripePriceId   String?  // null for free tier
+  priceInrPaise   Int?     // monthly price in INR paise (1 INR = 100 paise)
+  stripePriceId   String?  // Stripe Price ID (null for free or India-only)
+  razorpayPlanId  String?  // Razorpay Plan ID (null for free or US-only)
   isActive        Boolean  @default(true)
   sortOrder       Int      @default(0)
   subscriptions   Subscription[]
@@ -124,8 +129,15 @@ model Subscription {
   plan                  BillingPlan @relation(fields: [planId], references: [id])
   // active | trialing | past_due | canceled | incomplete
   status                String      @default("active")
+  // Which payment processor the active subscription is on. null = free tier
+  // or no active paid sub. "stripe" or "razorpay".
+  paymentProvider       String?
+  // Stripe IDs (set when paymentProvider = "stripe")
   stripeCustomerId      String?
   stripeSubscriptionId  String?     @unique
+  // Razorpay IDs (set when paymentProvider = "razorpay")
+  razorpayCustomerId    String?
+  razorpaySubscriptionId String?    @unique
   // Period window — month-to-date usage is computed against currentPeriodStart.
   currentPeriodStart    DateTime    @default(now())
   currentPeriodEnd      DateTime
@@ -137,6 +149,7 @@ model Subscription {
 
   @@index([planId])
   @@index([stripeCustomerId])
+  @@index([razorpayCustomerId])
   @@index([currentPeriodEnd])
 }
 
