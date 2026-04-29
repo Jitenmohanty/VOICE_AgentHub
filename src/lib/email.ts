@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { traceable } from "langsmith/traceable";
 import { getAppUrl } from "@/lib/url";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -294,7 +295,8 @@ export interface LeadCaptureEmailOpts {
   } | null;
 }
 
-export async function sendLeadCaptureEmail(opts: LeadCaptureEmailOpts) {
+export const sendLeadCaptureEmail = traceable(
+  async function sendLeadCaptureEmail(opts: LeadCaptureEmailOpts) {
   const sessionUrl = `${BASE_URL}/business/sessions/${opts.sessionId}`;
   const urgencyColor =
     opts.lead?.urgency === "high"
@@ -409,7 +411,9 @@ export async function sendLeadCaptureEmail(opts: LeadCaptureEmailOpts) {
     subject: `New lead from ${opts.agentName} — ${callerLabel}: ${subjectIntent}`,
     html: body,
   });
-}
+  },
+  { name: "sendLeadCaptureEmail", run_type: "tool" },
+);
 
 // ── Password reset email ──────────────────────────────────────────────────────
 

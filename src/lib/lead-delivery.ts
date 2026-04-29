@@ -1,4 +1,5 @@
 import { createHmac, randomBytes } from "node:crypto";
+import { traceable } from "langsmith/traceable";
 import { prisma } from "@/lib/db";
 import { sendLeadCaptureEmail } from "@/lib/email";
 import { getAppUrl } from "@/lib/url";
@@ -56,7 +57,8 @@ interface WebhookPayload {
   };
 }
 
-async function deliverWebhook(
+const deliverWebhook = traceable(
+  async function deliverWebhook(
   url: string,
   secret: string,
   payload: WebhookPayload,
@@ -84,7 +86,9 @@ async function deliverWebhook(
       error: err instanceof Error ? err.message : "fetch failed",
     };
   }
-}
+  },
+  { name: "deliverWebhook", run_type: "tool" },
+);
 
 /**
  * Notify the business owner that a session ran on their agent.
@@ -95,7 +99,8 @@ async function deliverWebhook(
  * Skips low-signal calls (no captured lead AND empty/short transcript) so
  * owners aren't spammed by the inevitable mis-clicks and connection-test calls.
  */
-export async function deliverLead(sessionId: string): Promise<LeadDeliveryResult> {
+export const deliverLead = traceable(
+  async function deliverLead(sessionId: string): Promise<LeadDeliveryResult> {
   const session = await prisma.agentSession.findUnique({
     where: { id: sessionId },
     include: {
@@ -208,5 +213,7 @@ export async function deliverLead(sessionId: string): Promise<LeadDeliveryResult
     }
   }
 
-  return { delivered: true, webhook: webhookResult };
-}
+    return { delivered: true, webhook: webhookResult };
+  },
+  { name: "deliverLead", run_type: "chain" },
+);

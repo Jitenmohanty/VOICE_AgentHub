@@ -1,8 +1,27 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
+import { traceable } from "langsmith/traceable";
 import { prisma } from "@/lib/db";
 import { queryKnowledge } from "@/lib/rag";
+import { flushTraces } from "@/lib/langsmith";
+
+/**
+ * Traceable wrapper so the in-call tool dispatch is grouped with the inner
+ * queryKnowledge span. Without this you'd see queryKnowledge in LangSmith
+ * but no parent context — couldn't tell which session triggered it.
+ */
+const traceableSearch = traceable(
+  async function searchKnowledgeDispatch(
+    sessionId: string,
+    agentId: string,
+    query: string,
+    k: number,
+  ) {
+    return queryKnowledge(agentId, query, k);
+  },
+  { name: "searchKnowledgeDispatch", run_type: "retriever" },
+);
 
 const BodySchema = z.object({
   sessionId: z.string().cuid("Invalid session id"),
@@ -66,10 +85,12 @@ export async function POST(
       return NextResponse.json({ error: "Session has no agent" }, { status: 400 });
     }
 
-    const results = await queryKnowledge(session.agentId, query, k ?? 5);
+    const results = await traceableSearch(sessionId, session.agentId, query, k ?? 5);
+    await flushTraces();
     return NextResponse.json({ results });
   } catch (err) {
     console.error("[search-knowledge] failed:", err);
+    await flushTraces();
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
 }

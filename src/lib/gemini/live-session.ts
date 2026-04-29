@@ -23,9 +23,13 @@ function tuningForAgent(agentType: string): {
 } {
   if (agentType === "interview") {
     return {
-      // Lower temp = more consistent question selection, fewer re-phrasings
-      // of the same question that confuse the candidate.
-      temperature: 0.6,
+      // 0.75 balances two competing goals: (a) low enough that the agent
+      // doesn't rephrase the same question multiple times within one call,
+      // (b) high enough that the *same candidate retaking the interview*
+      // doesn't get the same questions session after session. Cross-session
+      // variety also relies on the per-session varietySeed + sessionAngles
+      // injected by /api/public/agent/[slug]/session/route.ts.
+      temperature: 0.75,
       // Wait 2s of silence before declaring end-of-turn. Candidates pause to
       // think mid-answer; the default ~500ms cuts them off and the agent
       // ends up either talking over them or asking the same question again.

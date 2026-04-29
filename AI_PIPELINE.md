@@ -399,6 +399,36 @@ Fallback: if Inngest is down, `post-call.ts` falls back to a direct HTTP POST to
 
 ---
 
+## Observability — what's traced where
+
+LangSmith via `langsmith/traceable`. Two principles: (1) wrap every external-system call (LLMs, embeddings, RAG, email, webhooks) so failures and latency are visible, (2) wrap orchestrators so child spans are grouped under a meaningful parent.
+
+| What | Where | Span name | Type |
+|---|---|---|---|
+| Claude post-call analysis | `src/lib/claude.ts` | `generatePostCallAnalysis` | llm |
+| Claude interview report | `src/lib/claude.ts` | `generateInterviewReport` | llm |
+| Claude doc chunking (knowledge ingest) | `src/lib/claude.ts` | `chunkDocument` | llm |
+| Gemini embedding (single) | `src/lib/embeddings.ts` | `generateEmbedding` | embedding |
+| Gemini embedding (batch) | `src/lib/embeddings.ts` | `generateEmbeddings` | embedding |
+| pgvector cosine search | `src/lib/rag.ts` | `queryKnowledge` | retriever |
+| Mid-call RAG dispatch | `src/app/api/public/agent/[slug]/search-knowledge/route.ts` | `searchKnowledgeDispatch` | retriever |
+| Lead-delivery orchestrator | `src/lib/lead-delivery.ts` | `deliverLead` | chain |
+| Lead email send | `src/lib/email.ts` | `sendLeadCaptureEmail` | tool |
+| Outbound webhook send | `src/lib/lead-delivery.ts` | `deliverWebhook` | tool |
+
+Inngest also has its own per-step tracing; the `flushTraces()` calls at the end of `post-call-analysis.ts` and `search-knowledge/route.ts` push pending LangSmith batches before serverless cold-shutdown.
+
+**What's NOT traced (yet):**
+- The Gemini Live WebSocket session — runs in the browser, not the server. To trace it would need a separate logging endpoint the browser reports to. Recommended only when you have customer-reported issues you can't reproduce.
+- Per-tool-call durations during the call (e.g., how long does `searchKnowledge` take from the model's perspective?). Would need browser-side telemetry as above.
+- Stripe webhook handler — not LLM-relevant; existing Sentry coverage is sufficient.
+
+## What we deliberately don't use
+
+- **LangChain.** We use `langsmith` (the tracing client), not the broader LangChain framework. LangChain's value prop is provider-swap and chain composition — neither applies. Adding it would mean another wrapping layer between the code and the SDK calls (`@google/genai`, `@anthropic-ai/sdk`) we already understand.
+- **LangGraph.** LangGraph shines for stateful multi-step workflows (e.g., real booking pipelines: calendar check → conflict resolution → confirmation). We don't have those today (Phase 1 deliberately killed transactional tools). When/if we add a real Calendly integration or similar, LangGraph becomes the right tool. Until then it's a duplicate of Inngest's step graph.
+- **Per-turn RAG retrieval.** Two-phase retrieval (one-shot at session start + on-demand `searchKnowledge` tool) achieves the same outcome with less compute and cleaner UX.
+
 ## Mental model
 
 Think of it as **three separate runtimes**:

@@ -56,18 +56,59 @@ export async function POST(
     const candidateContext = body.candidateContext as Record<string, string> | undefined;
     const callContext = body.callContext;
 
+    // For interview agents, inject per-session variety hints so the same
+    // candidate + tech stack doesn't get the same questions on every session.
+    // Three perturbations: (a) random seed token, (b) randomized "lead-with"
+    // topic angle, (c) randomized depth focus.
+    if (agent.templateType === "interview") {
+      const TOPIC_ANGLES = [
+        "real-world debugging stories",
+        "trade-offs between competing approaches",
+        "scaling and performance under load",
+        "edge cases and failure modes",
+        "code organization and maintainability",
+        "testing strategy and coverage",
+        "recent ecosystem changes and best practices",
+        "security and data validation concerns",
+        "concurrency and race conditions",
+        "API design and contracts",
+      ] as const;
+      const DEPTH_FOCUS = [
+        "go especially deep on internals",
+        "emphasize practical, day-to-day work",
+        "lean into architecture-level thinking",
+        "focus on the candidate's most-used libraries",
+        "probe for production experience specifically",
+      ] as const;
+      const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)]!;
+      const angle1 = pick(TOPIC_ANGLES);
+      let angle2 = pick(TOPIC_ANGLES);
+      while (angle2 === angle1) angle2 = pick(TOPIC_ANGLES);
+      const depth = pick(DEPTH_FOCUS);
+      const varietySeed = randomBytes(4).toString("hex");
+
+      // Override existing candidateContext with the variety hints appended.
+      const ctxBase: Record<string, string> = candidateContext ? { ...candidateContext } : {};
+      ctxBase.varietySeed = varietySeed;
+      ctxBase.sessionAngles = `${angle1}; ${angle2}`;
+      ctxBase.sessionDepthFocus = depth;
+      // Reassign so the downstream prompt build uses the enriched context.
+      (body as { candidateContext?: Record<string, string> }).candidateContext = ctxBase;
+    }
+    const enrichedCandidateContext = (body.candidateContext as Record<string, string> | undefined) ?? candidateContext;
+
     // 1. Build base system prompt
     let systemPrompt: string;
     if (agent.systemPrompt && agent.templateType !== "interview") {
       // Custom system prompt: use as-is for non-interview agents
       systemPrompt = agent.systemPrompt;
-    } else if (agent.systemPrompt && agent.templateType === "interview" && candidateContext) {
+    } else if (agent.systemPrompt && agent.templateType === "interview" && enrichedCandidateContext) {
       // Interview agent with custom prompt: still inject candidateContext so the
-      // agent knows who it's talking to (name, resume, stack, level)
-      systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, candidateContext);
+      // agent knows who it's talking to (name, resume, stack, level, variety hints)
+      systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, enrichedCandidateContext);
       systemPrompt += `\n\nAdditional Owner Instructions:\n${agent.systemPrompt}`;
     } else {
-      systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, candidateContext);
+      systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, enrichedCandidateContext);
     }
 
     // Inject caller's pre-call context (e.g., "ordering food" or "book appointment with Dr. Smith")
@@ -105,8 +146,8 @@ export async function POST(
       // For interview agents, seed with the candidate's tech stack for better knowledge retrieval.
       // For all others, use the agent greeting as a broad topic signal.
       const ragSeed =
-        agent.templateType === "interview" && candidateContext?.techStack
-          ? `technical interview questions about ${candidateContext.techStack}`
+        agent.templateType === "interview" && enrichedCandidateContext?.techStack
+          ? `technical interview questions about ${enrichedCandidateContext.techStack}`
           : agent.greeting || `Help with ${agent.name}`;
       const ragResults = await queryKnowledge(agent.id, ragSeed, 10);
       if (ragResults.length > 0) {
@@ -129,7 +170,7 @@ export async function POST(
       data: {
         agentId: agent.id,
         title: `${agent.name} Session`,
-        callerName: body.callerName || candidateContext?.name || null,
+        callerName: body.callerName || enrichedCandidateContext?.name || null,
         callerPhone: body.callerPhone || null,
         status: "active",
         updateToken,
