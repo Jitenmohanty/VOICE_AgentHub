@@ -109,6 +109,20 @@ client.live.connect({
       },
     },
 
+    // Sliding-window context compression — for calls approaching the
+    // 10-min cap, keeps the model attending to recent turns instead of
+    // drowning in early conversation history. Token counts are STRINGS
+    // (protobuf int64 convention), not numbers.
+    contextWindowCompression: {
+      triggerTokens: "16000",
+      slidingWindow: { targetTokens: "8000" },
+    },
+
+    // Server emits sessionResumptionUpdate messages with handles we can
+    // store and use on reconnect. Captured-only today (see getResumptionHandle());
+    // wiring the actual reconnect path is a future phase.
+    sessionResumption: {},
+
     // Transcription for both sides — drives the visible transcript panel
     inputAudioTranscription: {},
     outputAudioTranscription: {},
@@ -176,7 +190,25 @@ Gemini Live can call functions during a turn. Our agents expose two classes of t
 
 All four resolve via `live-session.ts:fetchToolData()` which fetches `/api/public/agent/{slug}/data`. If the owner hasn't configured the relevant `BusinessData` row, the fallback says "no data on file — the team will share details on follow-up" so the agent doesn't hallucinate.
 
-### B) Universal `captureLead` tool (SMB agents only)
+### B) Universal `searchKnowledge` tool (every agent — SMB AND interview)
+
+Dynamic RAG retrieval. Defined in `src/lib/gemini/agent-prompts.ts:searchKnowledgeTool`. Always appended to every agent's tool list (not removable via `enabledTools`).
+
+```typescript
+{
+  name: "searchKnowledge",
+  description: "Search the business's knowledge base for information relevant to a specific question that came up in the conversation. Use when the caller asks about a topic that wasn't covered in initial context, or when you need more detail.",
+  parameters: { query: string (required) },
+}
+```
+
+When fired, `live-session.ts:searchKnowledge(query)` POSTs to `/api/public/agent/{slug}/search-knowledge` with the per-session `updateToken` Bearer. Server runs `queryKnowledge(agentId, query, k=5)` against pgvector and returns top-k snippets. The dispatch truncates each snippet's content to 600 chars before handing it back to the model so a long FAQ doesn't drown the audio response.
+
+**This is the fix for the "RAG runs once at session start" limitation.** The static system prompt still injects the initial top-10 retrieval (good for the opening of the call), and now the model can pull more context on demand when the conversation pivots topics.
+
+The base instructions (`baseInstructions` and `interviewBaseInstructions` in `agent-prompts.ts`) explicitly tell the model to reach for `searchKnowledge` when the caller asks about something specific that wasn't in initial context — so the model knows the tool exists.
+
+### C) Universal `captureLead` tool (SMB agents only)
 
 The single most important tool. Defined once in `src/lib/gemini/agent-prompts.ts:captureLeadTool` and appended to every SMB agent's tool list (always — owners cannot disable it via `enabledTools`).
 
@@ -194,7 +226,7 @@ When the agent calls it, `live-session.ts:persistCapturedLead()` immediately PAT
 
 This pairs with the `leadCaptureRule` system-prompt clause that tells the model: *"you cannot book/order/schedule yourself. You MUST call captureLead. NEVER claim to have completed a transaction yourself."* This is the difference between an agent that lies ("your booking is confirmed") and one that's honest ("I've passed your details to the front desk — they'll call you back to confirm").
 
-### C) Interview-only tools
+### D) Interview-only tools
 
 | Tool | Behavior |
 |---|---|
@@ -261,7 +293,12 @@ Once at session creation:
 4. Filter results above similarity threshold 0.3 (= distance < 0.7).
 5. Build a context block and append to the system prompt.
 
-**Limitation:** RAG runs once at session start. Mid-call, if the caller pivots to a topic the seed query didn't surface, the retrieved context may not help. A future improvement is to expose RAG as a Gemini tool (`searchKnowledge(query)`) so the model can pull context on-demand. Listed in `PRODUCT_FLOW.md` as deferred Phase 5+ work.
+**Two-phase retrieval (since AI pipeline polish):**
+
+1. **One-shot at session start** — top-10 RAG snippets are injected into the system prompt using a seed query (`agent.greeting` for SMB, `"technical interview questions about ${techStack}"` for interview). This grounds the opening of the call.
+2. **On-demand mid-call via `searchKnowledge` tool** — when the conversation pivots to a topic the seed didn't surface, the model can call the tool with a fresh query. Top-5 snippets returned inline. See "Tool calls during the conversation > Universal searchKnowledge tool" above.
+
+The two phases are complementary: the static block primes the model, the tool fills in the gaps as the conversation evolves. Together they're effectively the same as a per-turn retrieval but cheaper (we only run vector search when the model decides it's needed, not on every turn).
 
 ---
 
@@ -330,6 +367,8 @@ Fallback: if Inngest is down, `post-call.ts` falls back to a direct HTTP POST to
 | Agent rushes through topics | Default temp + interview prompt without the explicit pacing rules at the top | `interview-agent.ts` (top-level VOICE PACING block) |
 | Tool calls visibly pause the audio | Each `scoreAnswer`/`advanceRound` is a server round-trip — too many of them break the audio stream | Interview prompt's "DO IT SILENTLY, NOT MID-CONVERSATION" section batches scoring at end-of-round |
 | Agent gives generic / canned answers | RAG retrieval returned 0 hits OR the system prompt is not specific to the candidate | Check `KnowledgeItem.embeddingStatus` in DB; check `BusinessData` rows; check that pre-call form filled `candidateContext` correctly |
+| Agent never calls `searchKnowledge` even when the caller asks specifics | Either (a) the model thinks the static prompt already has the answer, or (b) the tool description is too vague | Tighten the tool's `description` in `agent-prompts.ts:searchKnowledgeTool` and the corresponding line in `baseInstructions` |
+| Long calls (8+ min) lose track of earlier conversation | Context compression triggering too aggressively or window too small | Adjust `triggerTokens`/`targetTokens` in `live-session.ts` — both are STRINGS not numbers |
 | Agent lies about completing a booking | Missing `leadCaptureRule` or removed `captureLead` tool | `agent-prompts.ts` — both are non-removable for SMB agents |
 | Caller hung up but no email arrived | Either `transcript` was empty, or `leadDeliveredAt` already stamped (idempotency), or no recipient on `Business.notificationEmail` and no `User.email` | Check `lead-delivery.ts` logs; the recipient-missing case now logs `[LeadDelivery] DROPPED — no recipient email` to Sentry |
 | Email arrived but webhook didn't fire | `webhookUrl` not set, or first attempt failed silently | `lead-delivery.ts:deliverWebhook` returns `{ ok, status, error }` — check the Inngest run output |
@@ -343,6 +382,9 @@ Fallback: if Inngest is down, `post-call.ts` falls back to a direct HTTP POST to
 |---|---|---|
 | How long the agent waits before responding | `src/lib/gemini/live-session.ts` | `tuningForAgent.silenceDurationMs` |
 | How creative / consistent the agent is | same file | `tuningForAgent.temperature` |
+| When/how the conversation context gets compressed | same file | `contextWindowCompression.{triggerTokens,slidingWindow.targetTokens}` (strings) |
+| What `searchKnowledge` returns per call | `src/lib/gemini/live-session.ts` | `searchKnowledge()` — `k=5`, content truncation `600` |
+| Whether `searchKnowledge` is exposed | `src/lib/gemini/agent-prompts.ts` | non-removable; appended in `getAgentTools` |
 | Voice (which Gemini prebuilt voice) | Owner-facing — set on `Agent.voiceName` | dashboard agent settings page |
 | Agent's tone / personality | Owner-facing — set on `Agent.personality`, `Agent.rules` | dashboard agent config page |
 | What tools an agent has | `src/lib/agents/{template}-agent.ts` + `Agent.enabledTools` (per-business) | template files + agent dashboard |

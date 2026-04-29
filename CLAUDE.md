@@ -156,6 +156,8 @@ Per-template logic in `src/lib/agents/<template>-agent.ts`.
 | `legal`     | (none — LLM answers from prompt) | |
 | `interview` | `scoreAnswer`, `advanceRound`, `endInterview` | B2C scoring product, NOT lead-capture |
 
+**Universal `searchKnowledge` tool** (every agent — SMB and interview) — dynamic RAG retrieval via `POST /api/public/agent/[slug]/search-knowledge`. Auth-gated by the per-session `updateToken`. Defined in `src/lib/gemini/agent-prompts.ts:searchKnowledgeTool`, dispatched in `live-session.ts:searchKnowledge()`. Non-removable.
+
 **Universal `captureLead` tool** is appended to every SMB agent (everything except `interview`) by `src/lib/gemini/agent-prompts.ts:getAgentTools`. Owners can disable info tools via `Agent.enabledTools`, but `captureLead` is non-removable — without it the agent has no honest handoff path.
 
 To add a new template: extend `TEMPLATES` in `templates.ts`, create `<name>-agent.ts` in `src/lib/agents/`, add a pre-call component to `src/components/public/`.
@@ -335,4 +337,5 @@ SENTRY_AUTH_TOKEN=
 - **LangSmith** — Wrap Claude/embedding calls with `wrapTraced()` from `src/lib/langsmith.ts`.
 - **Cross-origin iframe mic** — The host site's `<iframe>` MUST include `allow="microphone"` or `getUserMedia` is blocked. Snippet in `EmbedInstallCard` already includes it.
 - **Stripe webhook body** — Must be read as raw bytes BEFORE JSON parsing for signature verification. The webhook route uses `request.text()` then `stripe.webhooks.constructEvent`.
+- **`contextWindowCompression` token counts are STRINGS** — `triggerTokens` and `slidingWindow.targetTokens` are typed as `string`, not `number`, in the `@google/genai` SDK (protobuf int64 convention). Pass them as `"16000"`, not `16000`. Same for any other int64 fields.
 - **Lead delivery idempotency** — `leadDeliveredAt` is stamped after the email send (so a transient Resend failure can still retry) but BEFORE the webhook send (so a flaky receiver doesn't cause email duplication on retry). Consequence: webhook receivers should expect at-most-once delivery on first attempt + at-least-once on Inngest retry.

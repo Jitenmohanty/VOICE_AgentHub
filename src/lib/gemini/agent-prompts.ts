@@ -7,6 +7,39 @@ import * as restaurantAgent from "@/lib/agents/restaurant-agent";
 import * as legalAgent from "@/lib/agents/legal-agent";
 
 /**
+ * Universal RAG-as-tool. Exposed to every agent (SMB and interview).
+ *
+ * The system prompt already includes a one-shot RAG retrieval at session
+ * start (top-k=10 against a seed query). But mid-call the caller often
+ * pivots to a topic the seed didn't surface — at that point the agent can
+ * call this tool with a fresh, specific query to pull more relevant
+ * snippets from the owner's knowledge base.
+ */
+export const searchKnowledgeTool: GeminiToolDeclaration = {
+  name: "searchKnowledge",
+  description:
+    "Search the business's uploaded knowledge base (FAQs, policies, documents) for information " +
+    "relevant to a specific question that came up in the conversation. " +
+    "Use this when the caller asks about a topic that wasn't covered in your initial context, " +
+    "or when you need more detail on something specific. Do NOT call it for every turn — " +
+    "only when the caller's question requires information you don't already have.",
+  parameters: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description:
+          "What you're looking for, phrased as a search query. Be specific. " +
+          "Examples: 'cancellation policy for non-refundable bookings', " +
+          "'whether the pediatrician sees walk-ins on Saturday', " +
+          "'gluten-free options on the dinner menu'.",
+      },
+    },
+    required: ["query"],
+  },
+};
+
+/**
  * Universal lead-capture tool exposed by all SMB-facing agents (everything
  * except interview). The agent calls this whenever the caller wants to do
  * something transactional — booking, ordering, scheduling — that the agent
@@ -85,6 +118,7 @@ Core behaviors:
 - Keep responses concise (2-3 sentences for voice)
 - Ask clarifying questions when needed
 - Be helpful, professional, and empathetic
+- If the caller asks about something specific that wasn't in your initial context, call the searchKnowledge tool to pull fresh details from the business's knowledge base — don't guess
 - If you cannot help, explain why and suggest alternatives
 `;
 
@@ -102,6 +136,7 @@ Core behaviors:
 - Probing follow-ups are expected and encouraged — go deep, not wide
 - Be encouraging but honest; give substantive feedback after each answer
 - Do not rush to the next topic until you have explored the current one adequately
+- If the candidate references a specific framework / tool / library you want fresh detail on, call the searchKnowledge tool to pull relevant material from the owner's knowledge base
 `;
 
 export function getAgentSystemPrompt(
@@ -126,13 +161,20 @@ export function getAgentTools(agentType: string, enabledTools?: string[]): Gemin
   const mod = agentModules[agentType];
   if (!mod) return [];
   const moduleTools = mod.getTools();
-  // Append the universal captureLead tool for every SMB agent. Interview
-  // agents have their own scoring tools and don't capture leads.
-  const all = agentType === "interview" ? moduleTools : [...moduleTools, captureLeadTool];
+  // Universal tools appended to every agent:
+  //   - searchKnowledge: dynamic RAG retrieval mid-call (everyone)
+  //   - captureLead:     transactional handoff (SMB agents only)
+  const universalTools: GeminiToolDeclaration[] = [searchKnowledgeTool];
+  if (agentType !== "interview") universalTools.push(captureLeadTool);
+
+  const all = [...moduleTools, ...universalTools];
   if (!enabledTools || enabledTools.length === 0) return all;
-  // captureLead is non-removable — owners can disable info tools but not the
-  // handoff path, otherwise the agent has no way to comply with the prompt.
-  return all.filter((t) => t.name === "captureLead" || enabledTools.includes(t.name));
+  // The universal tools are non-removable. Owners can disable per-template
+  // info tools via enabledTools, but searchKnowledge + captureLead are
+  // load-bearing for the agent's correctness.
+  return all.filter(
+    (t) => t.name === "captureLead" || t.name === "searchKnowledge" || enabledTools.includes(t.name),
+  );
 }
 
 export function handleAgentToolCall(

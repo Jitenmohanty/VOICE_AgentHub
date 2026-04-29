@@ -96,6 +96,10 @@ export class GeminiLiveSession {
   private language: string;
   private sessionId: string | null;
   private updateToken: string | null;
+  // Latest session-resumption handle from Gemini. Currently captured-only —
+  // a future reconnect feature can replay state by passing this back as
+  // sessionResumption.handle on a fresh live.connect().
+  private resumptionHandle: string | null = null;
 
   constructor(
     agentType: string,
@@ -183,6 +187,19 @@ export class GeminiLiveSession {
               startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
             },
           },
+          // Sliding-window context compression so long calls (8+ minutes
+          // close to the Gemini Live 10-min cap) don't lose attention to
+          // earlier turns. Server keeps roughly the last 8k tokens of
+          // conversation + the system instruction. NOTE: protobuf int64
+          // convention — these are STRINGS, not numbers.
+          contextWindowCompression: {
+            triggerTokens: "16000",
+            slidingWindow: { targetTokens: "8000" },
+          },
+          // Capture session-resumption handles so a future reconnect
+          // feature can replay state. We don't actively reconnect yet —
+          // see handleMessage() for handle capture.
+          sessionResumption: {},
           // Voice selection — uses business owner's configured voice or Gemini default
           ...(this.voiceName ? {
             speechConfig: {
@@ -345,6 +362,10 @@ export class GeminiLiveSession {
             } else if (fc.name === "captureLead" && fc.args) {
               // Persist immediately so a mid-call disconnect doesn't lose the lead.
               await this.persistCapturedLead(fc.args);
+            } else if (fc.name === "searchKnowledge" && fc.args) {
+              // Dynamic RAG retrieval — replaces the default ack with real
+              // top-k snippets fetched from the owner's knowledge base.
+              result = await this.searchKnowledge(String(fc.args.query ?? ""));
             }
             // For data-fetch tools, override with real data from the public API
             if (this.agentSlug && (fc.name === "getMenu" || fc.name === "listRooms" || fc.name === "listDoctors")) {
@@ -372,6 +393,18 @@ export class GeminiLiveSession {
       // before the server forcibly drops the connection.
       this.emit({ type: "session-expiring", data: { remainingMs: remaining } });
     }
+
+    // Capture session-resumption handles. Server emits these periodically;
+    // we keep the latest one so a future reconnect feature can pass it back
+    // as sessionResumption.handle on a fresh live.connect().
+    if (message.sessionResumptionUpdate?.newHandle) {
+      this.resumptionHandle = message.sessionResumptionUpdate.newHandle;
+    }
+  }
+
+  /** Latest session-resumption handle (or null if none yet). */
+  getResumptionHandle(): string | null {
+    return this.resumptionHandle;
   }
 
   /**
@@ -451,6 +484,52 @@ export class GeminiLiveSession {
    * so we write immediately rather than waiting for end-of-call to avoid losing
    * the lead on a network drop.
    */
+  /**
+   * Dynamic RAG retrieval. The agent calls this when the conversation
+   * pivots to a topic the static prompt's one-shot retrieval didn't cover.
+   * Returns top-k snippets formatted as a JSON tool response that the model
+   * can read inline.
+   */
+  private async searchKnowledge(query: string): Promise<string> {
+    if (!query.trim()) {
+      return JSON.stringify({ error: "empty query" });
+    }
+    if (!this.sessionId || !this.updateToken || !this.agentSlug) {
+      return JSON.stringify({ error: "session not ready" });
+    }
+    try {
+      const res = await fetch(
+        `/api/public/agent/${this.agentSlug}/search-knowledge`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.updateToken}`,
+          },
+          body: JSON.stringify({ sessionId: this.sessionId, query, k: 5 }),
+        },
+      );
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        console.warn("[GeminiLive] searchKnowledge failed:", res.status, text);
+        return JSON.stringify({ error: `search failed (${res.status})`, results: [] });
+      }
+      const data = (await res.json()) as { results?: { title: string; content: string; category: string; score: number }[] };
+      // The model handles short-form JSON arrays better than long prose.
+      // Truncate content per snippet so the model doesn't drown.
+      const results = (data.results ?? []).map((r) => ({
+        title: r.title,
+        category: r.category,
+        score: Number(r.score.toFixed(3)),
+        content: r.content.length > 600 ? r.content.slice(0, 600) + "..." : r.content,
+      }));
+      return JSON.stringify({ results });
+    } catch (err) {
+      console.warn("[GeminiLive] searchKnowledge error:", err);
+      return JSON.stringify({ error: "search error", results: [] });
+    }
+  }
+
   private async persistCapturedLead(args: Record<string, unknown>): Promise<void> {
     if (!this.sessionId || !this.updateToken || !this.agentSlug) {
       console.warn("[GeminiLive] captureLead fired but session token/id not available; lead not persisted");
