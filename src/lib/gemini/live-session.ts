@@ -1,7 +1,49 @@
-import { GoogleGenAI, Session, LiveServerMessage, Modality } from "@google/genai";
+import {
+  GoogleGenAI,
+  Session,
+  LiveServerMessage,
+  Modality,
+  StartSensitivity,
+  EndSensitivity,
+} from "@google/genai";
 import type { AgentConfig } from "@/types/agent";
 import { getAgentSystemPrompt, getAgentTools, handleAgentToolCall } from "./agent-prompts";
 import { pcm16Base64ToFloat32, createAudioContext } from "./audio-utils";
+
+/**
+ * Per-agent-type generation tuning. The defaults Gemini Live uses are tuned
+ * for chatbots — they're too eager for a back-and-forth voice agent and
+ * disastrous for an interview where the candidate needs thinking time.
+ */
+function tuningForAgent(agentType: string): {
+  temperature: number;
+  silenceDurationMs: number;
+  endSensitivity: EndSensitivity;
+  enableAffectiveDialog: boolean;
+} {
+  if (agentType === "interview") {
+    return {
+      // Lower temp = more consistent question selection, fewer re-phrasings
+      // of the same question that confuse the candidate.
+      temperature: 0.6,
+      // Wait 2s of silence before declaring end-of-turn. Candidates pause to
+      // think mid-answer; the default ~500ms cuts them off and the agent
+      // ends up either talking over them or asking the same question again.
+      silenceDurationMs: 2000,
+      endSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
+      enableAffectiveDialog: true,
+    };
+  }
+  // Default for SMB agents (hotel/medical/restaurant/legal). Slightly more
+  // patience than the API default but not as long as an interview — a hotel
+  // caller asking about rooms shouldn't feel a 2s lag after every utterance.
+  return {
+    temperature: 0.7,
+    silenceDurationMs: 1200,
+    endSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
+    enableAffectiveDialog: true,
+  };
+}
 
 export type SessionEventType =
   | "connected"
@@ -112,6 +154,12 @@ export class GeminiLiveSession {
       console.log("[GeminiLive] System instruction length:", systemInstruction.length);
       console.log("[GeminiLive] Tools count:", tools.length);
 
+      const tuning = tuningForAgent(this.agentType);
+      console.log(
+        "[GeminiLive] Tuning:",
+        { agentType: this.agentType, temperature: tuning.temperature, silenceDurationMs: tuning.silenceDurationMs },
+      );
+
       const session = await this.client.live.connect({
         model: "gemini-3.1-flash-live-preview",
         config: {
@@ -122,6 +170,19 @@ export class GeminiLiveSession {
           // Enable transcription for both input (user) and output (agent)
           inputAudioTranscription: {},
           outputAudioTranscription: {},
+          // Generation tuning per agent type — interviews need patience.
+          temperature: tuning.temperature,
+          enableAffectiveDialog: tuning.enableAffectiveDialog,
+          // VAD: declare end-of-turn only after the configured silence
+          // window. Default ~500ms cuts off candidates who pause to think,
+          // causing the agent to talk over them or re-ask the question.
+          realtimeInputConfig: {
+            automaticActivityDetection: {
+              silenceDurationMs: tuning.silenceDurationMs,
+              endOfSpeechSensitivity: tuning.endSensitivity,
+              startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
+            },
+          },
           // Voice selection — uses business owner's configured voice or Gemini default
           ...(this.voiceName ? {
             speechConfig: {
