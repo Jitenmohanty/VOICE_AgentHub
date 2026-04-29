@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Mic, Sparkles, Link2, BarChart3 } from "lucide-react";
+import { ArrowRight, Mic, Inbox, Code2, Webhook } from "lucide-react";
 
 export function Hero() {
   return (
@@ -24,22 +24,22 @@ export function Hero() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
             <Mic className="w-4 h-4 text-[#00D4FF]" />
-            <span className="text-sm text-[#8888AA]">Powered by Google Gemini Live API</span>
+            <span className="text-sm text-[#8888AA]">Voice AI for small businesses · Hotels · Clinics · Restaurants · Law</span>
           </div>
 
           <h1 className="font-(family-name:--font-heading) text-5xl md:text-7xl font-bold leading-tight mb-6">
-            <span className="text-white">Deploy a Voice AI Agent</span>
+            <span className="text-white">Never Miss a Customer.</span>
             <br />
             <span className="bg-linear-to-r from-[#00D4FF] to-[#6366F1] bg-clip-text text-transparent">
-              for Any Business
+              Your AI Takes the Call.
             </span>
             <br />
-            <span className="text-white">in Minutes.</span>
+            <span className="text-white">You Get the Lead.</span>
           </h1>
 
           <p className="text-xl text-[#8888AA] max-w-2xl mx-auto mb-10">
-            Hotels, restaurants, clinics, law firms, and tech interviews — each agent speaks your domain,
-            handles real data, and delivers AI-powered reports after every call.
+            Drop a single iframe into your existing website. Visitors talk to an AI that knows your menu,
+            rooms, doctors, or services — and every captured lead lands in your inbox in under 30 seconds.
           </p>
 
           <div className="flex items-center justify-center gap-4 mb-12">
@@ -48,22 +48,22 @@ export function Hero() {
                 size="lg"
                 className="bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 text-lg px-8 py-6 hover:opacity-90"
               >
-                Create Your Agent Free
+                Start Free — 30 min/mo
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <a href="#agents">
+            <a href="#pricing">
               <Button
                 size="lg"
                 variant="outline"
                 className="text-lg px-8 py-6 border-[#2A2A3E] text-[#8888AA] hover:text-white hover:border-[#00D4FF]/50"
               >
-                See All Agents
+                See Pricing
               </Button>
             </a>
           </div>
 
-          {/* Quick proof points */}
+          {/* Quick proof points — what's actually shipped */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -71,18 +71,18 @@ export function Hero() {
             className="flex flex-wrap items-center justify-center gap-6 text-sm text-[#8888AA]"
           >
             <span className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#FFB800]" />
-              AI post-call reports
+              <Code2 className="w-4 h-4 text-[#00D4FF]" />
+              Embed on your existing site
             </span>
             <span className="hidden sm:inline text-[#2A2A3E]">•</span>
             <span className="flex items-center gap-2">
-              <Link2 className="w-4 h-4 text-[#10B981]" />
-              Shareable public links
+              <Inbox className="w-4 h-4 text-[#10B981]" />
+              Leads delivered by email
             </span>
             <span className="hidden sm:inline text-[#2A2A3E]">•</span>
             <span className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-[#6366F1]" />
-              Session analytics & scoring
+              <Webhook className="w-4 h-4 text-[#6366F1]" />
+              Slack / HubSpot / Zapier ready
             </span>
           </motion.div>
         </motion.div>

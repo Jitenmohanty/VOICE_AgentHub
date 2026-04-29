@@ -7,15 +7,15 @@ import {
   ArrowRight,
   UserPlus,
   Settings,
-  Link2,
-  BarChart3,
+  Code2,
+  Inbox,
 } from "lucide-react";
 
 const steps = [
   {
     icon: UserPlus,
     title: "Create Account",
-    description: "Sign up free with Google, GitHub, or email — takes 10 seconds",
+    description: "Sign up free with Google or email — takes 10 seconds, no card needed",
   },
   {
     icon: Settings,
@@ -24,16 +24,16 @@ const steps = [
       "Pick an industry, add your data (menus, doctors, rooms), customize personality & rules",
   },
   {
-    icon: Link2,
-    title: "Share Your Link",
+    icon: Code2,
+    title: "Embed on Your Website",
     description:
-      "Get a public link like /a/your-business — anyone can call your agent, no login needed",
+      "Copy a single iframe snippet, paste into your existing site. Visitors call the AI right from your homepage.",
   },
   {
-    icon: BarChart3,
-    title: "Get AI Insights",
+    icon: Inbox,
+    title: "Leads in Your Inbox",
     description:
-      "After every call: transcript, AI summary, sentiment analysis & action items — automatically",
+      "Every captured lead arrives by email in 30 seconds. Optional Slack/HubSpot/Zapier webhook for your CRM.",
   },
 ];
 
@@ -88,11 +88,10 @@ export function CTA() {
           className="glass rounded-3xl p-12 text-center glow-cyan"
         >
           <h2 className="font-(family-name:--font-heading) text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to deploy your AI voice agent?
+            Stop missing customers.
           </h2>
           <p className="text-[#8888AA] text-lg mb-8 max-w-xl mx-auto">
-            Hotels, restaurants, clinics, law firms, and tech recruiters are already using
-            AgentHub to handle calls, conduct interviews, and delight customers — 24/7.
+            Free for 30 minutes a month — no credit card. Embed it on your site this afternoon, capture your first lead before dinner.
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link href="/register">
@@ -100,17 +99,17 @@ export function CTA() {
                 size="lg"
                 className="bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 text-lg px-10 py-6 hover:opacity-90"
               >
-                Create Your Agent Free
+                Start Free
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <a href="#agents">
+            <a href="#pricing">
               <Button
                 size="lg"
                 variant="outline"
                 className="text-lg px-8 py-6 border-[#2A2A3E] text-[#8888AA] hover:text-white hover:border-[#00D4FF]/50"
               >
-                Explore Agents
+                See Pricing
               </Button>
             </a>
           </div>

@@ -2,71 +2,71 @@
 
 import { motion } from "framer-motion";
 import {
-  Globe,
-  Mic2,
+  Code2,
+  Inbox,
+  Webhook,
   Brain,
-  BarChart3,
-  FileText,
-  Link2,
-  Database,
   Sparkles,
+  ShieldCheck,
+  ListChecks,
+  Mic2,
 } from "lucide-react";
 
 const features = [
   {
-    icon: Mic2,
-    title: "Real-time Voice",
+    icon: Code2,
+    title: "Embed on Your Existing Site",
     description:
-      "Natural, low-latency conversations via Gemini Live API. Speak and get instant voice responses.",
-    color: "#FFB800",
+      "One iframe snippet. Paste it anywhere on your website. The voice widget appears as a floating module — no new domain, no rebuild.",
+    color: "#00D4FF",
+  },
+  {
+    icon: Inbox,
+    title: "Leads in Your Inbox in Seconds",
+    description:
+      "Every captured lead — caller name, phone, email, intent, urgency — lands as a structured email within ~30 seconds of the call ending.",
+    color: "#10B981",
+  },
+  {
+    icon: Webhook,
+    title: "Slack · HubSpot · Zapier Ready",
+    description:
+      "Optional outbound webhook fires on every lead with HMAC-SHA256 signed JSON. Plug into your CRM in minutes — no custom integration code.",
+    color: "#6366F1",
   },
   {
     icon: Brain,
     title: "Industry-Specific Agents",
     description:
-      "Hotels, restaurants, clinics, law firms & interviews — each agent has deep domain knowledge.",
-    color: "#6366F1",
+      "Hotel, restaurant, medical, legal, interview templates. Each one knows the right questions, vocabulary, and emergency protocols out of the box.",
+    color: "#FFB800",
   },
   {
-    icon: Database,
-    title: "Your Real Data",
+    icon: ShieldCheck,
+    title: "Honest by Design",
     description:
-      "Agents use your actual menus, room info, doctor rosters & FAQs — not generic scripts.",
-    color: "#10B981",
-  },
-  {
-    icon: Sparkles,
-    title: "AI Post-Call Reports",
-    description:
-      "Every call is analyzed by Claude AI — summaries, sentiment, action items & scores, automatically.",
-    color: "#00D4FF",
-  },
-  {
-    icon: BarChart3,
-    title: "Interview Scoring",
-    description:
-      "5-round structured interviews with per-question scores, round breakdowns & detailed reports.",
-    color: "#EF4444",
-  },
-  {
-    icon: FileText,
-    title: "Resume Parsing",
-    description:
-      "Candidates upload a PDF resume. Claude extracts skills and personalizes interview questions.",
+      "Agents never claim to have booked or scheduled anything. They capture lead intent, you call back to confirm. No fake confirmations, no broken trust.",
     color: "#F97316",
   },
   {
-    icon: Link2,
-    title: "Shareable Public Links",
+    icon: Mic2,
+    title: "Real-Time Voice",
     description:
-      "Every agent gets a public link — no login needed for callers. Share via QR, email, or embed.",
+      "Natural, low-latency Gemini Live conversations with per-agent VAD tuning. Callers can pause to think without being cut off mid-sentence.",
+    color: "#EF4444",
+  },
+  {
+    icon: Sparkles,
+    title: "AI Post-Call Summaries",
+    description:
+      "Claude analyzes every transcript: summary, sentiment, topics, escalation flag, action items. All searchable and CSV-exportable.",
     color: "#8B5CF6",
   },
   {
-    icon: Globe,
-    title: "90+ Languages",
+    icon: ListChecks,
+    title: "Lead Workflow + CSV Export",
     description:
-      "Speak naturally in any language. Gemini understands and responds fluently worldwide.",
+      "Mark leads new → contacted → qualified → won/lost. Export filtered date ranges as CSV. Run your sales pipeline without a separate CRM.",
     color: "#06B6D4",
   },
 ];
@@ -82,10 +82,10 @@ export function Features() {
           className="text-center mb-16"
         >
           <h2 className="font-(family-name:--font-heading) text-4xl md:text-5xl font-bold text-white mb-4">
-            Everything You Need, Built In
+            Built for Real SMBs, Not Demos
           </h2>
           <p className="text-[#8888AA] text-lg max-w-2xl mx-auto">
-            From onboarding to post-call analytics — a complete AI voice platform, not just a chatbot.
+            From the iframe install to the lead in your inbox — everything you need to capture customers from your website 24/7.
           </p>
         </motion.div>
 
