@@ -4,7 +4,9 @@
 
 AgentHub lets **business owners** create AI voice agents trained on their own data — menus, room inventory, policies, FAQs — and embed them into their existing website as a widget. Visitors talk to the AI; the AI answers from real business data; captured leads land in the owner's inbox (or Slack, or Zapier) within seconds. No AI expertise required.
 
-> 📄 Read **[`PRODUCT_FLOW.md`](./PRODUCT_FLOW.md)** for the full end-to-end runtime walkthrough — what fires when a caller clicks "Start Call," how the lead reaches the owner, how billing enforces quotas.
+> 📄 Companion docs:
+> - **[`PRODUCT_FLOW.md`](./PRODUCT_FLOW.md)** — end-to-end runtime walkthrough (what fires when a caller clicks "Start Call," how the lead reaches the owner, how billing enforces quotas).
+> - **[`AI_PIPELINE.md`](./AI_PIPELINE.md)** — internals of the AI stack: how the system prompt is assembled, the per-agent Gemini Live tuning, dynamic RAG, post-call Claude pipeline, LangSmith tracing coverage, and what we deliberately *don't* use (LangChain, LangGraph).
 
 ---
 
@@ -75,7 +77,8 @@ AgentHub lets **business owners** create AI voice agents trained on their own da
 | **Phase 2** — Distribution | `/embed/{slug}` widget + `frame-ancestors *` CSP scoped to `/embed/*` only; copy-paste install snippet UI; embedding model upgraded to `gemini-embedding-001` (768-dim) | ✅ |
 | **Phase 3** — Monetization | `BillingPlan` + `Subscription` models (Free / Starter / Pro); plan-aware monthly quota; Stripe checkout/portal/webhook; usage gauge; 80%/95%/100% threshold emails | ✅ |
 | **Phase 4** — Polish | Outbound webhook with HMAC-SHA256 signing; lead status workflow (new → contacted → qualified → won / lost / archived); CSV export; settings UI for notification email + webhook URL | ✅ |
-| **Phase 5+** — Future | Per-agent webhook overrides; metered overage billing; transcript audio recording; multi-business per owner; dedicated webhook retry queue with dead-letter UI; richer analytics dashboard | Planned |
+| **Phase 5** — AI pipeline tuning | Per-agent VAD config (`silenceDurationMs` 1.2s/2s, `endOfSpeechSensitivity: LOW`); per-agent `temperature` (0.7 SMB, 0.75 interview); `enableAffectiveDialog`; sliding-window `contextWindowCompression`; `sessionResumption` handle capture; universal `searchKnowledge` tool for dynamic mid-call RAG; per-session variety seed + topic angles for interview agents (no more identical questions across sessions); LangSmith tracing on `deliverLead`, `sendLeadCaptureEmail`, `deliverWebhook`, `searchKnowledgeDispatch` | ✅ |
+| **Phase 6+** — Future | WebSocket reconnect handler (resumption data is captured but the reconnect flow is unbuilt); per-agent webhook overrides; metered overage billing; audio call recording; multi-business per owner; dedicated webhook retry queue with dead-letter UI; LangGraph for real booking workflows (not needed until we add Calendly/EHR integrations) | Planned |
 
 ---
 
