@@ -223,20 +223,35 @@ Side hook on PATCH: `recordBusinessSessionUsage` → `notifyQuotaThresholds` (fi
 
 ---
 
-## Stripe (Phase 3)
+## Billing — Stripe + Razorpay (Phase 3 + 6)
+
+Two providers run in parallel. The owner can pick either at checkout. `Subscription.paymentProvider` records which one is active so portal / cancel routing works.
+
+### Stripe (international, USD)
 
 | Endpoint | Purpose |
 |---|---|
-| `POST /api/billing/checkout` | Creates Checkout Session, returns `{ url }`. Metadata round-trips `{ businessId, planId }`. |
-| `POST /api/billing/portal`   | Customer portal for plan changes / cancel. Requires existing `stripeCustomerId`. |
+| `POST /api/billing/checkout` | Creates Stripe Checkout Session, returns `{ url }`. Metadata round-trips `{ businessId, planId }`. |
+| `POST /api/billing/portal`   | Stripe customer portal for plan changes / cancel. Requires existing `Subscription.stripeCustomerId`. |
 | `POST /api/billing/webhook`  | Signature-verified. Handles `checkout.session.completed`, `customer.subscription.{created,updated,deleted}`, `invoice.payment_failed`. |
 
-Without `STRIPE_SECRET_KEY` set, all three endpoints return 503 and the billing UI hides Upgrade buttons (Free tier still works because `resolvePlan` falls back to Free when no `Subscription` row exists).
+### Razorpay (India, INR)
 
-To turn on real Stripe in prod:
-1. Set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`.
-2. Re-run `node prisma/seed-plans.mjs` (it picks up the price IDs from env).
-3. Configure the webhook in the Stripe dashboard for the four events above.
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/billing/razorpay/checkout` | Creates Razorpay subscription, returns `{ url }` (the hosted `short_url`). `notes` round-trips `{ businessId, planId }`. |
+| `POST /api/billing/razorpay/webhook`  | HMAC-SHA256 signature verified via `RAZORPAY_WEBHOOK_SECRET`. Handles `subscription.{activated,charged,cancelled,completed,paused}`, `payment.failed`. |
+
+Razorpay has no equivalent "customer portal" — owners manage Razorpay subscriptions from their Razorpay account / email confirmations. The dashboard shows a "Active on Razorpay — manage from your Razorpay account" hint instead of a Manage button.
+
+### Provider gating
+
+Without `STRIPE_SECRET_KEY` Stripe routes return 503. Without `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET` Razorpay routes return 503. The billing UI hides whichever provider isn't ready. Free tier always works because `resolvePlan` falls back to free when no `Subscription` row exists.
+
+To turn either provider on in prod:
+1. Set the provider-specific env vars (see README).
+2. **Re-run** `node prisma/seed-plans.mjs` so plans pick up the new IDs.
+3. Configure the webhook in the provider dashboard for the events above.
 
 ---
 
@@ -309,11 +324,18 @@ UPSTASH_REDIS_REST_TOKEN=
 INNGEST_EVENT_KEY=
 INNGEST_SIGNING_KEY=
 
-# Billing (optional — Free tier works without; paid plans require all four)
+# Billing — Stripe (international, USD). Free tier works without these.
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_PRICE_STARTER=
 STRIPE_PRICE_PRO=
+
+# Billing — Razorpay (India, INR). Same gating: unset disables Razorpay only.
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+RAZORPAY_PLAN_STARTER=
+RAZORPAY_PLAN_PRO=
 
 # Observability (optional)
 LANGSMITH_API_KEY=
@@ -337,5 +359,7 @@ SENTRY_AUTH_TOKEN=
 - **LangSmith** — Wrap Claude/embedding calls with `wrapTraced()` from `src/lib/langsmith.ts`.
 - **Cross-origin iframe mic** — The host site's `<iframe>` MUST include `allow="microphone"` or `getUserMedia` is blocked. Snippet in `EmbedInstallCard` already includes it.
 - **Stripe webhook body** — Must be read as raw bytes BEFORE JSON parsing for signature verification. The webhook route uses `request.text()` then `stripe.webhooks.constructEvent`.
+- **Razorpay webhook body** — Same rule, different signing primitive. Read raw via `request.text()`, then `createHmac("sha256", RAZORPAY_WEBHOOK_SECRET).update(rawBody).digest("hex")` and `timingSafeEqual` against the `x-razorpay-signature` header. Only THEN `JSON.parse` the body for handler dispatch.
+- **Razorpay subscription totals are in paise, not rupees.** 1 INR = 100 paise. `BillingPlan.priceInrPaise` mirrors `priceCents` in Stripe terms — multiply by 100 when displaying.
 - **`contextWindowCompression` token counts are STRINGS** — `triggerTokens` and `slidingWindow.targetTokens` are typed as `string`, not `number`, in the `@google/genai` SDK (protobuf int64 convention). Pass them as `"16000"`, not `16000`. Same for any other int64 fields.
 - **Lead delivery idempotency** — `leadDeliveredAt` is stamped after the email send (so a transient Resend failure can still retry) but BEFORE the webhook send (so a flaky receiver doesn't cause email duplication on retry). Consequence: webhook receivers should expect at-most-once delivery on first attempt + at-least-once on Inngest retry.

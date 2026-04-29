@@ -78,7 +78,8 @@ AgentHub lets **business owners** create AI voice agents trained on their own da
 | **Phase 3** — Monetization | `BillingPlan` + `Subscription` models (Free / Starter / Pro); plan-aware monthly quota; Stripe checkout/portal/webhook; usage gauge; 80%/95%/100% threshold emails | ✅ |
 | **Phase 4** — Polish | Outbound webhook with HMAC-SHA256 signing; lead status workflow (new → contacted → qualified → won / lost / archived); CSV export; settings UI for notification email + webhook URL | ✅ |
 | **Phase 5** — AI pipeline tuning | Per-agent VAD config (`silenceDurationMs` 1.2s/2s, `endOfSpeechSensitivity: LOW`); per-agent `temperature` (0.7 SMB, 0.75 interview); `enableAffectiveDialog`; sliding-window `contextWindowCompression`; `sessionResumption` handle capture; universal `searchKnowledge` tool for dynamic mid-call RAG; per-session variety seed + topic angles for interview agents (no more identical questions across sessions); LangSmith tracing on `deliverLead`, `sendLeadCaptureEmail`, `deliverWebhook`, `searchKnowledgeDispatch` | ✅ |
-| **Phase 6+** — Future | WebSocket reconnect handler (resumption data is captured but the reconnect flow is unbuilt); per-agent webhook overrides; metered overage billing; audio call recording; multi-business per owner; dedicated webhook retry queue with dead-letter UI; LangGraph for real booking workflows (not needed until we add Calendly/EHR integrations) | Planned |
+| **Phase 6** — Razorpay + hardening | Razorpay subscriptions alongside Stripe (Indian SMB market): hosted checkout via short_url, HMAC-SHA256-signed webhook handling `subscription.{activated,charged,cancelled,completed,paused}` + `payment.failed`; dual-provider billing UI with currency-aware display (USD / INR); per-business `paymentProvider` field; INR plan pricing seeded (₹2399 / ₹7999 / Free); IP rate-limit on `/search-knowledge` (30/min); `robots.ts` + `sitemap.ts` for SEO basics | ✅ |
+| **Phase 7+** — Future | WebSocket reconnect handler (resumption data is captured but the reconnect flow is unbuilt); per-agent webhook overrides; metered overage billing; audio call recording; multi-business per owner; dedicated webhook retry queue with dead-letter UI; LangGraph for real booking workflows (not needed until we add Calendly/EHR integrations) | Planned |
 
 ---
 
@@ -263,11 +264,18 @@ UPSTASH_REDIS_REST_TOKEN=
 INNGEST_EVENT_KEY=               # Optional in dev — falls back to direct HTTP post-call
 INNGEST_SIGNING_KEY=
 
-# ── Billing (Stripe) ──────────────────────────
-STRIPE_SECRET_KEY=               # If unset: billing routes return 503, Free tier still works
+# ── Billing (Stripe — international) ──────────
+STRIPE_SECRET_KEY=               # If unset: Stripe routes return 503; Razorpay or Free tier still work
 STRIPE_WEBHOOK_SECRET=
 STRIPE_PRICE_STARTER=            # Stripe Price ID for the Starter plan
 STRIPE_PRICE_PRO=                # Stripe Price ID for the Pro plan
+
+# ── Billing (Razorpay — India / INR) ──────────
+RAZORPAY_KEY_ID=                 # Same gating as Stripe — unset disables Razorpay only
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+RAZORPAY_PLAN_STARTER=           # Razorpay Plan ID for the Starter plan
+RAZORPAY_PLAN_PRO=               # Razorpay Plan ID for the Pro plan
 
 # ── Observability ─────────────────────────────
 LANGSMITH_API_KEY=               # Optional
@@ -279,8 +287,9 @@ SENTRY_AUTH_TOKEN=
 
 > **Production checklist**:
 > - Set `INTERNAL_API_SECRET` in your hosting env (Vercel) or post-call analysis will 500.
-> - Set the four Stripe vars in your Vercel env, then **re-run** `node prisma/seed-plans.mjs` so the plans pick up the price IDs.
-> - Add `https://your-domain/api/billing/webhook` to your Stripe dashboard, listening for `checkout.session.completed`, `customer.subscription.{created,updated,deleted}`, `invoice.payment_failed`.
+> - **Stripe** (international): set the four `STRIPE_*` vars; add `https://your-domain/api/billing/webhook` to your Stripe dashboard listening for `checkout.session.completed`, `customer.subscription.{created,updated,deleted}`, `invoice.payment_failed`.
+> - **Razorpay** (India): set the five `RAZORPAY_*` vars; create monthly Plans in the Razorpay dashboard and copy their IDs into `RAZORPAY_PLAN_STARTER` / `RAZORPAY_PLAN_PRO`; add `https://your-domain/api/billing/razorpay/webhook` listening for `subscription.activated`, `subscription.charged`, `subscription.cancelled`, `subscription.completed`, `subscription.paused`, `payment.failed`.
+> - **After setting Stripe / Razorpay env vars, re-run** `node prisma/seed-plans.mjs` so plans pick up the new price/plan IDs.
 > - Add `https://your-domain/api/auth/callback/google` to Google OAuth's authorized redirect URIs.
 
 ---

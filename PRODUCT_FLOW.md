@@ -183,16 +183,19 @@ At month-end, owner clicks "Export CSV" on the sessions list. `/api/business/{bu
 
 ---
 
-## Stripe billing flow
+## Billing flow (Stripe + Razorpay)
 
+Two payment processors run in parallel — Stripe for international (USD) and Razorpay for India (INR). The owner sees both buttons on `/business/billing` if both are configured. `Subscription.paymentProvider` records which one is active so cancel/manage routing works.
+
+### Stripe path
 ```
-Owner clicks Upgrade
+Owner clicks "Pay with Stripe"
    │
    ▼
 POST /api/billing/checkout
    │  metadata: { businessId, planId }
    ▼
-Stripe Checkout (hosted page)
+Stripe Checkout (hosted page, USD)
    │
    ▼
 On payment success → Stripe webhook
@@ -201,7 +204,7 @@ On payment success → Stripe webhook
 POST /api/billing/webhook   ← signature verified via STRIPE_WEBHOOK_SECRET
    │
    ├── checkout.session.completed
-   │      → upsert Subscription { stripeCustomerId, stripeSubscriptionId, planId }
+   │      → upsert Subscription { paymentProvider: "stripe", stripeCustomerId, stripeSubscriptionId, planId }
    │
    ├── customer.subscription.{created,updated}
    │      → reconcile planId from price ID, set period dates, status
@@ -210,10 +213,42 @@ POST /api/billing/webhook   ← signature verified via STRIPE_WEBHOOK_SECRET
    │      → drop to Free plan immediately, status="canceled"
    │
    └── invoice.payment_failed
-          → status="past_due" (quota stays in force on existing plan)
+          → status="past_due"
 ```
 
-Without Stripe configured, all billing routes return 503 and the UI shows an info notice. Free tier still works because `resolvePlan` falls back to a default Free plan when no `Subscription` row exists.
+### Razorpay path
+```
+Owner clicks "Pay with Razorpay"
+   │
+   ▼
+POST /api/billing/razorpay/checkout
+   │  notes: { businessId, planId }
+   ▼
+Razorpay Hosted Subscription page (short_url, INR)
+   │
+   ▼
+On activation → Razorpay webhook
+   │
+   ▼
+POST /api/billing/razorpay/webhook   ← HMAC-SHA256 verified via RAZORPAY_WEBHOOK_SECRET
+   │
+   ├── subscription.activated / subscription.charged
+   │      → upsert Subscription { paymentProvider: "razorpay", razorpayCustomerId, razorpaySubscriptionId, planId, periodStart, periodEnd }
+   │
+   ├── subscription.cancelled / subscription.completed
+   │      → drop to Free plan immediately, status="canceled"
+   │
+   ├── subscription.paused
+   │      → status="past_due"
+   │
+   └── payment.failed
+          → status="past_due" (matched by razorpayCustomerId)
+```
+
+### Provider gating
+Without `STRIPE_SECRET_KEY` set, Stripe routes return 503 and the Stripe button is hidden. Without `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET`, Razorpay routes return 503 and the Razorpay button is hidden. With neither configured, paid plans show a "Not available" disabled button. Free tier always works because `resolvePlan` falls back to a default Free plan when no `Subscription` row exists.
+
+**Razorpay has no customer portal**, so once active the dashboard shows a "manage from your Razorpay account" hint instead of a Manage button. Stripe customers get the standard customer portal redirect.
 
 ---
 
