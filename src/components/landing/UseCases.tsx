@@ -6,6 +6,7 @@ import {
   UtensilsCrossed,
   Stethoscope,
   Scale,
+  User,
 } from "lucide-react";
 
 const cases = [
@@ -47,6 +48,16 @@ const cases = [
       "Practice areas, fee structure & consultation process configured",
       "Callers select their legal topic before the call starts",
       "Automatic disclaimer: 'informational only, not legal advice'",
+    ],
+  },
+  {
+    icon: User,
+    title: "Personal · Portfolios",
+    color: "#A855F7",
+    features: [
+      "An AI version of you, embedded on your portfolio site",
+      "Visitors talk to you 24/7 — recruiters, clients, peers",
+      "Trained on your resume, projects & bio. Captures opportunities to your inbox.",
     ],
   },
 ];

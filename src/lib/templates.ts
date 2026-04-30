@@ -183,6 +183,40 @@ export const TEMPLATES: AgentTemplate[] = [
     defaultKnowledgeCategories: ["faq", "procedures", "templates", "regulations"],
     defaultBusinessDataTypes: ["practice_areas", "attorneys", "fee_structure"],
   },
+  {
+    id: "personal",
+    name: "Personal · Portfolio",
+    tagline: "An AI version of you, on your portfolio",
+    description:
+      "An AI agent trained on your background, projects, and resume. Embed it on your personal site so recruiters and clients can talk to your AI 24/7.",
+    icon: "User",
+    accentColor: "#8B5CF6",
+    capabilities: ["About You", "Project Walkthroughs", "Skills Q&A", "Recruiter / Client Capture"],
+    configFields: [
+      // Identity
+      { id: "fullName", label: "Your Full Name", type: "text", defaultValue: "", placeholder: "Jane Doe", section: "About You" },
+      { id: "role", label: "Role / Title", type: "text", defaultValue: "", placeholder: "Full-stack engineer · Product designer · Indie hacker", section: "About You" },
+      { id: "yearsExperience", label: "Years of Experience", type: "number", defaultValue: 0, min: 0, max: 60, section: "About You" },
+      { id: "currentCompany", label: "Currently At (optional)", type: "text", defaultValue: "", placeholder: "Acme Inc · Freelance · Looking for next role", section: "About You" },
+      { id: "location", label: "Location", type: "text", defaultValue: "", placeholder: "Bangalore, India · Remote", section: "About You" },
+      // Skills + bio
+      { id: "techStack", label: "Skills / Tech Stack", type: "multi-select", options: ["React", "Next.js", "TypeScript", "Node.js", "Python", "Go", "Rust", "PostgreSQL", "AWS", "GCP", "Docker", "Kubernetes", "GraphQL", "Tailwind", "Figma", "Product Design", "ML/AI", "Mobile (iOS)", "Mobile (Android)", "Data Engineering"], defaultValue: [], section: "Skills" },
+      { id: "briefBio", label: "Short Bio", type: "textarea", defaultValue: "", placeholder: "1-2 paragraphs about you. What you've built, what you care about, what you're looking for. The agent uses this as its core voice.", section: "Skills" },
+      { id: "notableProjects", label: "Notable Projects", type: "textarea", defaultValue: "", placeholder: "List 3-5 projects with one-line descriptions. e.g.,\n• AgentHub — voice AI for small businesses (Next.js, Gemini)\n• ...\nThe agent will reference these by name.", section: "Skills" },
+      // Contact + links
+      { id: "linkedinUrl", label: "LinkedIn", type: "text", defaultValue: "", placeholder: "https://linkedin.com/in/...", section: "Links" },
+      { id: "githubUrl", label: "GitHub", type: "text", defaultValue: "", placeholder: "https://github.com/...", section: "Links" },
+      { id: "websiteUrl", label: "Personal Website", type: "text", defaultValue: "", placeholder: "https://...", section: "Links" },
+      { id: "contactEmail", label: "Contact Email (for captured leads)", type: "text", defaultValue: "", placeholder: "you@example.com — used for follow-up emails", section: "Links" },
+      // Style
+      { id: "tone", label: "Conversational Tone", type: "select", options: ["Friendly + casual", "Professional + concise", "Playful + technical", "Formal + corporate"], defaultValue: "Friendly + casual", section: "Style" },
+      { id: "openToWork", label: "Open to new opportunities", type: "toggle", defaultValue: true, section: "Style" },
+    ],
+    defaultGreeting: "Hi! I'm an AI version of {fullName}. Ask me anything about my background, projects, or what I'm working on.",
+    defaultPersonality: "First-person, friendly, technically grounded. Speaks naturally about real projects without overselling.",
+    defaultKnowledgeCategories: ["resume", "projects", "blog_posts", "talks", "open_source"],
+    defaultBusinessDataTypes: [],
+  },
 ];
 
 export function getTemplateById(id: string): AgentTemplate | undefined {

@@ -24,7 +24,7 @@ export function Hero() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8">
             <Mic className="w-4 h-4 text-[#00D4FF]" />
-            <span className="text-sm text-[#8888AA]">Voice AI for small businesses · Hotels · Clinics · Restaurants · Law</span>
+            <span className="text-sm text-[#8888AA]">Voice AI for small businesses · Hotels · Clinics · Restaurants · Law · Personal portfolios</span>
           </div>
 
           <h1 className="font-(family-name:--font-heading) text-5xl md:text-7xl font-bold leading-tight mb-6">

@@ -18,6 +18,7 @@ import {
   Code,
   UtensilsCrossed,
   Scale,
+  User,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -29,6 +30,7 @@ const INDUSTRY_OPTIONS = [
   { id: "interview", name: "Interview", icon: Code, color: "#6366F1" },
   { id: "restaurant", name: "Restaurant", icon: UtensilsCrossed, color: "#EF4444" },
   { id: "legal", name: "Legal", icon: Scale, color: "#8B5CF6" },
+  { id: "personal", name: "Personal", icon: User, color: "#A855F7" },
 ];
 
 export default function RegisterPage() {

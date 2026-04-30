@@ -15,6 +15,7 @@ import { InterviewPreCallForm, type CandidateContext } from "@/components/agent/
 import { RestaurantPreCall, type MenuItem } from "@/components/public/RestaurantPreCall";
 import { MedicalPreCall, type DoctorInfo } from "@/components/public/MedicalPreCall";
 import { LegalPreCall } from "@/components/public/LegalPreCall";
+import { PersonalPreCall } from "@/components/public/PersonalPreCall";
 import type { TranscriptMessage } from "@/types/session";
 import type { ConnectionState } from "@/types/gemini";
 
@@ -407,6 +408,24 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
                   onStartCall={(ctx) => {
                     setPreCallDone(true);
                     connect(ctx);
+                  }}
+                />
+              ) : agentInfo.templateType === "personal" && !preCallDone ? (
+                /* Personal: portfolio AI — minimal pre-call */
+                <PersonalPreCall
+                  fullName={(agentInfo.config?.fullName as string) || businessInfo.name}
+                  role={(agentInfo.config?.role as string) || ""}
+                  briefBio={(agentInfo.config?.briefBio as string) || ""}
+                  techStack={Array.isArray(agentInfo.config?.techStack) ? (agentInfo.config.techStack as string[]) : []}
+                  links={{
+                    linkedin: (agentInfo.config?.linkedinUrl as string) || undefined,
+                    github: (agentInfo.config?.githubUrl as string) || undefined,
+                    website: (agentInfo.config?.websiteUrl as string) || undefined,
+                  }}
+                  accentColor={accentColor}
+                  onStartCall={() => {
+                    setPreCallDone(true);
+                    connect();
                   }}
                 />
               ) : (

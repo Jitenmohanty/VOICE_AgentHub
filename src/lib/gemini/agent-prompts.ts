@@ -5,6 +5,7 @@ import * as medicalAgent from "@/lib/agents/medical-agent";
 import * as interviewAgent from "@/lib/agents/interview-agent";
 import * as restaurantAgent from "@/lib/agents/restaurant-agent";
 import * as legalAgent from "@/lib/agents/legal-agent";
+import * as personalAgent from "@/lib/agents/personal-agent";
 
 /**
  * Universal RAG-as-tool. Exposed to every agent (SMB and interview).
@@ -110,6 +111,7 @@ const agentModules: Record<
   interview: interviewAgent,
   restaurant: restaurantAgent,
   legal: legalAgent,
+  personal: personalAgent,
 };
 
 const baseInstructions = `You are an AI voice agent on the AgentHub platform.
