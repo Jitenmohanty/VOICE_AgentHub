@@ -18,6 +18,8 @@ import {
   Code,
   UtensilsCrossed,
   Scale,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +39,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // Step 2: Business
   const [businessName, setBusinessName] = useState("");
@@ -167,12 +170,25 @@ export default function RegisterPage() {
                 </div>
                 <div>
                   <Label htmlFor="password" className="text-[#8888AA]">Password</Label>
-                  <Input
-                    id="password" type="password" value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••" required minLength={8}
-                    className="mt-1 bg-white/5 border-[#2A2A3E] focus:border-[#00D4FF] text-white"
-                  />
+                  <div className="relative mt-1">
+                    <Input
+                      id="password" type={showPassword ? "text" : "password"} value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••" required minLength={8}
+                      className="bg-white/5 border-[#2A2A3E] focus:border-[#00D4FF] text-white pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8888AA] hover:text-white transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {password.length > 0 && password.length < 8 && (
+                    <p className="mt-1 text-xs text-red-400">At least 8 characters required</p>
+                  )}
                 </div>
                 <Button type="submit" className="w-full bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 hover:opacity-90">
                   Next <ArrowRight className="w-4 h-4 ml-2" />
