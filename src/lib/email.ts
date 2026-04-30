@@ -194,12 +194,23 @@ export async function sendVerificationEmail(opts: {
     </table>
   `);
 
-  return resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM,
     to: opts.to,
     subject: "Verify your email — AgentHub",
     html: body,
   });
+
+  // Resend returns { data, error } — the SDK never throws on send failures,
+  // it returns the error in the body. Log loudly so a misconfigured sender
+  // (e.g. onboarding@resend.dev to an unverified address) doesn't silently
+  // swallow verification emails.
+  if (result.error) {
+    console.error(`[Email] verification → ${opts.to} failed:`, result.error);
+  } else {
+    console.log(`[Email] verification → ${opts.to} sent (id: ${result.data?.id})`);
+  }
+  return result;
 }
 
 // ── Plan quota threshold email ────────────────────────────────────────────────
