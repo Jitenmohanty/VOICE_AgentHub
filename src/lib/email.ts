@@ -15,10 +15,10 @@ const useGmail =
   !!process.env.GMAIL_APP_PASSWORD;
 
 const FROM = useGmail
-  ? `AgentHub <${process.env.GMAIL_SENDER}>`
+  ? `Voxie <${process.env.GMAIL_SENDER}>`
   : process.env.NODE_ENV === "development"
-    ? "AgentHub <onboarding@resend.dev>"
-    : "AgentHub <noreply@agenthub.ai>";
+    ? "Voxie <onboarding@resend.dev>"
+    : "Voxie <noreply@agenthub.ai>";
 
 let gmailTransport: Transporter | null = null;
 function getGmailTransport(): Transporter {
@@ -80,7 +80,7 @@ function emailShell(content: string): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgentHub</title>
+  <title>Voxie</title>
 </head>
 <body style="margin:0;padding:0;background:#0A0A0F;font-family:'Helvetica Neue',Arial,sans-serif;color:#F0F0F5;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0F;padding:40px 16px;">
@@ -96,7 +96,7 @@ function emailShell(content: string): string {
                     <span style="font-size:18px;line-height:36px;">⚡</span>
                   </td>
                   <td style="padding-left:10px;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:-0.3px;">
-                    AgentHub
+                    Voxie
                   </td>
                 </tr>
               </table>
@@ -112,7 +112,7 @@ function emailShell(content: string): string {
           <tr>
             <td style="padding:24px 40px;border-top:1px solid #2A2A3E;text-align:center;">
               <p style="margin:0;font-size:12px;color:#555577;">
-                © ${new Date().getFullYear()} AgentHub · Powered by Google Gemini &amp; Claude AI
+                © ${new Date().getFullYear()} Voxie · Powered by Google Gemini &amp; Claude AI
               </p>
               <p style="margin:8px 0 0;font-size:12px;color:#555577;">
                 If you didn't request this email, you can safely ignore it.
@@ -157,7 +157,7 @@ export async function sendWelcomeEmail(opts: {
 
   const body = emailShell(`
     <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#FFFFFF;letter-spacing:-0.5px;">
-      Welcome to AgentHub, ${opts.name || "there"}! 👋
+      Welcome to Voxie, ${opts.name || "there"}! 👋
     </h1>
     <p style="margin:0 0 20px;font-size:15px;color:#8888AA;line-height:1.6;">
       Your account and <strong style="color:#F0F0F5;">${opts.businessName}</strong> workspace are ready.
@@ -211,7 +211,7 @@ export async function sendWelcomeEmail(opts: {
   return sendMail({
     from: FROM,
     to: opts.to,
-    subject: `Welcome to AgentHub — your ${industryLabel} AI agent is ready`,
+    subject: `Welcome to Voxie — your ${industryLabel} AI agent is ready`,
     html: body,
   });
 }
@@ -230,7 +230,7 @@ export async function sendVerificationEmail(opts: {
       Verify your email
     </h1>
     <p style="margin:0 0 20px;font-size:15px;color:#8888AA;line-height:1.6;">
-      Hi ${opts.name || "there"}, thanks for signing up to AgentHub. Click the button below
+      Hi ${opts.name || "there"}, thanks for signing up to Voxie. Click the button below
       to confirm this is your email address and activate your account.
     </p>
 
@@ -258,7 +258,7 @@ export async function sendVerificationEmail(opts: {
   const result = await sendMail({
     from: FROM,
     to: opts.to,
-    subject: "Verify your email — AgentHub",
+    subject: "Verify your email — Voxie",
     html: body,
   });
 
@@ -299,7 +299,7 @@ export async function sendQuotaWarningEmail(opts: QuotaWarningEmailOpts) {
       ${headline}
     </h1>
     <p style="margin:0 0 20px;font-size:14px;color:#8888AA;line-height:1.6;">
-      Hi ${opts.ownerName || "there"} — heads up on your AgentHub usage.
+      Hi ${opts.ownerName || "there"} — heads up on your Voxie usage.
     </p>
 
     <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:12px;border:1px solid #2A2A3E;margin:0 0 20px;">
@@ -466,7 +466,7 @@ export const sendLeadCaptureEmail = traceable(
     ${primaryButton(sessionUrl, "View full transcript →")}
 
     <p style="margin:24px 0 0;font-size:12px;color:#555577;line-height:1.6;">
-      You're receiving this because someone called your AgentHub voice agent. To change where these go, update the notification email in your business settings.
+      You're receiving this because someone called your Voxie voice agent. To change where these go, update the notification email in your business settings.
     </p>
   `);
 
@@ -501,7 +501,7 @@ export async function sendPasswordResetEmail(opts: {
       Reset your password
     </h1>
     <p style="margin:0 0 20px;font-size:15px;color:#8888AA;line-height:1.6;">
-      Hi ${opts.name || "there"}, we received a request to reset the password for your AgentHub account.
+      Hi ${opts.name || "there"}, we received a request to reset the password for your Voxie account.
       Click the button below to choose a new password.
     </p>
 
@@ -529,7 +529,7 @@ export async function sendPasswordResetEmail(opts: {
   return sendMail({
     from: FROM,
     to: opts.to,
-    subject: "Reset your AgentHub password",
+    subject: "Reset your Voxie password",
     html: body,
   });
 }

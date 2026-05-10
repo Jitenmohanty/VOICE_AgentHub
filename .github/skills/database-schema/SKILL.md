@@ -1,6 +1,6 @@
 ---
 name: database-schema
-description: "Use when modifying the Prisma schema, adding new models or fields, running migrations, or working with pgvector embeddings in AgentHub. Covers Neon HTTP adapter gotchas."
+description: "Use when modifying the Prisma schema, adding new models or fields, running migrations, or working with pgvector embeddings in Voxie. Covers Neon HTTP adapter gotchas."
 ---
 
 # Database Schema Changes

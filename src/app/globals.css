@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ──────────────────────────────────────────────────────────────────────────
-   AgentHub design system — WisprType-inspired premium dark theme.
+   Voxie design system — WisprType-inspired premium dark theme.
 
    Palette:
      • Background:   #050816 (deep) / #0B1020 (raised)
@@ -95,7 +95,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* AgentHub design tokens — referenced from styles + components */
+  /* Voxie design tokens — referenced from styles + components */
   --ah-bg-deep: #050816;
   --ah-bg-raised: #0B1020;
   --ah-surface: rgba(255, 255, 255, 0.05);

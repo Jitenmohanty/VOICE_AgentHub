@@ -2,9 +2,9 @@ import Link from "next/link";
 import { LegalShell } from "@/components/legal/LegalShell";
 
 export const metadata = {
-  title: "Cookie Policy – AgentHub",
+  title: "Cookie Policy – Voxie",
   description:
-    "Learn how AgentHub uses cookies and similar technologies on our platform.",
+    "Learn how Voxie uses cookies and similar technologies on our platform.",
 };
 
 const EFFECTIVE_DATE = "April 5, 2025";
@@ -75,7 +75,7 @@ export default function CookiePolicyPage() {
               next visit easier and the site more useful to you.
             </p>
             <p className="mt-3">
-              AgentHub uses cookies exclusively for the purposes described in
+              Voxie uses cookies exclusively for the purposes described in
               this policy. We do not use cookies to track your activity across
               third-party websites or to serve targeted advertising.
             </p>
@@ -93,7 +93,7 @@ export default function CookiePolicyPage() {
               <li>
                 <strong className="text-white">Business Users</strong> — people
                 who create an account to build and manage AI voice agents on
-                the AgentHub dashboard. Cookies are set when you log in.
+                the Voxie dashboard. Cookies are set when you log in.
               </li>
               <li>
                 <strong className="text-white">Callers (anonymous users)</strong>{" "}
@@ -120,7 +120,7 @@ export default function CookiePolicyPage() {
               the dashboard. They are set by{" "}
               <strong className="text-white">NextAuth.js</strong>, our
               authentication library, after a successful login. Without them,
-              the authenticated features of AgentHub cannot function.
+              the authenticated features of Voxie cannot function.
             </p>
             <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.06]">
               <table className="w-full text-sm">
@@ -208,7 +208,7 @@ export default function CookiePolicyPage() {
               3c. Analytics and Advertising Cookies
             </h3>
             <p>
-              AgentHub does <strong className="text-white">not</strong> use any
+              Voxie does <strong className="text-white">not</strong> use any
               analytics cookies (e.g. Google Analytics), advertising cookies, or
               cross-site tracking technologies. We do not sell your data.
             </p>
@@ -251,7 +251,7 @@ export default function CookiePolicyPage() {
             </ul>
             <p className="mt-3">
               Once the OAuth flow completes and you are redirected back to
-              AgentHub, only our own session cookies (listed above) are active.
+              Voxie, only our own session cookies (listed above) are active.
             </p>
           </section>
 
@@ -335,7 +335,7 @@ export default function CookiePolicyPage() {
             </ul>
             <p className="mt-3">
               Please note that blocking or deleting essential authentication
-              cookies will prevent you from logging into the AgentHub dashboard.
+              cookies will prevent you from logging into the Voxie dashboard.
               It will not affect Callers using public agent links.
             </p>
           </section>
@@ -363,7 +363,7 @@ export default function CookiePolicyPage() {
               please contact us:
             </p>
             <div className="mt-3 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.03]">
-              <p className="text-white font-medium">AgentHub</p>
+              <p className="text-white font-medium">Voxie</p>
               <p className="mt-1">
                 Email:{" "}
                 <a

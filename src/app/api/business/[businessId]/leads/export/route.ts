@@ -123,7 +123,7 @@ export async function GET(
     });
 
     const body = [header, ...rows].join("\n") + "\n";
-    const filename = `agenthub-leads-${owns.slug}-${new Date().toISOString().slice(0, 10)}.csv`;
+    const filename = `voxie-leads-${owns.slug}-${new Date().toISOString().slice(0, 10)}.csv`;
 
     return new Response(body, {
       status: 200,

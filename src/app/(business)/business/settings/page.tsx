@@ -247,7 +247,7 @@ export default function BusinessSettingsPage() {
                 </p>
                 <p className="text-[10px] text-white/40 mt-2 leading-relaxed">
                   Each request is signed with HMAC-SHA256 in the{" "}
-                  <code className="ah-gradient-text font-mono">X-AgentHub-Signature</code> header as{" "}
+                  <code className="ah-gradient-text font-mono">X-Voxie-Signature</code> header as{" "}
                   <code className="ah-gradient-text font-mono">sha256=&lt;hex&gt;</code>. Verify on your endpoint before trusting the body.
                 </p>
               </div>

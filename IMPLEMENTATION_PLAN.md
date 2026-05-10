@@ -1,4 +1,4 @@
-# AgentHub — Template-Specific Agent Implementation Plan
+# Voxie — Template-Specific Agent Implementation Plan
 
 > Each agent type gets its own onboarding form, data model, public page, and conversation flow.
 > Replaces the current "one size fits all" generic config (name → greeting → personality → rules).

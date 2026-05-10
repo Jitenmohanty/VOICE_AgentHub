@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# AgentHub
+# Voxie
 
 Multi-tenant voice AI SaaS. Business owners create industry-specific Gemini Live voice agents; embed them in their existing websites; callers talk to the AI; captured leads land in the owner's inbox + (optionally) a signed webhook. Stripe-billed against monthly minute caps.
 
@@ -197,7 +197,7 @@ Caller hangs up
             ├─ stamp leadDeliveredAt = now()
             └─ if Business.webhookUrl set:
                  ├─ mint Business.webhookSecret if null
-                 ├─ POST signed JSON: X-AgentHub-Signature: sha256=<hex>
+                 ├─ POST signed JSON: X-Voxie-Signature: sha256=<hex>
                  └─ 10s timeout, single attempt (Inngest retries the whole function)
 ```
 

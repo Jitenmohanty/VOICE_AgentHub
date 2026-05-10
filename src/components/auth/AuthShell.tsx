@@ -44,7 +44,7 @@ export function AuthShell({ title, subtitle, meta, footer, children }: AuthShell
               </div>
               <div className="absolute inset-0 rounded-2xl ah-gradient-bg blur-md opacity-40 group-hover:opacity-70 transition-opacity -z-10" />
             </div>
-            <span className="font-semibold text-xl tracking-tight text-white">AgentHub</span>
+            <span className="font-semibold text-xl tracking-tight text-white">Voxie</span>
           </Link>
 
           <h1 className="text-3xl md:text-[34px] font-semibold tracking-[-0.025em] text-white mb-2">

@@ -70,9 +70,9 @@ const deliverWebhook = traceable(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "AgentHub-Webhook/1.0",
-        "X-AgentHub-Event": payload.event,
-        "X-AgentHub-Signature": `sha256=${signature}`,
+        "User-Agent": "Voxie-Webhook/1.0",
+        "X-Voxie-Event": payload.event,
+        "X-Voxie-Signature": `sha256=${signature}`,
       },
       body,
       // 10s ceiling — receivers should ack fast; long pauses are queueing tools' job.

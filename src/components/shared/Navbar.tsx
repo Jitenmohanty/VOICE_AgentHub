@@ -38,7 +38,7 @@ export function Navbar() {
             <div className="absolute inset-0 rounded-2xl ah-gradient-bg blur-md opacity-40 group-hover:opacity-70 transition-opacity -z-10" />
           </div>
           <span className="font-semibold text-[17px] tracking-tight text-white">
-            AgentHub
+            Voxie
           </span>
         </Link>
 

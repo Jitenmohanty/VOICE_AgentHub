@@ -1,4 +1,4 @@
-# How AgentHub Works — End to End
+# How Voxie Works — End to End
 
 A walkthrough of the runtime behavior of the platform: who clicks what, which routes fire, what gets persisted, and how money + leads + emails flow. Read alongside `README.md` (overview) and `CLAUDE.md` (codebase orientation).
 
@@ -17,7 +17,7 @@ A small business owner signs up, configures an industry-specific AI voice agent 
 | **Business owner** | `/business/*` dashboard | A monthly plan | Email/password OR Google OAuth via NextAuth |
 | **Caller (end customer)** | An iframe on the owner's website OR `/a/{slug}` directly | Nothing | None — anonymous |
 
-The caller never sees AgentHub branding except a tiny "Powered by AgentHub" footer. The owner-facing dashboard is the only place that needs login.
+The caller never sees Voxie branding except a tiny "Powered by Voxie" footer. The owner-facing dashboard is the only place that needs login.
 
 ---
 
@@ -146,7 +146,7 @@ If Inngest is unavailable, `post-call.ts` falls back to a direct HTTP POST to `/
 6. **Webhook send** (if `Business.webhookUrl` set):
    - Mint `Business.webhookSecret` lazily if it doesn't exist yet.
    - Build payload: `{ event: "lead.captured", business, agent, session, caller, lead, analysis }`.
-   - Sign body with HMAC-SHA256, send `X-AgentHub-Signature: sha256=<hex>` header.
+   - Sign body with HMAC-SHA256, send `X-Voxie-Signature: sha256=<hex>` header.
    - 10-second timeout, single attempt — Inngest's function-level retries cover the rest.
 
 The owner sees a structured email within ~30 seconds of the call ending. If they wired Slack, the lead also lands as a JSON message in the channel.

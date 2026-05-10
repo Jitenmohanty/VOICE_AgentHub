@@ -1,6 +1,6 @@
 ---
 name: langsmith-tracing
-description: "Use when adding LangSmith observability tracing to Claude, Gemini, or embedding calls in AgentHub. Covers wrapTraced usage, trace naming, and the langsmith.ts client."
+description: "Use when adding LangSmith observability tracing to Claude, Gemini, or embedding calls in Voxie. Covers wrapTraced usage, trace naming, and the langsmith.ts client."
 ---
 
 # LangSmith Tracing

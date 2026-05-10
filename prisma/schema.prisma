@@ -87,7 +87,7 @@ model Business {
   // Where lead-capture emails are sent. Falls back to owner.email at delivery time.
   notificationEmail String?
   // Optional outbound webhook for leads (Slack/HubSpot/Zapier/etc).
-  // Signed with HMAC-SHA256 using webhookSecret in X-AgentHub-Signature.
+  // Signed with HMAC-SHA256 using webhookSecret in X-Voxie-Signature.
   webhookUrl    String?
   webhookSecret String?
   isActive    Boolean  @default(true)

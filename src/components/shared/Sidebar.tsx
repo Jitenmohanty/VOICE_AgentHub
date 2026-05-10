@@ -45,7 +45,7 @@ function Brand({ size = "md", onClick }: { size?: "sm" | "md"; onClick?: () => v
         <div className="absolute inset-0 rounded-2xl ah-gradient-bg blur-md opacity-40 group-hover:opacity-70 transition-opacity -z-10" />
       </div>
       <span className={`font-semibold tracking-tight text-white ${size === "sm" ? "text-base" : "text-lg"}`}>
-        AgentHub
+        Voxie
       </span>
     </Link>
   );

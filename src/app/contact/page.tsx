@@ -56,7 +56,7 @@ export default function ContactPage() {
     }
 
     setLoading(true);
-    const subject = encodeURIComponent(`[AgentHub] ${selectedCat.label} — ${name}`);
+    const subject = encodeURIComponent(`[Voxie] ${selectedCat.label} — ${name}`);
     const body = encodeURIComponent(
       `Category: ${selectedCat.label}\nName: ${name}\nEmail: ${email}\n\n${message}`,
     );
@@ -83,7 +83,7 @@ export default function ContactPage() {
             <div className="w-8 h-8 rounded-2xl ah-gradient-bg flex items-center justify-center shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
               <Sparkles className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
             </div>
-            <span className="font-semibold text-white text-sm tracking-tight">AgentHub</span>
+            <span className="font-semibold text-white text-sm tracking-tight">Voxie</span>
           </Link>
         </div>
       </header>
@@ -278,7 +278,7 @@ export default function ContactPage() {
         <Link href="/" className="hover:text-white transition-colors">Home</Link>
         <Link href="/legal/privacy" className="hover:text-white transition-colors">Privacy</Link>
         <Link href="/legal/terms" className="hover:text-white transition-colors">Terms</Link>
-        <span>© {new Date().getFullYear()} AgentHub</span>
+        <span>© {new Date().getFullYear()} Voxie</span>
       </div>
     </div>
   );

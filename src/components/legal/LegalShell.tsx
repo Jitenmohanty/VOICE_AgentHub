@@ -31,7 +31,7 @@ export function LegalShell({ title, subtitle, children }: Props) {
             <div className="w-8 h-8 rounded-2xl ah-gradient-bg flex items-center justify-center shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
               <Sparkles className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
             </div>
-            <span className="font-semibold text-white text-sm tracking-tight">AgentHub</span>
+            <span className="font-semibold text-white text-sm tracking-tight">Voxie</span>
           </Link>
         </div>
       </header>
@@ -52,7 +52,7 @@ export function LegalShell({ title, subtitle, children }: Props) {
         <Link href="/legal/terms" className="hover:text-white transition-colors">Terms</Link>
         <Link href="/legal/cookies" className="hover:text-white transition-colors">Cookies</Link>
         <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
-        <span>© {new Date().getFullYear()} AgentHub</span>
+        <span>© {new Date().getFullYear()} Voxie</span>
       </div>
     </div>
   );

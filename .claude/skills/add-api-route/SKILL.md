@@ -1,6 +1,6 @@
 ---
 name: add-api-route
-description: "Use when adding or modifying an API route in AgentHub. Covers protected business routes (auth required), public routes (no auth), and internal server-to-server routes with correct patterns."
+description: "Use when adding or modifying an API route in Voxie. Covers protected business routes (auth required), public routes (no auth), and internal server-to-server routes with correct patterns."
 ---
 
 # Add an API Route

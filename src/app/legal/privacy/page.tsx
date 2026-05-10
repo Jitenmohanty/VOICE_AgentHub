@@ -2,9 +2,9 @@ import Link from "next/link";
 import { LegalShell } from "@/components/legal/LegalShell";
 
 export const metadata = {
-  title: "Privacy Policy – AgentHub",
+  title: "Privacy Policy – Voxie",
   description:
-    "Learn how AgentHub collects, uses, and protects your personal data.",
+    "Learn how Voxie collects, uses, and protects your personal data.",
 };
 
 const EFFECTIVE_DATE = "April 5, 2025";
@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
       <section>
         <h2 className={sectionH}>1. Who We Are</h2>
         <p>
-          AgentHub (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) operates a multi-tenant voice AI SaaS platform that lets
+          Voxie (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) operates a multi-tenant voice AI SaaS platform that lets
           business owners create and deploy AI voice agents for their customers. This Privacy Policy
           explains what personal data we collect, how we use it, and your rights in relation to it.
         </p>
@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
         <h2 className={sectionH}>2. Who This Policy Applies To</h2>
         <p>This policy applies to two categories of people:</p>
         <ul className="mt-3 ml-5 list-disc space-y-2">
-          <li><strong className="text-white">Business Users</strong> — individuals who create an AgentHub account to build and manage AI voice agents.</li>
+          <li><strong className="text-white">Business Users</strong> — individuals who create an Voxie account to build and manage AI voice agents.</li>
           <li><strong className="text-white">Callers (anonymous end users)</strong> — people who interact with an agent via a public shareable link. No account is required.</li>
         </ul>
       </section>
@@ -115,7 +115,7 @@ export default function PrivacyPolicyPage() {
       <section>
         <h2 className={sectionH}>4. AI Processing</h2>
         <p>
-          AgentHub uses third-party AI services to power its features. When data is sent to these services it is
+          Voxie uses third-party AI services to power its features. When data is sent to these services it is
           subject to their respective privacy policies:
         </p>
         <ul className="mt-3 ml-5 list-disc space-y-2">
@@ -208,7 +208,7 @@ export default function PrivacyPolicyPage() {
       <section>
         <h2 className={sectionH}>10. Children&apos;s Privacy</h2>
         <p>
-          AgentHub is not directed at children under 16. We do not knowingly collect personal data from children.
+          Voxie is not directed at children under 16. We do not knowingly collect personal data from children.
           If you believe a child has provided us with personal data, please contact us and we will delete it promptly.
         </p>
       </section>
@@ -232,7 +232,7 @@ export default function PrivacyPolicyPage() {
       <section>
         <h2 className={sectionH}>13. Contact</h2>
         <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.03]">
-          <p className="text-white font-medium">AgentHub — Privacy Team</p>
+          <p className="text-white font-medium">Voxie — Privacy Team</p>
           <p className="mt-1.5">
             Email:{" "}
             <a href={`mailto:${CONTACT_EMAIL}`} className="ah-gradient-text font-medium hover:opacity-80">{CONTACT_EMAIL}</a>

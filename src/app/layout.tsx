@@ -24,11 +24,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AgentHub — Multi-Agent Voice AI Platform",
+  title: "Voxie — Multi-Agent Voice AI Platform",
   description:
     "Choose your industry. Get a specialized voice AI agent powered by Gemini.",
   openGraph: {
-    title: "AgentHub — Multi-Agent Voice AI Platform",
+    title: "Voxie — Multi-Agent Voice AI Platform",
     description:
       "Choose your industry. Get a specialized voice AI agent powered by Gemini.",
     type: "website",

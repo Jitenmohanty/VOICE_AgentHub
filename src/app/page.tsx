@@ -22,7 +22,7 @@ export default function Home() {
       <footer className="py-12 px-6 border-t border-white/[0.06] mt-12">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-white/50">
           <span className="text-white/40">
-            © {new Date().getFullYear()} AgentHub · Powered by Gemini &amp; Claude
+            © {new Date().getFullYear()} Voxie · Powered by Gemini &amp; Claude
           </span>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link href="/legal/privacy" className="hover:text-white transition-colors">

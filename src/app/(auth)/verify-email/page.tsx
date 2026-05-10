@@ -74,7 +74,7 @@ function VerifyInner() {
           <p className="text-sm text-white/60 mb-6">
             {state.alreadyVerified
               ? "Your account was already active. You can sign in."
-              : "Your account is active. You can now sign in to AgentHub."}
+              : "Your account is active. You can now sign in to Voxie."}
           </p>
           <GradientButton href="/login" size="default">
             Sign in

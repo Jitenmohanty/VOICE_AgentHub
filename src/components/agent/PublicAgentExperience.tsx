@@ -623,7 +623,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
 
       {/* ── Footer ── */}
       <footer className={`relative shrink-0 flex items-center justify-center text-[10px] text-white/35 ${isEmbed ? "py-1.5" : "py-2.5"}`}>
-        Powered by <span className="ah-gradient-text font-medium ml-1">AgentHub</span>
+        Powered by <span className="ah-gradient-text font-medium ml-1">Voxie</span>
       </footer>
 
       {/* ── Rating modal ── */}

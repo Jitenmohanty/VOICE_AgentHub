@@ -1,5 +1,5 @@
 /**
- * Languages supported by AgentHub voice agents.
+ * Languages supported by Voxie voice agents.
  *
  * `code` is BCP-47 (Gemini Live's `speechConfig.languageCode` expects BCP-47;
  * a bare ISO 639-1 like "hi" works inconsistently across regions, so we always
