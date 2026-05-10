@@ -3,11 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Zap,
+  Sparkles,
   Hotel,
   Stethoscope,
   Code,
@@ -31,13 +30,15 @@ import { toast } from "sonner";
 import { getTemplateById, type AgentTemplate } from "@/lib/templates";
 import { MenuBuilder } from "@/components/business/MenuBuilder";
 import { DoctorRoster } from "@/components/business/DoctorRoster";
+import { GlassPanel } from "@/components/ui/glass-panel";
+import { GradientButton } from "@/components/ui/gradient-button";
 
 const INDUSTRY_OPTIONS = [
-  { id: "hotel", name: "Hotel", icon: Hotel, color: "#F59E0B", desc: "Concierge, bookings, room service" },
-  { id: "medical", name: "Medical", icon: Stethoscope, color: "#10B981", desc: "Appointments, patient support" },
-  { id: "interview", name: "Interview", icon: Code, color: "#6366F1", desc: "Mock interviews, coaching" },
-  { id: "restaurant", name: "Restaurant", icon: UtensilsCrossed, color: "#EF4444", desc: "Orders, reservations, menu" },
-  { id: "legal", name: "Legal", icon: Scale, color: "#8B5CF6", desc: "Legal info, procedures" },
+  { id: "hotel", name: "Hotel", icon: Hotel, desc: "Concierge & bookings" },
+  { id: "medical", name: "Medical", icon: Stethoscope, desc: "Appointments & support" },
+  { id: "interview", name: "Interview", icon: Code, desc: "Mock interviews" },
+  { id: "restaurant", name: "Restaurant", icon: UtensilsCrossed, desc: "Orders & menu" },
+  { id: "legal", name: "Legal", icon: Scale, desc: "Legal information" },
 ];
 
 interface BusinessInfo {
@@ -54,13 +55,17 @@ interface BusinessInfo {
 
 const TOTAL_STEPS = 4;
 
+const inputClass =
+  "mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
+const textareaClass =
+  "w-full mt-1.5 bg-white/[0.04] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50";
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
 
-  // Business data
   const [business, setBusiness] = useState<BusinessInfo | null>(null);
   const [businessName, setBusinessName] = useState("");
   const [industry, setIndustry] = useState("");
@@ -69,20 +74,17 @@ export default function OnboardingPage() {
   const [address, setAddress] = useState("");
   const [website, setWebsite] = useState("");
 
-  // Agent data
   const [agentName, setAgentName] = useState("");
   const [greeting, setGreeting] = useState("");
   const [personality, setPersonality] = useState("");
   const [config, setConfig] = useState<Record<string, string | string[] | number | boolean>>({});
 
-  // Knowledge quick-add
   const [faqs, setFaqs] = useState<{ title: string; content: string }[]>([]);
   const [newFaqTitle, setNewFaqTitle] = useState("");
   const [newFaqContent, setNewFaqContent] = useState("");
 
   const [copied, setCopied] = useState(false);
 
-  // Check existing business state
   useEffect(() => {
     fetch("/api/business")
       .then((r) => r.json())
@@ -112,7 +114,6 @@ export default function OnboardingPage() {
 
   const template = getTemplateById(industry) || null;
 
-  // Step 1: Save business details
   const saveStep1 = useCallback(async () => {
     if (!businessName.trim() || !industry) {
       toast.error("Please fill business name and select an industry");
@@ -121,15 +122,13 @@ export default function OnboardingPage() {
     setLoading(true);
     try {
       if (!business) {
-        // Create business (OAuth user)
         const res = await fetch("/api/business/onboard", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ businessName, industry }),
         });
         if (!res.ok) { toast.error("Failed to create business"); return false; }
-        const data = await res.json();
-        // Refetch full business
+        await res.json();
         const bRes = await fetch("/api/business");
         const bData = await bRes.json();
         setBusiness(bData.businesses?.[0] || null);
@@ -148,7 +147,6 @@ export default function OnboardingPage() {
           }
         }
       } else {
-        // Update existing business
         await fetch(`/api/business/${business.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -166,7 +164,6 @@ export default function OnboardingPage() {
     finally { setLoading(false); }
   }, [business, businessName, industry, description, phone, address, website]);
 
-  // Step 2: Save agent config
   const saveStep2 = useCallback(async () => {
     if (!business?.agents[0]) return false;
     setLoading(true);
@@ -186,9 +183,8 @@ export default function OnboardingPage() {
     finally { setLoading(false); }
   }, [business, agentName, greeting, personality, config]);
 
-  // Step 3: Save knowledge
   const saveStep3 = useCallback(async () => {
-    if (!business?.agents[0] || faqs.length === 0) return true; // skip if empty
+    if (!business?.agents[0] || faqs.length === 0) return true;
     setLoading(true);
     try {
       for (const faq of faqs) {
@@ -238,346 +234,374 @@ export default function OnboardingPage() {
   if (checking) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#00D4FF]/30 border-t-[#00D4FF] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-violet-300/30 border-t-violet-300 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
+    <div className="max-w-2xl mx-auto py-8 px-4 md:py-12">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-        <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center mx-auto mb-4">
-          <Zap className="w-6 h-6 text-white" />
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-8">
+        <div className="relative inline-block mb-4">
+          <div className="w-12 h-12 rounded-2xl ah-gradient-bg flex items-center justify-center mx-auto shadow-[0_8px_24px_-8px_rgba(124,58,237,0.6)]">
+            <Sparkles className="w-5 h-5 text-white" strokeWidth={2.5} />
+          </div>
+          <div className="absolute inset-0 ah-gradient-bg rounded-2xl blur-xl opacity-40 -z-10" />
         </div>
-        <h1 className="font-(family-name:--font-heading) text-2xl font-bold text-white">Set up your AI Agent</h1>
-        <p className="text-sm text-[#8888AA] mt-1">Complete these steps to get your agent live</p>
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-white">Set up your AI agent</h1>
+        <p className="text-sm text-white/55 mt-1.5">Complete these steps to get your agent live.</p>
 
-        {/* Progress bar */}
-        <div className="flex items-center justify-center gap-1.5 mt-5">
+        <div className="flex items-center justify-center gap-1.5 mt-6">
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <div
               key={i}
-              className="h-1.5 rounded-full transition-all duration-300"
-              style={{
-                width: i + 1 === step ? 32 : 16,
-                backgroundColor: i + 1 <= step ? "#00D4FF" : "#2A2A3E",
-              }}
+              className={`h-1 rounded-full transition-all duration-500 ${
+                i + 1 <= step ? "ah-gradient-bg" : "bg-white/10"
+              }`}
+              style={{ width: i + 1 === step ? 32 : 16 }}
             />
           ))}
         </div>
-        <p className="text-xs text-[#666680] mt-2">Step {step} of {TOTAL_STEPS}</p>
+        <p className="text-[11px] text-white/40 mt-2">Step {step} of {TOTAL_STEPS}</p>
       </motion.div>
 
       <AnimatePresence mode="wait">
-        {/* ── STEP 1: Business Details ── */}
+        {/* STEP 1 */}
         {step === 1 && (
-          <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="glass rounded-2xl p-6 space-y-5">
-            <div className="flex items-center gap-2 mb-1">
-              <Building2 className="w-5 h-5 text-[#00D4FF]" />
-              <h2 className="font-semibold text-white text-lg">Business Details</h2>
-            </div>
-
-            <div>
-              <Label className="text-[#8888AA]">Business Name *</Label>
-              <Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="e.g., Grand Hotel Mumbai" required className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
-            </div>
-
-            {!business && (
-              <div>
-                <Label className="text-[#8888AA] mb-3 block">Industry *</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {INDUSTRY_OPTIONS.map((opt) => {
-                    const Icon = opt.icon;
-                    const sel = industry === opt.id;
-                    return (
-                      <button key={opt.id} type="button" onClick={() => setIndustry(opt.id)}
-                        className="p-3 rounded-xl text-left transition-all relative"
-                        style={{ backgroundColor: sel ? `${opt.color}15` : "rgba(255,255,255,0.03)", borderWidth: "1px", borderColor: sel ? `${opt.color}50` : "#2A2A3E" }}>
-                        {sel && <Check className="w-3.5 h-3.5 absolute top-2 right-2" style={{ color: opt.color }} />}
-                        <Icon className="w-5 h-5 mb-1.5" style={{ color: sel ? opt.color : "#8888AA" }} />
-                        <p className="text-xs font-medium" style={{ color: sel ? opt.color : "#F0F0F5" }}>{opt.name}</p>
-                      </button>
-                    );
-                  })}
+          <motion.div key="step1" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35 }}>
+            <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-300/20 flex items-center justify-center">
+                  <Building2 className="w-4 h-4 text-violet-300" strokeWidth={2} />
                 </div>
+                <h2 className="font-semibold text-white text-lg tracking-tight">Business details</h2>
               </div>
-            )}
 
-            <div>
-              <Label className="text-[#8888AA]">Description</Label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description of your business for customers..." rows={2} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-[#8888AA] flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</Label>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
+                <Label className="text-xs font-medium text-white/60">Business name *</Label>
+                <Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="e.g., Grand Hotel Mumbai" required className={inputClass} />
               </div>
-              <div>
-                <Label className="text-[#8888AA] flex items-center gap-1"><Globe className="w-3 h-3" /> Website</Label>
-                <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://..." className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
-              </div>
-            </div>
 
-            <div>
-              <Label className="text-[#8888AA] flex items-center gap-1"><MapPin className="w-3 h-3" /> Address</Label>
-              <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full business address" className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
-            </div>
-          </motion.div>
-        )}
-
-        {/* ── STEP 2: Agent Config ── */}
-        {step === 2 && template && (
-          <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="glass rounded-2xl p-6 space-y-5">
-            <div className="flex items-center gap-2 mb-1">
-              <Bot className="w-5 h-5" style={{ color: template.accentColor }} />
-              <h2 className="font-semibold text-white text-lg">Configure Your Agent</h2>
-            </div>
-
-            <div>
-              <Label className="text-[#8888AA]">Agent Name</Label>
-              <Input value={agentName} onChange={(e) => setAgentName(e.target.value)} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
-            </div>
-
-            <div>
-              <Label className="text-[#8888AA]">Greeting Message</Label>
-              <Input value={greeting} onChange={(e) => setGreeting(e.target.value)} placeholder={template.defaultGreeting} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
-            </div>
-
-            <div>
-              <Label className="text-[#8888AA]">Personality & Tone</Label>
-              <textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder={template.defaultPersonality} rows={2} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
-            </div>
-
-            {/* Template-specific fields grouped by section */}
-            {(() => {
-              const sections: { name: string; fields: typeof template.configFields }[] = [];
-              for (const field of template.configFields) {
-                const sectionName = field.section || "Details";
-                let section = sections.find((s) => s.name === sectionName);
-                if (!section) { section = { name: sectionName, fields: [] }; sections.push(section); }
-                section.fields.push(field);
-              }
-              return sections.map((section) => (
-                <div key={section.name} className="space-y-4">
-                  <p className="text-xs font-medium text-[#666680] uppercase tracking-wider pt-2 border-t border-[#2A2A3E]/50">{section.name}</p>
-                  {section.fields.map((field) => (
-                    <div key={field.id}>
-                      <Label className="text-[#8888AA]">{field.label}</Label>
-                      {field.description && <p className="text-xs text-[#666680] mt-0.5">{field.description}</p>}
-
-                      {field.type === "text" && (
-                        <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : "")} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
-                      )}
-
-                      {field.type === "number" && (
-                        <Input type="number" value={config[field.id] !== undefined ? String(config[field.id]) : ""} onChange={(e) => updateConfig(field.id, e.target.value === "" ? 0 : Number(e.target.value))} min={field.min} max={field.max} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white w-32" />
-                      )}
-
-                      {field.type === "time" && (
-                        <Input type="time" value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white w-40" />
-                      )}
-
-                      {field.type === "textarea" && (
-                        <textarea value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || ""} rows={3} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
-                      )}
-
-                      {field.type === "toggle" && (
-                        <button type="button" onClick={() => updateConfig(field.id, !config[field.id])} className="mt-1.5 flex items-center gap-2">
-                          <div className={`w-10 h-5 rounded-full transition-colors relative ${config[field.id] ? "bg-[#00D4FF]" : "bg-[#2A2A3E]"}`}>
-                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${config[field.id] ? "translate-x-5" : "translate-x-0.5"}`} />
-                          </div>
-                          <span className="text-sm text-[#8888AA]">{config[field.id] ? "Yes" : "No"}</span>
+              {!business && (
+                <div>
+                  <Label className="text-xs font-medium text-white/60 mb-2.5 block">Industry *</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {INDUSTRY_OPTIONS.map((opt) => {
+                      const Icon = opt.icon;
+                      const sel = industry === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setIndustry(opt.id)}
+                          className={`p-3.5 rounded-2xl text-left transition-all border relative ${
+                            sel
+                              ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40 shadow-[0_0_16px_-4px_rgba(124,58,237,0.4)]"
+                              : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-white/15"
+                          }`}
+                        >
+                          {sel && <Check className="w-3.5 h-3.5 absolute top-2 right-2 text-violet-300" strokeWidth={2.5} />}
+                          <Icon className={`w-4 h-4 mb-1.5 ${sel ? "text-violet-300" : "text-white/55"}`} strokeWidth={2} />
+                          <p className={`text-xs font-medium ${sel ? "text-white" : "text-white/75"}`}>{opt.name}</p>
+                          <p className="text-[10px] text-white/40 mt-0.5">{opt.desc}</p>
                         </button>
-                      )}
-
-                      {field.type === "select" && field.options && (
-                        <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-10 bg-white/5 border border-[#2A2A3E] rounded-lg px-3 text-sm text-white focus:outline-none focus:border-[#00D4FF]">
-                          <option value="" className="bg-[#1A1A2E]">Select...</option>
-                          {field.options.map((o) => <option key={o} value={o} className="bg-[#1A1A2E]">{o}</option>)}
-                        </select>
-                      )}
-
-                      {field.type === "multi-select" && field.options && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {field.options.map((o) => {
-                            const sel = ((config[field.id] as string[]) || []).includes(o);
-                            return (
-                              <button key={o} type="button" onClick={() => toggleMulti(field.id, o)} className="px-3 py-1.5 rounded-lg text-sm transition-all" style={{ backgroundColor: sel ? `${template.accentColor}20` : "rgba(255,255,255,0.05)", color: sel ? template.accentColor : "#8888AA", borderWidth: "1px", borderColor: sel ? `${template.accentColor}40` : "transparent" }}>
-                                {o}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ));
-            })()}
-
-            {/* ── Restaurant: Menu Builder sub-step ── */}
-            {template.id === "restaurant" && business?.agents[0] && (
-              <div className="space-y-3 border-t border-[#2A2A3E]/50 pt-4">
-                <p className="text-xs font-medium text-[#666680] uppercase tracking-wider">
-                  Menu Items
-                </p>
-                <p className="text-xs text-[#8888AA] -mt-1">
-                  Add your menu items so the agent can read them out and take orders.
-                </p>
-                <MenuBuilder
-                  businessId={business.id}
-                  agentId={business.agents[0].id}
-                  accentColor={template.accentColor}
-                />
-              </div>
-            )}
-
-            {/* ── Medical: Doctor Roster sub-step ── */}
-            {template.id === "medical" && business?.agents[0] && (
-              <div className="space-y-3 border-t border-[#2A2A3E]/50 pt-4">
-                <p className="text-xs font-medium text-[#666680] uppercase tracking-wider">
-                  Doctor Roster
-                </p>
-                <p className="text-xs text-[#8888AA] -mt-1">
-                  Add doctors so the agent can answer availability and appointment questions.
-                </p>
-                <DoctorRoster
-                  businessId={business.id}
-                  agentId={business.agents[0].id}
-                  accentColor={template.accentColor}
-                />
-              </div>
-            )}
-          </motion.div>
-        )}
-
-        {/* ── STEP 3: Quick Knowledge ── */}
-        {step === 3 && (
-          <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="glass rounded-2xl p-6 space-y-5">
-            <div className="flex items-center gap-2 mb-1">
-              <BookOpen className="w-5 h-5 text-[#00D4FF]" />
-              <h2 className="font-semibold text-white text-lg">Add Quick FAQs</h2>
-            </div>
-            <p className="text-xs text-[#8888AA] -mt-3">Add common questions your customers ask. You can add more later.</p>
-
-            {/* Suggestion chips */}
-            {template && (
-              <div>
-                <p className="text-xs text-[#666680] mb-2">Suggested for {template.name}:</p>
-                <div className="flex flex-wrap gap-2">
-                  {getSuggestedFaqs(template).map((s, i) => (
-                    <button key={i} type="button" onClick={() => { setNewFaqTitle(s.title); setNewFaqContent(s.content); }} className="text-xs px-3 py-1.5 rounded-full bg-white/5 text-[#8888AA] hover:text-white hover:bg-white/10 transition-colors">
-                      {s.title}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Add FAQ form */}
-            <div className="bg-white/[0.03] rounded-xl p-4 border border-[#2A2A3E] space-y-3">
-              <Input value={newFaqTitle} onChange={(e) => setNewFaqTitle(e.target.value)} placeholder="Question (e.g., What is check-in time?)" className="bg-white/5 border-[#2A2A3E] text-white text-sm" />
-              <textarea value={newFaqContent} onChange={(e) => setNewFaqContent(e.target.value)} placeholder="Answer (e.g., Check-in is at 2:00 PM and check-out is at 11:00 AM)" rows={2} className="w-full bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
-              <Button type="button" onClick={addFaq} disabled={!newFaqTitle.trim() || !newFaqContent.trim()} size="sm" className="bg-[#00D4FF] text-black hover:bg-[#00D4FF]/80 border-0">
-                <Plus className="w-3.5 h-3.5 mr-1" /> Add FAQ
-              </Button>
-            </div>
-
-            {/* Added FAQs */}
-            {faqs.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs text-[#8888AA]">{faqs.length} FAQ{faqs.length !== 1 ? "s" : ""} ready to save</p>
-                {faqs.map((faq, i) => (
-                  <div key={i} className="flex items-start justify-between bg-white/[0.03] rounded-lg p-3 border border-[#2A2A3E]">
-                    <div className="min-w-0">
-                      <p className="text-sm text-white font-medium">{faq.title}</p>
-                      <p className="text-xs text-[#8888AA] line-clamp-1">{faq.content}</p>
-                    </div>
-                    <button onClick={() => setFaqs((prev) => prev.filter((_, j) => j !== i))} className="p-1 text-[#8888AA] hover:text-red-400 shrink-0 ml-2">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
+              )}
+
+              <div>
+                <Label className="text-xs font-medium text-white/60">Description</Label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description of your business…" rows={2} className={textareaClass} />
               </div>
-            )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+                    <Phone className="w-3 h-3" /> Phone
+                  </Label>
+                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className={inputClass} />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+                    <Globe className="w-3 h-3" /> Website
+                  </Label>
+                  <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" className={inputClass} />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3" /> Address
+                </Label>
+                <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full business address" className={inputClass} />
+              </div>
+            </GlassPanel>
           </motion.div>
         )}
 
-        {/* ── STEP 4: Go Live ── */}
-        {step === 4 && (
-          <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="glass rounded-2xl p-8 text-center space-y-6">
-            <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
-              <Check className="w-8 h-8 text-green-400" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-white text-xl">Your Agent is Ready!</h2>
-              <p className="text-sm text-[#8888AA] mt-1">Share this link with your customers</p>
-            </div>
-
-            {/* Public link */}
-            <div className="p-4 bg-white/[0.03] rounded-xl border border-[#2A2A3E] flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
-                <ExternalLink className="w-4 h-4 text-[#00D4FF] shrink-0" />
-                <span className="text-sm text-[#8888AA] truncate">{publicUrl}</span>
+        {/* STEP 2 */}
+        {step === 2 && template && (
+          <motion.div key="step2" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35 }}>
+            <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${template.accentColor}30, ${template.accentColor}10)`,
+                    border: `1px solid ${template.accentColor}30`,
+                  }}
+                >
+                  <Bot className="w-4 h-4" style={{ color: template.accentColor }} strokeWidth={2} />
+                </div>
+                <h2 className="font-semibold text-white text-lg tracking-tight">Configure your agent</h2>
               </div>
-              <Button size="sm" variant="outline" className="border-[#2A2A3E] text-white shrink-0 ml-3" onClick={() => {
-                navigator.clipboard.writeText(publicUrl);
-                setCopied(true);
-                toast.success("Link copied!");
-                setTimeout(() => setCopied(false), 2000);
-              }}>
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              </Button>
-            </div>
 
-            <div className="flex gap-3 justify-center">
-              <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-black bg-[#00D4FF] hover:bg-[#00D4FF]/80 transition-colors">
-                <ExternalLink className="w-4 h-4" /> Test Your Agent
-              </a>
-              <Button onClick={() => router.push("/business/dashboard")} variant="outline" className="border-[#2A2A3E] text-white">
-                Go to Dashboard
-              </Button>
-            </div>
+              <div>
+                <Label className="text-xs font-medium text-white/60">Agent name</Label>
+                <Input value={agentName} onChange={(e) => setAgentName(e.target.value)} className={inputClass} />
+              </div>
 
-            <p className="text-xs text-[#666680]">You can always customize your agent further from the dashboard</p>
+              <div>
+                <Label className="text-xs font-medium text-white/60">Greeting message</Label>
+                <Input value={greeting} onChange={(e) => setGreeting(e.target.value)} placeholder={template.defaultGreeting} className={inputClass} />
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium text-white/60">Personality &amp; tone</Label>
+                <textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder={template.defaultPersonality} rows={2} className={textareaClass} />
+              </div>
+
+              {(() => {
+                const sections: { name: string; fields: typeof template.configFields }[] = [];
+                for (const field of template.configFields) {
+                  const sectionName = field.section || "Details";
+                  let section = sections.find((s) => s.name === sectionName);
+                  if (!section) { section = { name: sectionName, fields: [] }; sections.push(section); }
+                  section.fields.push(field);
+                }
+                return sections.map((section) => (
+                  <div key={section.name} className="space-y-4">
+                    <p className="text-[10px] font-medium text-white/40 uppercase tracking-[0.18em] pt-2 border-t border-white/[0.06]">{section.name}</p>
+                    {section.fields.map((field) => (
+                      <div key={field.id}>
+                        <Label className="text-xs font-medium text-white/60">{field.label}</Label>
+                        {field.description && <p className="text-[11px] text-white/40 mt-0.5">{field.description}</p>}
+
+                        {field.type === "text" && (
+                          <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : "")} className={inputClass} />
+                        )}
+                        {field.type === "number" && (
+                          <Input type="number" value={config[field.id] !== undefined ? String(config[field.id]) : ""} onChange={(e) => updateConfig(field.id, e.target.value === "" ? 0 : Number(e.target.value))} min={field.min} max={field.max} className={`${inputClass} w-32`} />
+                        )}
+                        {field.type === "time" && (
+                          <Input type="time" value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className={`${inputClass} w-40`} />
+                        )}
+                        {field.type === "textarea" && (
+                          <textarea value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || ""} rows={3} className={textareaClass} />
+                        )}
+                        {field.type === "toggle" && (
+                          <button type="button" onClick={() => updateConfig(field.id, !config[field.id])} className="mt-2 flex items-center gap-2.5">
+                            <div className={`w-11 h-6 rounded-full transition-all relative border ${config[field.id] ? "ah-gradient-bg border-violet-300/40" : "bg-white/[0.06] border-white/10"}`}>
+                              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${config[field.id] ? "translate-x-5" : "translate-x-0.5"}`} />
+                            </div>
+                            <span className="text-sm text-white/65">{config[field.id] ? "Yes" : "No"}</span>
+                          </button>
+                        )}
+                        {field.type === "select" && field.options && (
+                          <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50">
+                            <option value="" className="bg-[#0B1020]">Select…</option>
+                            {field.options.map((o) => <option key={o} value={o} className="bg-[#0B1020]">{o}</option>)}
+                          </select>
+                        )}
+                        {field.type === "multi-select" && field.options && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {field.options.map((o) => {
+                              const sel = ((config[field.id] as string[]) || []).includes(o);
+                              return (
+                                <button
+                                  key={o}
+                                  type="button"
+                                  onClick={() => toggleMulti(field.id, o)}
+                                  className={`px-3 py-1.5 rounded-xl text-sm transition-all border ${
+                                    sel
+                                      ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40 text-white"
+                                      : "bg-white/[0.03] border-white/10 text-white/55 hover:bg-white/[0.06] hover:text-white/85"
+                                  }`}
+                                >
+                                  {o}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ));
+              })()}
+
+              {template.id === "restaurant" && business?.agents[0] && (
+                <div className="space-y-3 border-t border-white/[0.06] pt-5">
+                  <p className="text-[10px] font-medium text-white/40 uppercase tracking-[0.18em]">Menu items</p>
+                  <p className="text-xs text-white/55 -mt-1">Add menu items so the agent can read them and take orders.</p>
+                  <MenuBuilder businessId={business.id} agentId={business.agents[0].id} />
+                </div>
+              )}
+
+              {template.id === "medical" && business?.agents[0] && (
+                <div className="space-y-3 border-t border-white/[0.06] pt-5">
+                  <p className="text-[10px] font-medium text-white/40 uppercase tracking-[0.18em]">Doctor roster</p>
+                  <p className="text-xs text-white/55 -mt-1">Add doctors so the agent can answer availability questions.</p>
+                  <DoctorRoster businessId={business.id} agentId={business.agents[0].id} />
+                </div>
+              )}
+            </GlassPanel>
+          </motion.div>
+        )}
+
+        {/* STEP 3 */}
+        {step === 3 && (
+          <motion.div key="step3" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35 }}>
+            <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-300/20 flex items-center justify-center">
+                  <BookOpen className="w-4 h-4 text-cyan-300" strokeWidth={2} />
+                </div>
+                <h2 className="font-semibold text-white text-lg tracking-tight">Add quick FAQs</h2>
+              </div>
+              <p className="text-xs text-white/55 -mt-3">Add common questions your customers ask. You can add more later.</p>
+
+              {template && (
+                <div>
+                  <p className="text-[11px] text-white/45 mb-2">Suggested for {template.name}:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {getSuggestedFaqs(template).map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { setNewFaqTitle(s.title); setNewFaqContent(s.content); }}
+                        className="text-xs px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-white/65 hover:bg-white/[0.08] hover:text-white hover:border-white/20 transition-all"
+                      >
+                        {s.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06] space-y-3">
+                <Input value={newFaqTitle} onChange={(e) => setNewFaqTitle(e.target.value)} placeholder="Question (e.g., What is check-in time?)" className={`${inputClass} mt-0`} />
+                <textarea value={newFaqContent} onChange={(e) => setNewFaqContent(e.target.value)} placeholder="Answer (e.g., Check-in is at 2:00 PM and check-out is at 11:00 AM)" rows={2} className={`${textareaClass} mt-0`} />
+                <GradientButton type="button" onClick={addFaq} disabled={!newFaqTitle.trim() || !newFaqContent.trim()} size="sm">
+                  <Plus className="w-3.5 h-3.5" /> Add FAQ
+                </GradientButton>
+              </div>
+
+              {faqs.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[11px] text-white/45">{faqs.length} FAQ{faqs.length !== 1 ? "s" : ""} ready to save</p>
+                  {faqs.map((faq, i) => (
+                    <div key={i} className="flex items-start justify-between bg-white/[0.03] rounded-2xl p-3.5 border border-white/[0.06]">
+                      <div className="min-w-0">
+                        <p className="text-sm text-white font-medium">{faq.title}</p>
+                        <p className="text-xs text-white/55 line-clamp-1">{faq.content}</p>
+                      </div>
+                      <button
+                        onClick={() => setFaqs((prev) => prev.filter((_, j) => j !== i))}
+                        className="p-1 text-white/40 hover:text-rose-300 shrink-0 ml-2 rounded transition-colors"
+                        aria-label="Remove FAQ"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </GlassPanel>
+          </motion.div>
+        )}
+
+        {/* STEP 4 */}
+        {step === 4 && (
+          <motion.div key="step4" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35 }}>
+            <GlassPanel elevation="floating" gradientBorder radius="lg" className="p-8 text-center space-y-6">
+              <div className="relative inline-block mx-auto">
+                <div className="w-16 h-16 rounded-2xl ah-gradient-bg flex items-center justify-center shadow-[0_8px_32px_-8px_rgba(124,58,237,0.6)]">
+                  <Check className="w-7 h-7 text-white" strokeWidth={2.5} />
+                </div>
+                <div className="absolute inset-0 ah-gradient-bg rounded-2xl blur-xl opacity-40 -z-10" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-white text-xl tracking-tight">Your agent is ready!</h2>
+                <p className="text-sm text-white/55 mt-1">Share this link with your customers</p>
+              </div>
+
+              <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/[0.06] flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <ExternalLink className="w-4 h-4 text-violet-300 shrink-0" />
+                  <span className="text-sm text-white/65 truncate font-mono">{publicUrl}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(publicUrl);
+                    setCopied(true);
+                    toast.success("Link copied!");
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="p-2 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] text-white/75 hover:text-white shrink-0 transition-all"
+                  aria-label="Copy link"
+                >
+                  {copied ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+
+              <div className="flex gap-3 justify-center flex-wrap">
+                <GradientButton href={publicUrl} external size="default">
+                  <ExternalLink className="w-4 h-4" /> Test your agent
+                </GradientButton>
+                <GradientButton onClick={() => router.push("/business/dashboard")} variant="outline" size="default">
+                  Go to dashboard
+                </GradientButton>
+              </div>
+
+              <p className="text-[11px] text-white/40">You can always customize your agent further from the dashboard.</p>
+            </GlassPanel>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Navigation buttons */}
       {step < TOTAL_STEPS && (
         <div className="flex items-center justify-between mt-6">
-          <Button
+          <GradientButton
             onClick={() => setStep((s) => Math.max(s - 1, 1))}
             disabled={step === 1}
             variant="outline"
-            className="border-[#2A2A3E] text-white disabled:opacity-30"
           >
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back
-          </Button>
+            <ArrowLeft className="w-4 h-4" /> Back
+          </GradientButton>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             {step === 3 && (
-              <Button onClick={handleFinish} variant="outline" className="border-[#2A2A3E] text-white">
-                Skip & Finish
-              </Button>
+              <GradientButton onClick={handleFinish} variant="outline">
+                Skip &amp; finish
+              </GradientButton>
             )}
-            <Button
+            <GradientButton
               onClick={handleNext}
               disabled={loading || (step === 1 && (!businessName.trim() || !industry))}
-              className="bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 hover:opacity-90"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Saving...
+                  Saving…
                 </span>
               ) : (
-                <>{step === 3 ? "Save & Continue" : "Next"} <ArrowRight className="w-4 h-4 ml-1" /></>
+                <>{step === 3 ? "Save & continue" : "Next"} <ArrowRight className="w-4 h-4" /></>
               )}
-            </Button>
+            </GradientButton>
           </div>
         </div>
       )}
@@ -585,7 +609,6 @@ export default function OnboardingPage() {
   );
 }
 
-/** Industry-specific FAQ suggestions */
 function getSuggestedFaqs(template: AgentTemplate): { title: string; content: string }[] {
   const suggestions: Record<string, { title: string; content: string }[]> = {
     hotel: [

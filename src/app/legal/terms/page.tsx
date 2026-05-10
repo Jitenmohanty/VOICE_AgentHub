@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Zap, ArrowLeft } from "lucide-react";
+import { LegalShell } from "@/components/legal/LegalShell";
 
 export const metadata = {
   title: "Terms & Conditions – AgentHub",
@@ -12,39 +12,8 @@ const CONTACT_EMAIL = "legal@agenthub.ai";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-[#F0F0F5]">
-      {/* Header */}
-      <header className="border-b border-[#2A2A3E] bg-[#0E0E16]/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-[#8888AA] hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back to home</span>
-          </Link>
-          <div className="flex-1" />
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-bold text-white text-sm">AgentHub</span>
-          </Link>
-        </div>
-      </header>
-
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-white mb-3">
-            Terms &amp; Conditions
-          </h1>
-          <p className="text-[#8888AA] text-sm">
-            Effective date: {EFFECTIVE_DATE}
-          </p>
-        </div>
-
-        <div className="space-y-10 text-[#C0C0D8] leading-relaxed">
+    <LegalShell title="Terms & Conditions" subtitle={`Effective date: ${EFFECTIVE_DATE}`}>
+      <>
 
           {/* 1 */}
           <section>
@@ -374,30 +343,20 @@ export default function TermsPage() {
             <p>
               If you have questions about these Terms, please contact us at:
             </p>
-            <div className="mt-3 p-4 rounded-xl border border-[#2A2A3E] bg-[#0E0E16]">
+            <div className="mt-3 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.03]">
               <p className="text-white font-medium">AgentHub</p>
               <p className="mt-1">
                 Email:{" "}
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  className="text-[#00D4FF] hover:underline"
+                  className="ah-gradient-text font-medium hover:opacity-80"
                 >
                   {CONTACT_EMAIL}
                 </a>
               </p>
             </div>
           </section>
-        </div>
-
-        {/* Footer nav */}
-        <div className="mt-16 pt-8 border-t border-[#2A2A3E] flex flex-wrap gap-6 text-sm text-[#8888AA]">
-          <Link href="/" className="hover:text-white transition-colors">Home</Link>
-          <Link href="/legal/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-          <Link href="/legal/cookies" className="hover:text-white transition-colors">Cookie Policy</Link>
-          <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
-          <span>© {new Date().getFullYear()} AgentHub</span>
-        </div>
-      </main>
-    </div>
+      </>
+    </LegalShell>
   );
 }

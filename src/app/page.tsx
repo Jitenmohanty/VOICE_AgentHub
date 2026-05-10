@@ -10,7 +10,7 @@ import { CTA } from "@/components/landing/CTA";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0A0A0F]">
+    <main className="min-h-screen bg-[#050816]">
       <Navbar />
       <Hero />
       <AgentShowcase />
@@ -19,21 +19,23 @@ export default function Home() {
       <Features />
       <Pricing />
       <CTA />
-      <footer className="py-8 px-6 border-t border-[#2A2A3E]">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[#8888AA]">
-          <span>© {new Date().getFullYear()} AgentHub. Powered by Google Gemini &amp; Claude AI.</span>
+      <footer className="py-12 px-6 border-t border-white/[0.06] mt-12">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-white/50">
+          <span className="text-white/40">
+            © {new Date().getFullYear()} AgentHub · Powered by Gemini &amp; Claude
+          </span>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link href="/legal/privacy" className="hover:text-white transition-colors">
-              Privacy Policy
+              Privacy
             </Link>
             <Link href="/legal/terms" className="hover:text-white transition-colors">
-              Terms &amp; Conditions
+              Terms
             </Link>
             <Link href="/legal/cookies" className="hover:text-white transition-colors">
-              Cookie Policy
+              Cookies
             </Link>
             <Link href="/contact" className="hover:text-white transition-colors">
-              Contact &amp; Support
+              Contact
             </Link>
           </div>
         </div>

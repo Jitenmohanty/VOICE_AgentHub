@@ -4,12 +4,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ──────────────────────────────────────────────────────────────────────────
+   AgentHub design system — WisprType-inspired premium dark theme.
+
+   Palette:
+     • Background:   #050816 (deep) / #0B1020 (raised)
+     • Surface:      rgba(255,255,255,0.05)
+     • Borders:      rgba(255,255,255,0.08)
+     • Primary:      #7C3AED → #3B82F6 → #06B6D4 (purple → blue → cyan)
+     • Text:         #FFFFFF / rgba(255,255,255,0.65)
+
+   Tokens are exposed as both CSS custom properties (for inline `style={{...}}`
+   usage) and Tailwind theme variables (for `bg-[var(--ah-...)]` usage).
+   ────────────────────────────────────────────────────────────────────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -81,6 +94,24 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* AgentHub design tokens — referenced from styles + components */
+  --ah-bg-deep: #050816;
+  --ah-bg-raised: #0B1020;
+  --ah-surface: rgba(255, 255, 255, 0.05);
+  --ah-surface-strong: rgba(255, 255, 255, 0.07);
+  --ah-border: rgba(255, 255, 255, 0.08);
+  --ah-border-strong: rgba(255, 255, 255, 0.14);
+  --ah-text-primary: #FFFFFF;
+  --ah-text-secondary: rgba(255, 255, 255, 0.65);
+  --ah-text-muted: rgba(255, 255, 255, 0.45);
+
+  /* Brand gradient stops — used everywhere */
+  --ah-grad-violet: #7C3AED;
+  --ah-grad-blue: #3B82F6;
+  --ah-grad-cyan: #06B6D4;
+  --ah-gradient: linear-gradient(135deg, #7C3AED 0%, #3B82F6 50%, #06B6D4 100%);
+  --ah-gradient-soft: linear-gradient(135deg, rgba(124, 58, 237, 0.18), rgba(59, 130, 246, 0.18), rgba(6, 182, 212, 0.18));
 }
 
 .dark {
@@ -123,62 +154,218 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Subtle aurora wash — sits below every page so even legacy screens
+       inherit the new feel without per-page work. */
+    background-color: var(--ah-bg-deep);
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124, 58, 237, 0.18), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 20%, rgba(59, 130, 246, 0.12), transparent 60%),
+      radial-gradient(ellipse 60% 60% at 10% 110%, rgba(6, 182, 212, 0.10), transparent 60%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
   }
   html {
     @apply font-sans;
   }
+  ::selection {
+    background: rgba(124, 58, 237, 0.35);
+    color: #fff;
+  }
 }
 
-/* AgentHub Custom Styles */
+/* ──────────────────────────────────────────────────────────────────────────
+   Glassmorphism — the workhorse surface treatment.
+   `glass` keeps backwards compatibility with existing pages.
+   `glass-raised` and `glass-floating` are higher-elevation variants.
+   ────────────────────────────────────────────────────────────────────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--ah-surface);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid var(--ah-border);
 }
 
+.glass-raised {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(11, 16, 32, 0.55);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid var(--ah-border-strong);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+    0 24px 48px -24px rgba(2, 6, 23, 0.6);
+}
+
+.glass-floating {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    rgba(11, 16, 32, 0.7);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.08) inset,
+    0 32px 80px -32px rgba(2, 6, 23, 0.8),
+    0 0 80px -20px rgba(124, 58, 237, 0.15);
+}
+
+/* Animated gradient border — wrap any element in `.gradient-border` to give
+   it a 1px conic gradient stroke that subtly rotates. Use the `.static`
+   modifier to disable the animation (useful for hover-only triggers). */
+.gradient-border {
+  position: relative;
+  isolation: isolate;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--gradient-angle, 0deg),
+    #7C3AED,
+    #3B82F6,
+    #06B6D4,
+    #3B82F6,
+    #7C3AED
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.7;
+  animation: gradient-rotate 8s linear infinite;
+}
+.gradient-border.static::before {
+  animation: none;
+  opacity: 0.5;
+}
+
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes gradient-rotate {
+  from { --gradient-angle: 0deg; }
+  to   { --gradient-angle: 360deg; }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Glow utilities — soft, layered shadows for premium depth.
+   Pre-composed for the brand gradient so we don't repeat the boxShadow blob.
+   ────────────────────────────────────────────────────────────────────────── */
+.glow-aurora {
+  box-shadow:
+    0 0 40px -8px rgba(124, 58, 237, 0.35),
+    0 0 80px -16px rgba(59, 130, 246, 0.25),
+    0 0 120px -24px rgba(6, 182, 212, 0.18);
+}
+.glow-violet {
+  box-shadow: 0 0 24px rgba(124, 58, 237, 0.25), 0 0 64px -8px rgba(124, 58, 237, 0.12);
+}
+.glow-blue {
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.25), 0 0 64px -8px rgba(59, 130, 246, 0.12);
+}
 .glow-cyan {
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15), 0 0 60px rgba(0, 212, 255, 0.05);
+  box-shadow: 0 0 24px rgba(6, 182, 212, 0.25), 0 0 64px -8px rgba(6, 182, 212, 0.12);
 }
 
-.glow-amber {
-  box-shadow: 0 0 20px rgba(255, 184, 0, 0.15), 0 0 60px rgba(255, 184, 0, 0.05);
+/* Brand gradient text — apply as `<span class="ah-gradient-text">…</span>`. */
+.ah-gradient-text {
+  background: var(--ah-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
+/* Brand gradient surface — inverse: solid gradient fill (CTAs, badges). */
+.ah-gradient-bg {
+  background: var(--ah-gradient);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Motion primitives — keyframes shared across the app.
+   ────────────────────────────────────────────────────────────────────────── */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50%      { transform: translateY(-10px); }
 }
-
+@keyframes float-slow {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(0, -28px, 0) scale(1.03); }
+}
 @keyframes pulse-ring {
-  0% { transform: scale(1); opacity: 1; }
+  0%   { transform: scale(1); opacity: 1; }
   100% { transform: scale(1.5); opacity: 0; }
 }
-
 @keyframes wave-bar {
   0%, 100% { height: 4px; }
-  50% { height: 24px; }
+  50%      { height: 24px; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes aurora-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  33%      { transform: translate3d(40px, -20px, 0); }
+  66%      { transform: translate3d(-30px, 20px, 0); }
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.animate-float       { animation: float 3s ease-in-out infinite; }
+.animate-float-slow  { animation: float-slow 14s ease-in-out infinite; }
+.animate-pulse-ring  { animation: pulse-ring 1.5s ease-out infinite; }
+.animate-aurora      { animation: aurora-drift 22s ease-in-out infinite; }
+
+.shimmer {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.08) 50%,
+      transparent 70%
+    );
+  background-size: 200% 100%;
+  animation: shimmer 2.4s linear infinite;
 }
 
-.animate-pulse-ring {
-  animation: pulse-ring 1.5s ease-out infinite;
-}
-
-/* Scrollbar styling for dark theme */
+/* ──────────────────────────────────────────────────────────────────────────
+   Scrollbar — slim, brand-tinted on hover.
+   ────────────────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.5), rgba(6, 182, 212, 0.5));
+  background-clip: content-box;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Focus ring — gradient instead of solid color, matches premium feel.
+   ────────────────────────────────────────────────────────────────────────── */
+.ah-focus-ring:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(11, 16, 32, 1),
+    0 0 0 4px rgba(124, 58, 237, 0.6);
 }

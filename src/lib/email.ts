@@ -1,14 +1,75 @@
 import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
 import { traceable } from "langsmith/traceable";
 import { getAppUrl } from "@/lib/url";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Use Resend's shared domain in dev, your verified domain in production
-const FROM =
-  process.env.NODE_ENV === "development"
+// In dev we'd rather send through Gmail (Nodemailer + App Password) so we
+// can deliver to ANY recipient — Resend's shared `onboarding@resend.dev`
+// only allows sending to the Resend account owner. The Gmail path activates
+// as soon as GMAIL_SENDER + GMAIL_APP_PASSWORD are set in dev.
+const useGmail =
+  process.env.NODE_ENV === "development" &&
+  !!process.env.GMAIL_SENDER &&
+  !!process.env.GMAIL_APP_PASSWORD;
+
+const FROM = useGmail
+  ? `AgentHub <${process.env.GMAIL_SENDER}>`
+  : process.env.NODE_ENV === "development"
     ? "AgentHub <onboarding@resend.dev>"
     : "AgentHub <noreply@agenthub.ai>";
+
+let gmailTransport: Transporter | null = null;
+function getGmailTransport(): Transporter {
+  if (!gmailTransport) {
+    // Gmail displays app passwords as "abcd efgh ijkl mnop" but the real
+    // credential is the 16 chars with no whitespace. Strip defensively so
+    // either form works in .env.local. Same for the sender address.
+    const user = process.env.GMAIL_SENDER!.trim();
+    const pass = process.env.GMAIL_APP_PASSWORD!.replace(/\s+/g, "");
+    gmailTransport = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user, pass },
+    });
+  }
+  return gmailTransport;
+}
+
+type SendResult = {
+  data: { id: string } | null;
+  error: { message: string; name?: string; statusCode?: number } | null;
+};
+
+async function sendMail(opts: {
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<SendResult> {
+  if (useGmail) {
+    console.log(`[Email] using Gmail transport → ${opts.to}`);
+    try {
+      const info = await getGmailTransport().sendMail(opts);
+      return { data: { id: info.messageId }, error: null };
+    } catch (err) {
+      const e = err as Error;
+      return { data: null, error: { message: e.message, name: e.name } };
+    }
+  }
+  console.log(`[Email] using Resend transport → ${opts.to}`);
+  const result = await resend.emails.send(opts);
+  return {
+    data: result.data ? { id: result.data.id } : null,
+    error: result.error
+      ? {
+          message: result.error.message,
+          name: result.error.name,
+        }
+      : null,
+  };
+}
+
 const BASE_URL = getAppUrl();
 
 // ── Shared HTML shell ─────────────────────────────────────────────────────────
@@ -147,7 +208,7 @@ export async function sendWelcomeEmail(opts: {
     </p>
   `);
 
-  return resend.emails.send({
+  return sendMail({
     from: FROM,
     to: opts.to,
     subject: `Welcome to AgentHub — your ${industryLabel} AI agent is ready`,
@@ -194,7 +255,7 @@ export async function sendVerificationEmail(opts: {
     </table>
   `);
 
-  const result = await resend.emails.send({
+  const result = await sendMail({
     from: FROM,
     to: opts.to,
     subject: "Verify your email — AgentHub",
@@ -270,7 +331,7 @@ export async function sendQuotaWarningEmail(opts: QuotaWarningEmailOpts) {
     ? `Quota reached — ${opts.businessName} calls are being declined`
     : `${opts.threshold}% of monthly quota — ${opts.businessName}`;
 
-  return resend.emails.send({
+  return sendMail({
     from: FROM,
     to: opts.to,
     subject,
@@ -416,7 +477,7 @@ export const sendLeadCaptureEmail = traceable(
     : "new caller";
   const callerLabel = opts.caller.name || "anonymous caller";
 
-  return resend.emails.send({
+  return sendMail({
     from: FROM,
     to: opts.to,
     subject: `New lead from ${opts.agentName} — ${callerLabel}: ${subjectIntent}`,
@@ -465,7 +526,7 @@ export async function sendPasswordResetEmail(opts: {
     </table>
   `);
 
-  return resend.emails.send({
+  return sendMail({
     from: FROM,
     to: opts.to,
     subject: "Reset your AgentHub password",

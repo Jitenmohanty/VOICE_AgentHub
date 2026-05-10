@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, Zap, Mic, MicOff, PhoneOff, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Phone, Sparkles, Mic, MicOff, PhoneOff, Clock } from "lucide-react";
+import { GradientButton } from "@/components/ui/gradient-button";
+import { GlassPanel } from "@/components/ui/glass-panel";
 import { GeminiLiveSession } from "@/lib/gemini/live-session";
 import { useAudioStream } from "@/hooks/useAudioStream";
 import { AgentAvatar } from "@/components/agent/AgentAvatar";
@@ -302,8 +303,8 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
   // ── Loading ──
   if (loading) {
     return (
-      <div className={`${rootHeight} flex items-center justify-center bg-[#0A0A0F]`}>
-        <div className="w-8 h-8 border-2 border-[#00D4FF]/30 border-t-[#00D4FF] rounded-full animate-spin" />
+      <div className={`${rootHeight} flex items-center justify-center bg-[#050816]`}>
+        <div className="w-8 h-8 border-2 border-violet-300/30 border-t-violet-300 rounded-full animate-spin" />
       </div>
     );
   }
@@ -311,12 +312,12 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
   // ── Not found ──
   if (notFound || !agentInfo || !businessInfo) {
     return (
-      <div className={`${rootHeight} flex flex-col items-center justify-center bg-[#0A0A0F] text-center px-6`}>
-        <div className="w-16 h-16 rounded-full bg-[#2A2A3E] flex items-center justify-center mb-4">
-          <Phone className="w-7 h-7 text-[#8888AA]" />
+      <div className={`${rootHeight} flex flex-col items-center justify-center bg-[#050816] text-center px-6`}>
+        <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-4">
+          <Phone className="w-6 h-6 text-white/40" strokeWidth={1.75} />
         </div>
-        <h1 className="text-xl font-bold text-white mb-2">Agent Not Found</h1>
-        <p className="text-sm text-[#8888AA] max-w-xs">
+        <h1 className="text-xl font-semibold tracking-tight text-white mb-2">Agent not found</h1>
+        <p className="text-sm text-white/55 max-w-xs">
           This link is invalid or the agent has been deactivated.
         </p>
       </div>
@@ -329,31 +330,47 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
 
   return (
     <div
-      className={`${rootHeight} flex flex-col overflow-hidden`}
-      style={{ background: `radial-gradient(ellipse at top, ${accentColor}06, #0A0A0F 50%)` }}
+      className={`${rootHeight} flex flex-col overflow-hidden relative`}
+      style={{
+        background: `radial-gradient(ellipse 80% 50% at 50% 0%, ${accentColor}10, transparent 60%), #050816`,
+      }}
     >
+      {/* Soft aurora orbs — fixed, low opacity */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute -top-32 -left-20 w-80 h-80 rounded-full blur-3xl opacity-25"
+          style={{ background: `${accentColor}` }}
+        />
+        <div className="absolute -bottom-32 -right-20 w-80 h-80 rounded-full blur-3xl opacity-15 bg-cyan-500" />
+      </div>
+
       {/* ── Header (standalone only) ── */}
       {!isEmbed && (
-        <header className="shrink-0 flex items-center justify-center px-4 py-3 md:py-4 border-b border-white/4">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: `${accentColor}15` }}
-            >
-              <Zap className="w-4 h-4" style={{ color: accentColor }} />
+        <header className="relative shrink-0 flex items-center justify-center px-4 py-4 border-b border-white/[0.06]">
+          <div className="flex items-center gap-2.5">
+            <div className="relative">
+              <div
+                className="w-8 h-8 rounded-2xl flex items-center justify-center"
+                style={{
+                  background: `linear-gradient(135deg, ${accentColor}40, ${accentColor}10)`,
+                  border: `1px solid ${accentColor}30`,
+                }}
+              >
+                <Sparkles className="w-3.5 h-3.5" style={{ color: accentColor }} strokeWidth={2.5} />
+              </div>
             </div>
             <div className="text-center">
-              <p className="font-(family-name:--font-heading) font-semibold text-white text-sm leading-tight">
+              <p className="font-semibold tracking-tight text-white text-sm leading-tight">
                 {businessInfo.name}
               </p>
-              <p className="text-[10px] text-[#8888AA] leading-tight">{agentInfo.name}</p>
+              <p className="text-[10px] text-white/45 leading-tight">{agentInfo.name}</p>
             </div>
           </div>
         </header>
       )}
 
       {/* ── Main content ── */}
-      <main className={`flex-1 flex flex-col min-h-0 w-full max-w-lg mx-auto px-4 ${isEmbed ? "py-3" : "py-4 md:py-6"}`}>
+      <main className={`relative flex-1 flex flex-col min-h-0 w-full max-w-lg mx-auto px-4 ${isEmbed ? "py-3" : "py-4 md:py-6"}`}>
         <AnimatePresence mode="sync">
 
           {/* ── Idle state ── */}
@@ -461,24 +478,20 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
                     isSpeaking={false}
                   />
                   <div className="text-center">
-                    <h2 className="text-lg md:text-xl font-semibold text-white mb-2 px-4">
+                    <h2 className="text-lg md:text-xl font-semibold tracking-tight text-white mb-2 px-4">
                       {agentInfo.greeting || `Talk to ${agentInfo.name}`}
                     </h2>
-                    <p className="text-sm text-[#8888AA] max-w-xs mx-auto">
+                    <p className="text-sm text-white/55 max-w-xs mx-auto leading-relaxed">
                       {isEmbed
                         ? `Tap below to talk to ${businessInfo.name}'s assistant. No sign-up needed.`
-                        : "Tap the button below to start a voice conversation. No sign-up needed."}
+                        : "Tap below to start a voice conversation. No sign-up needed."}
                     </p>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <Button
-                      onClick={() => connect()}
-                      className="px-8 py-3 text-white border-0 hover:opacity-90 text-base"
-                      style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
-                    >
-                      <Phone className="w-5 h-5 mr-2" /> Start Call
-                    </Button>
-                    <span className="text-xs text-[#8888AA]">Free · 9 min per call</span>
+                    <GradientButton onClick={() => connect()} size="lg">
+                      <Phone className="w-4 h-4" /> Start call
+                    </GradientButton>
+                    <span className="text-[11px] text-white/40">Free · 9 min per call</span>
                   </div>
                 </>
               )}
@@ -522,15 +535,15 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
                 </div>
               </div>
 
-              <div className="flex-1 min-h-0 glass rounded-2xl p-3 md:p-4 flex flex-col">
+              <GlassPanel elevation="raised" radius="lg" className="flex-1 min-h-0 p-3.5 md:p-4 flex flex-col">
                 <TranscriptPanel messages={transcript} accentColor={accentColor} />
-              </div>
+              </GlassPanel>
 
               {isConnected && showEndingWarning && (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400 text-xs font-medium"
+                  className="shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/10 border border-amber-300/25 text-amber-300 text-xs font-medium"
                 >
                   <Clock className="w-3.5 h-3.5" />
                   Call ending in {fmtTime(remaining)}
@@ -541,26 +554,28 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
                 <div className="shrink-0 flex items-center justify-center gap-5 py-2">
                   <button
                     onClick={() => setMuted(!isMuted)}
-                    className="w-12 h-12 rounded-full flex items-center justify-center border transition-colors"
-                    style={{
-                      backgroundColor: isMuted ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.05)",
-                      borderColor: isMuted ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.08)",
-                    }}
+                    aria-label={isMuted ? "Unmute" : "Mute"}
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all ${
+                      isMuted
+                        ? "bg-rose-500/15 border-rose-300/40 hover:bg-rose-500/25"
+                        : "bg-white/[0.05] border-white/10 hover:bg-white/[0.09] hover:border-white/20"
+                    }`}
                   >
-                    {isMuted ? <MicOff className="w-5 h-5 text-red-400" /> : <Mic className="w-5 h-5 text-white" />}
+                    {isMuted ? <MicOff className="w-5 h-5 text-rose-300" /> : <Mic className="w-5 h-5 text-white" />}
                   </button>
 
                   <button
                     onClick={handleEndCall}
-                    className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-colors shadow-lg shadow-red-500/20"
+                    aria-label="End call"
+                    className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 hover:from-rose-400 hover:to-rose-500 flex items-center justify-center transition-all shadow-[0_8px_24px_-8px_rgba(244,63,94,0.6)] hover:shadow-[0_12px_32px_-8px_rgba(244,63,94,0.7)] hover:scale-105 active:scale-95"
                   >
                     <PhoneOff className="w-6 h-6 text-white" />
                   </button>
 
                   <div className="w-12 h-12 flex items-center justify-center">
                     <span
-                      className="flex items-center gap-1 text-sm tabular-nums transition-colors"
-                      style={{ color: remaining <= 60 ? "#f59e0b" : "#8888AA" }}
+                      className="flex items-center gap-1 text-xs font-mono tabular-nums transition-colors"
+                      style={{ color: remaining <= 60 ? "#fbbf24" : "rgba(255,255,255,0.55)" }}
                     >
                       <Clock className="w-3.5 h-3.5" />
                       {fmtTime(remaining)}
@@ -571,13 +586,9 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
 
               {isDisconnected && transcript.length > 0 && (
                 <div className="shrink-0 flex justify-center gap-3 py-2">
-                  <Button
-                    onClick={() => { setPreCallDone(false); setCandidateContext(null); }}
-                    className="text-white border-0 hover:opacity-90"
-                    style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
-                  >
-                    <Phone className="w-4 h-4 mr-2" /> Call Again
-                  </Button>
+                  <GradientButton onClick={() => { setPreCallDone(false); setCandidateContext(null); }} size="default">
+                    <Phone className="w-4 h-4" /> Call again
+                  </GradientButton>
                 </div>
               )}
             </motion.div>
@@ -591,20 +602,19 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
               animate={{ opacity: 1 }}
               className="flex-1 flex flex-col items-center justify-center text-center gap-4 px-4"
             >
-              <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
-                <PhoneOff className="w-6 h-6 text-red-400" />
+              <div className="w-14 h-14 rounded-2xl bg-rose-500/15 border border-rose-300/20 flex items-center justify-center">
+                <PhoneOff className="w-6 h-6 text-rose-300" />
               </div>
               <div>
-                <p className="text-red-400 font-medium mb-1">Connection Error</p>
-                <p className="text-[#8888AA] text-sm max-w-xs mx-auto">{error}</p>
+                <p className="text-rose-300 font-medium mb-1">Connection error</p>
+                <p className="text-sm text-white/55 max-w-xs mx-auto">{error}</p>
               </div>
-              <Button
+              <GradientButton
                 onClick={() => { setError(null); setPreCallDone(false); setCandidateContext(null); }}
-                className="text-white border-0 hover:opacity-90"
-                style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}CC)` }}
+                size="default"
               >
                 Retry
-              </Button>
+              </GradientButton>
             </motion.div>
           )}
 
@@ -612,8 +622,8 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
       </main>
 
       {/* ── Footer ── */}
-      <footer className={`shrink-0 flex items-center justify-center text-[10px] text-[#666680] ${isEmbed ? "py-1" : "py-2"}`}>
-        Powered by <span className="font-medium text-[#8888AA] ml-1">AgentHub</span>
+      <footer className={`relative shrink-0 flex items-center justify-center text-[10px] text-white/35 ${isEmbed ? "py-1.5" : "py-2.5"}`}>
+        Powered by <span className="ah-gradient-text font-medium ml-1">AgentHub</span>
       </footer>
 
       {/* ── Rating modal ── */}

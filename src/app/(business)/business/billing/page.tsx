@@ -13,7 +13,6 @@ export default async function BillingPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  // Show billing for the user's first business (single-business per owner today).
   const business = await prisma.business.findFirst({
     where: { ownerId: session.user.id },
     select: { id: true, name: true },
@@ -33,95 +32,115 @@ export default async function BillingPage() {
     year: "numeric",
   });
 
-  // Format helpers — currency depends on which provider is configured.
   const fmtUsd = (cents: number) => `$${(cents / 100).toFixed(0)}`;
   const fmtInr = (paise: number) => `₹${(paise / 100).toLocaleString("en-IN")}`;
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4 space-y-8">
+    <div className="max-w-4xl mx-auto p-6 md:p-10 space-y-8">
       <div>
-        <h1 className="font-(family-name:--font-heading) text-2xl font-bold text-white mb-1">Billing</h1>
-        <p className="text-sm text-[#8888AA]">{business.name}</p>
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Billing</p>
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Plans &amp; usage</h1>
+        <p className="text-sm text-white/55 mt-1.5">{business.name}</p>
       </div>
 
-      {/* ── Current usage ── */}
-      <section className="glass rounded-2xl p-6 space-y-4">
+      {/* Current usage */}
+      <section className="glass-raised rounded-3xl p-7 space-y-5">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-[#666680] uppercase tracking-wider">Current plan</p>
-            <p className="text-xl font-semibold text-white capitalize">
+            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/40">Current plan</p>
+            <p className="text-2xl font-semibold tracking-tight text-white capitalize mt-1.5 inline-flex items-center gap-2">
               {snapshot.planId}
               {sub?.status && sub.status !== "active" && (
-                <span className="ml-2 text-xs px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 align-middle">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-300/20 capitalize align-middle font-medium">
                   {sub.status}
                 </span>
               )}
             </p>
           </div>
-          <p className="text-xs text-[#666680]">{periodLabel}</p>
+          <p className="text-xs text-white/40">{periodLabel}</p>
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1.5">
-            <span className="text-white">{snapshot.usedMinutes} / {snapshot.monthlyMinutes} min</span>
-            <span className="text-[#8888AA]">{snapshot.remainingMinutes} min left</span>
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-white tabular-nums">
+              <span className="font-semibold">{snapshot.usedMinutes}</span>
+              <span className="text-white/45"> / {snapshot.monthlyMinutes} min</span>
+            </span>
+            <span className="text-white/55 tabular-nums">{snapshot.remainingMinutes} min left</span>
           </div>
-          <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+          <div className="h-2 rounded-full bg-white/[0.05] overflow-hidden">
             <div
-              className="h-full transition-all"
+              className="h-full rounded-full transition-all duration-500"
               style={{
-                width: `${snapshot.percentUsed}%`,
+                width: `${Math.min(100, snapshot.percentUsed)}%`,
                 background:
                   snapshot.percentUsed >= 100
-                    ? "#EF4444"
+                    ? "linear-gradient(90deg, #F43F5E, #FB7185)"
                     : snapshot.percentUsed >= 80
-                      ? "#F59E0B"
-                      : "linear-gradient(90deg, #00D4FF, #6366F1)",
+                      ? "linear-gradient(90deg, #F59E0B, #FCD34D)"
+                      : "linear-gradient(90deg, #7C3AED, #3B82F6, #06B6D4)",
               }}
             />
           </div>
-          <p className="text-xs text-[#666680] mt-2">
+          <p className="text-[11px] text-white/40 mt-2.5 leading-relaxed">
             Period: {snapshot.periodStart.toUTCString().split(",")[1]?.trim()} → today (UTC).
             Counts every completed call against the cap; overflow is rejected with a 429.
           </p>
         </div>
       </section>
 
-      {/* ── Plan picker ── */}
+      {/* Plan picker */}
       <section>
-        <h2 className="text-lg font-semibold text-white mb-4">Plans</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-white mb-4">Plans</h2>
         <div className="grid md:grid-cols-3 gap-4">
           {plans.map((plan) => {
             const isCurrent = plan.id === snapshot.planId;
             return (
               <div
                 key={plan.id}
-                className={`glass rounded-2xl p-5 flex flex-col ${isCurrent ? "ring-1 ring-[#00D4FF]" : ""}`}
+                className={`relative glass-raised rounded-3xl p-6 flex flex-col ${
+                  isCurrent ? "border-violet-300/40" : ""
+                }`}
+                style={isCurrent ? { boxShadow: "0 0 24px -8px rgba(124,58,237,0.4)" } : undefined}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <p className="font-semibold text-white">{plan.name}</p>
+                  <p className="font-semibold text-white tracking-tight">{plan.name}</p>
                   {isCurrent && (
-                    <span className="text-[10px] uppercase tracking-wider text-[#00D4FF]">Current</span>
+                    <span className="text-[10px] uppercase tracking-[0.18em] ah-gradient-text font-semibold">
+                      Current
+                    </span>
                   )}
                 </div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-3xl font-semibold tracking-[-0.03em] text-white">
                   {plan.priceCents > 0 ? fmtUsd(plan.priceCents) : "Free"}
                   {plan.priceInrPaise && plan.priceInrPaise > 0 && (
-                    <span className="text-sm font-normal text-[#8888AA] ml-2">
+                    <span className="text-sm font-normal text-white/50 ml-2">
                       / {fmtInr(plan.priceInrPaise)}
                     </span>
                   )}
                   {plan.priceCents > 0 && (
-                    <span className="text-sm font-normal text-[#8888AA]"> / mo</span>
+                    <span className="text-sm font-normal text-white/50"> / mo</span>
                   )}
                 </p>
-                <ul className="text-sm text-[#C0C0D8] mt-4 space-y-1.5">
-                  <li>• {plan.monthlyMinutes} call minutes / month</li>
-                  <li>• Up to {plan.maxAgents} agent{plan.maxAgents === 1 ? "" : "s"}</li>
-                  <li>• Email lead delivery</li>
-                  <li>• Embed widget</li>
+                <ul className="text-sm text-white/75 mt-4 space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-violet-300 mt-2 shrink-0" />
+                    {plan.monthlyMinutes} call minutes / month
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-violet-300 mt-2 shrink-0" />
+                    Up to {plan.maxAgents} agent{plan.maxAgents === 1 ? "" : "s"}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-violet-300 mt-2 shrink-0" />
+                    Email lead delivery
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1 h-1 rounded-full bg-violet-300 mt-2 shrink-0" />
+                    Embed widget
+                  </li>
                 </ul>
-                <div className="mt-5 space-y-2">
+                <div className="mt-6 space-y-2">
                   <BillingActions
                     businessId={business.id}
                     planId={plan.id}
@@ -140,14 +159,14 @@ export default async function BillingPage() {
       </section>
 
       {!stripeReady && !razorpayReady && (
-        <p className="text-xs text-[#666680] text-center">
+        <p className="text-[11px] text-white/40 text-center leading-relaxed">
           No payment provider is configured on this server — paid plans are visible but cannot be purchased.
-          Set <code className="text-[#00D4FF]">STRIPE_SECRET_KEY</code> (or <code className="text-[#00D4FF]">RAZORPAY_KEY_ID</code> + secret) plus per-plan IDs to enable checkout.
+          Set <code className="ah-gradient-text font-mono">STRIPE_SECRET_KEY</code> (or <code className="ah-gradient-text font-mono">RAZORPAY_KEY_ID</code> + secret) plus per-plan IDs to enable checkout.
         </p>
       )}
 
       <div className="text-center">
-        <Link href="/business/dashboard" className="text-sm text-[#8888AA] hover:text-white">
+        <Link href="/business/dashboard" className="text-sm text-white/55 hover:text-white transition-colors">
           ← Back to dashboard
         </Link>
       </div>

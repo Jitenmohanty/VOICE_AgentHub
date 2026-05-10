@@ -4,11 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, Star, MessageSquare, ChevronLeft, ChevronRight, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { SessionDetailModal } from "@/components/dashboard/SessionDetailModal";
 import { formatIST } from "@/lib/format-date";
 import Link from "next/link";
 import type { AgentSessionData } from "@/types/session";
+import { GlassPanel } from "@/components/ui/glass-panel";
 
 const PAGE_SIZE = 10;
 
@@ -40,15 +40,19 @@ export default function AgentSessionsPage() {
   useEffect(() => { fetchSessions(1); }, [fetchSessions]);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <Link href={`/business/agents/${agentId}?bid=${businessId}`} className="flex items-center gap-1 text-sm text-[#8888AA] hover:text-white mb-4">
-          <ArrowLeft className="w-4 h-4" /> Back to Agent
+    <div className="max-w-4xl mx-auto p-6 md:p-10">
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-7">
+        <Link
+          href={`/business/agents/${agentId}?bid=${businessId}`}
+          className="inline-flex items-center gap-1.5 text-sm text-white/55 hover:text-white mb-4 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to agent
         </Link>
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-(family-name:--font-heading) text-2xl font-bold text-white">Session History</h1>
-            <p className="text-sm text-[#8888AA]">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">History</p>
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-white">Session history</h1>
+            <p className="text-sm text-white/55 mt-1">
               {total > 0 ? `${total} total conversations` : "No conversations yet"}
             </p>
           </div>
@@ -56,7 +60,7 @@ export default function AgentSessionsPage() {
             <a
               href={`/api/business/${businessId}/leads/export`}
               download
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-white/5 hover:bg-white/10 border border-[#2A2A3E] text-white transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-white transition-all"
             >
               <Download className="w-3.5 h-3.5" /> Export CSV
             </a>
@@ -67,17 +71,17 @@ export default function AgentSessionsPage() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="glass rounded-xl p-5 animate-pulse">
-              <div className="h-5 w-1/3 bg-white/5 rounded mb-2" />
-              <div className="h-4 w-2/3 bg-white/5 rounded" />
+            <div key={i} className="glass rounded-2xl p-5 animate-pulse">
+              <div className="h-5 w-1/3 bg-white/[0.06] rounded mb-2" />
+              <div className="h-4 w-2/3 bg-white/[0.06] rounded" />
             </div>
           ))}
         </div>
       ) : sessions.length === 0 ? (
-        <div className="text-center py-16">
-          <MessageSquare className="w-16 h-16 text-[#8888AA]/30 mx-auto mb-4" />
-          <p className="text-[#8888AA]">No sessions yet</p>
-        </div>
+        <GlassPanel elevation="subtle" radius="lg" className="text-center py-16 px-6">
+          <MessageSquare className="w-12 h-12 text-white/15 mx-auto mb-4" strokeWidth={1.5} />
+          <p className="text-white/65">No sessions yet</p>
+        </GlassPanel>
       ) : (
         <>
           <div className="space-y-3">
@@ -86,47 +90,56 @@ export default function AgentSessionsPage() {
               return (
                 <motion.div
                   key={session.id}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04 }}
+                  transition={{ delay: i * 0.04, duration: 0.4 }}
                   onClick={() => setSelectedId(session.id)}
-                  className="glass rounded-xl p-5 cursor-pointer hover:bg-white/[0.04] transition-colors group"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-medium text-white text-sm">
-                        {session.title || "Voice Session"}
-                      </h4>
-                      <div className="flex items-center gap-4 mt-1 text-xs text-[#8888AA]">
-                        <span>{formatIST(session.createdAt)}</span>
-                        {session.duration != null && session.duration > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {Math.floor(session.duration / 60)}m {session.duration % 60}s
-                          </span>
-                        )}
-                        {transcript.length > 0 && (
-                          <span className="flex items-center gap-1">
-                            <MessageSquare className="w-3 h-3" /> {transcript.length}
-                          </span>
-                        )}
-                        {session.sentiment && (
-                          <span className={`capitalize ${session.sentiment === "positive" ? "text-green-400" : session.sentiment === "negative" ? "text-red-400" : ""}`}>
-                            {session.sentiment}
-                          </span>
+                  <GlassPanel elevation="subtle" interactive radius="md" className="p-5 cursor-pointer">
+                    <div className="flex items-start justify-between">
+                      <div className="min-w-0">
+                        <h4 className="font-medium text-white text-sm tracking-tight truncate">
+                          {session.title || "Voice session"}
+                        </h4>
+                        <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-white/55">
+                          <span>{formatIST(session.createdAt)}</span>
+                          {session.duration != null && session.duration > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {Math.floor(session.duration / 60)}m {session.duration % 60}s
+                            </span>
+                          )}
+                          {transcript.length > 0 && (
+                            <span className="flex items-center gap-1">
+                              <MessageSquare className="w-3 h-3" /> {transcript.length}
+                            </span>
+                          )}
+                          {session.sentiment && (
+                            <span
+                              className={`capitalize ${
+                                session.sentiment === "positive"
+                                  ? "text-emerald-300"
+                                  : session.sentiment === "negative"
+                                    ? "text-rose-300"
+                                    : "text-white/55"
+                              }`}
+                            >
+                              {session.sentiment}
+                            </span>
+                          )}
+                        </div>
+                        {session.callerName && (
+                          <p className="text-xs text-white/40 mt-1.5">Caller: {session.callerName}</p>
                         )}
                       </div>
-                      {session.callerName && (
-                        <p className="text-xs text-[#666680] mt-1">Caller: {session.callerName}</p>
+                      {session.rating != null && session.rating > 0 && (
+                        <div className="flex items-center gap-1 text-amber-300 shrink-0">
+                          <Star className="w-4 h-4 fill-current" />
+                          <span className="text-sm tabular-nums">{session.rating}</span>
+                        </div>
                       )}
                     </div>
-                    {session.rating != null && session.rating > 0 && (
-                      <div className="flex items-center gap-1 text-yellow-400">
-                        <Star className="w-4 h-4 fill-current" />
-                        <span className="text-sm">{session.rating}</span>
-                      </div>
-                    )}
-                  </div>
+                  </GlassPanel>
                 </motion.div>
               );
             })}
@@ -134,23 +147,21 @@ export default function AgentSessionsPage() {
 
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-6">
-              <Button
+              <button
                 onClick={() => fetchSessions(page - 1)}
                 disabled={page <= 1}
-                variant="outline" size="sm"
-                className="border-[#2A2A3E] text-white disabled:opacity-30 gap-1"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-sm text-white/75 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft className="w-4 h-4" /> Prev
-              </Button>
-              <span className="text-xs text-[#8888AA]">Page {page} of {totalPages}</span>
-              <Button
+              </button>
+              <span className="text-xs text-white/55">Page {page} of {totalPages}</span>
+              <button
                 onClick={() => fetchSessions(page + 1)}
                 disabled={page >= totalPages}
-                variant="outline" size="sm"
-                className="border-[#2A2A3E] text-white disabled:opacity-30 gap-1"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-sm text-white/75 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 Next <ChevronRight className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
           )}
         </>

@@ -11,104 +11,151 @@ import {
   ListChecks,
   Mic2,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { GlassPanel } from "@/components/ui/glass-panel";
+import { GradientText } from "@/components/ui/gradient-text";
 
-const features = [
+interface Feature {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  /** Bento grid placement — uses Tailwind grid-area utilities. */
+  span: string;
+  /** Tint applied to the icon halo. Constrained to the brand palette. */
+  tint: "violet" | "blue" | "cyan";
+  /** Featured cells get the gradient border + lower text density. */
+  featured?: boolean;
+}
+
+const TINT_BG: Record<Feature["tint"], string> = {
+  violet: "bg-violet-500/10",
+  blue: "bg-blue-500/10",
+  cyan: "bg-cyan-500/10",
+};
+const TINT_TEXT: Record<Feature["tint"], string> = {
+  violet: "text-violet-300",
+  blue: "text-blue-300",
+  cyan: "text-cyan-300",
+};
+
+const features: Feature[] = [
   {
     icon: Code2,
-    title: "Embed on Your Existing Site",
+    title: "Embed on any website",
     description:
-      "One iframe snippet. Paste it anywhere on your website. The voice widget appears as a floating module — no new domain, no rebuild.",
-    color: "#00D4FF",
+      "One iframe snippet — no rebuild, no new domain. The widget appears as a floating module wherever you paste it.",
+    span: "md:col-span-2 md:row-span-2",
+    tint: "violet",
+    featured: true,
   },
   {
     icon: Inbox,
-    title: "Leads in Your Inbox in Seconds",
-    description:
-      "Every captured lead — caller name, phone, email, intent, urgency — lands as a structured email within ~30 seconds of the call ending.",
-    color: "#10B981",
+    title: "Leads in your inbox",
+    description: "Caller name, phone, email, intent — delivered within 30 seconds of hangup.",
+    span: "md:col-span-2",
+    tint: "blue",
   },
   {
     icon: Webhook,
-    title: "Slack · HubSpot · Zapier Ready",
-    description:
-      "Optional outbound webhook fires on every lead with HMAC-SHA256 signed JSON. Plug into your CRM in minutes — no custom integration code.",
-    color: "#6366F1",
+    title: "CRM ready",
+    description: "Signed JSON webhook to Slack, HubSpot, Zapier.",
+    span: "md:col-span-2",
+    tint: "cyan",
   },
   {
     icon: Brain,
-    title: "Industry-Specific Agents",
+    title: "Industry-tuned agents",
     description:
-      "Hotel, restaurant, medical, legal, interview templates. Each one knows the right questions, vocabulary, and emergency protocols out of the box.",
-    color: "#FFB800",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Honest by Design",
-    description:
-      "Agents never claim to have booked or scheduled anything. They capture lead intent, you call back to confirm. No fake confirmations, no broken trust.",
-    color: "#F97316",
+      "Hotel, restaurant, medical, legal, interview templates. Each one knows the right questions and protocols.",
+    span: "md:col-span-2",
+    tint: "violet",
   },
   {
     icon: Mic2,
-    title: "Real-Time Voice",
-    description:
-      "Natural, low-latency Gemini Live conversations with per-agent VAD tuning. Callers can pause to think without being cut off mid-sentence.",
-    color: "#EF4444",
+    title: "Real-time voice",
+    description: "Low-latency Gemini Live with per-agent VAD. Pause to think — never get cut off.",
+    span: "md:col-span-2 md:row-span-2",
+    tint: "cyan",
+    featured: true,
+  },
+  {
+    icon: ShieldCheck,
+    title: "Honest by design",
+    description: "Agents capture lead intent. They never claim to have booked or scheduled.",
+    span: "md:col-span-2",
+    tint: "blue",
   },
   {
     icon: Sparkles,
-    title: "AI Post-Call Summaries",
-    description:
-      "Claude analyzes every transcript: summary, sentiment, topics, escalation flag, action items. All searchable and CSV-exportable.",
-    color: "#8B5CF6",
+    title: "AI summaries",
+    description: "Claude analyzes every transcript: summary, sentiment, action items.",
+    span: "md:col-span-3",
+    tint: "violet",
   },
   {
     icon: ListChecks,
-    title: "Lead Workflow + CSV Export",
-    description:
-      "Mark leads new → contacted → qualified → won/lost. Export filtered date ranges as CSV. Run your sales pipeline without a separate CRM.",
-    color: "#06B6D4",
+    title: "Lead workflow + CSV",
+    description: "Mark new → contacted → won. Filter dates, export to CSV.",
+    span: "md:col-span-3",
+    tint: "cyan",
   },
 ];
 
 export function Features() {
   return (
-    <section className="py-24 px-6 bg-[#0A0A12]">
-      <div className="max-w-6xl mx-auto">
+    <section id="features" className="relative py-32 px-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Section header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
         >
-          <h2 className="font-(family-name:--font-heading) text-4xl md:text-5xl font-bold text-white mb-4">
-            Built for Real SMBs, Not Demos
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-4">
+            Built for SMBs
+          </p>
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
+            Everything you need to <GradientText>turn calls into customers</GradientText>
           </h2>
-          <p className="text-[#8888AA] text-lg max-w-2xl mx-auto">
-            From the iframe install to the lead in your inbox — everything you need to capture customers from your website 24/7.
+          <p className="text-lg text-white/60 max-w-2xl mx-auto">
+            From the iframe install to the structured lead in your inbox — all the pieces, none of the busywork.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Bento grid — 6 columns desktop, asymmetric spans for visual rhythm */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-5 auto-rows-[minmax(180px,auto)]">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.08 }}
-              className="glass rounded-2xl p-6 text-center group hover:border-white/10 transition-all"
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+              className={feature.span}
             >
-              <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 transition-all group-hover:scale-110"
-                style={{ backgroundColor: `${feature.color}15` }}
+              <GlassPanel
+                elevation={feature.featured ? "raised" : "subtle"}
+                gradientBorder={feature.featured}
+                interactive
+                radius="lg"
+                className="h-full p-7 md:p-8 flex flex-col justify-between gap-6 group"
               >
-                <feature.icon className="w-7 h-7" style={{ color: feature.color }} />
-              </div>
-              <h3 className="font-(family-name:--font-heading) font-semibold text-white mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-sm text-[#8888AA]">{feature.description}</p>
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center ${TINT_BG[feature.tint]} transition-transform duration-500 group-hover:scale-110`}
+                >
+                  <feature.icon className={`w-5 h-5 ${TINT_TEXT[feature.tint]}`} strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-lg md:text-xl tracking-tight mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm md:text-[15px] text-white/55 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </GlassPanel>
             </motion.div>
           ))}
         </div>

@@ -17,12 +17,11 @@ export function CookieConsent() {
 
   useEffect(() => {
     if (suppress) return;
-    // Only show if user hasn't made a choice yet
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) setVisible(true);
     } catch {
-      // localStorage unavailable (SSR guard already handled by useEffect, but just in case)
+      /* localStorage unavailable */
     }
   }, [suppress]);
 
@@ -53,50 +52,44 @@ export function CookieConsent() {
           transition={{ type: "spring", damping: 26, stiffness: 220 }}
           className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-6 md:max-w-sm"
         >
-          <div className="bg-[#0E0E16] border border-[#2A2A3E] rounded-2xl p-5 shadow-2xl shadow-black/40">
-            {/* Header */}
+          <div className="glass-floating rounded-3xl p-5 shadow-2xl shadow-black/60">
             <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-[#00D4FF]/10 flex items-center justify-center shrink-0">
-                  <Cookie className="w-3.5 h-3.5 text-[#00D4FF]" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-violet-500/10 border border-violet-300/20 flex items-center justify-center shrink-0">
+                  <Cookie className="w-3.5 h-3.5 text-violet-300" strokeWidth={2} />
                 </div>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm font-semibold text-white tracking-tight">
                   Cookie preferences
                 </span>
               </div>
               <button
                 onClick={decline}
-                className="text-[#555577] hover:text-white transition-colors mt-0.5"
+                className="text-white/40 hover:text-white transition-colors mt-0.5"
                 aria-label="Dismiss"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Body */}
-            <p className="text-xs text-[#8888AA] leading-relaxed mb-4">
-              We use essential cookies to keep you signed in and remember your
-              preferences. We don&apos;t use tracking or advertising cookies.{" "}
-              <Link
-                href="/legal/cookies"
-                className="text-[#00D4FF] hover:underline"
-              >
+            <p className="text-xs text-white/60 leading-relaxed mb-4">
+              We use essential cookies to keep you signed in and remember your preferences.
+              We don&apos;t use tracking or advertising cookies.{" "}
+              <Link href="/legal/cookies" className="ah-gradient-text font-medium hover:opacity-80">
                 Cookie Policy
               </Link>
               .
             </p>
 
-            {/* Actions */}
             <div className="flex gap-2">
               <button
                 onClick={accept}
-                className="flex-1 py-2 rounded-xl text-xs font-semibold text-white bg-linear-to-r from-[#00D4FF] to-[#6366F1] hover:opacity-90 transition-opacity"
+                className="flex-1 py-2 rounded-xl text-xs font-semibold text-white ah-gradient-bg shadow-[0_4px_16px_-4px_rgba(124,58,237,0.5)] hover:shadow-[0_6px_20px_-4px_rgba(59,130,246,0.6)] transition-shadow"
               >
                 Accept all
               </button>
               <button
                 onClick={decline}
-                className="flex-1 py-2 rounded-xl text-xs font-semibold text-[#8888AA] border border-[#2A2A3E] hover:text-white hover:bg-white/5 transition-all"
+                className="flex-1 py-2 rounded-xl text-xs font-semibold text-white/65 border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] hover:text-white hover:border-white/20 transition-all"
               >
                 Essential only
               </button>

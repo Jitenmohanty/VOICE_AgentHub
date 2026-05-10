@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Zap, ArrowLeft } from "lucide-react";
+import { LegalShell } from "@/components/legal/LegalShell";
 
 export const metadata = {
   title: "Cookie Policy – AgentHub",
@@ -60,37 +60,8 @@ const functionalCookies: CookieRow[] = [
 
 export default function CookiePolicyPage() {
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-[#F0F0F5]">
-      {/* Header */}
-      <header className="border-b border-[#2A2A3E] bg-[#0E0E16]/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-[#8888AA] hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back to home</span>
-          </Link>
-          <div className="flex-1" />
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-bold text-white text-sm">AgentHub</span>
-          </Link>
-        </div>
-      </header>
-
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-white mb-3">Cookie Policy</h1>
-          <p className="text-[#8888AA] text-sm">
-            Effective date: {EFFECTIVE_DATE}
-          </p>
-        </div>
-
-        <div className="space-y-10 text-[#C0C0D8] leading-relaxed">
+    <LegalShell title="Cookie Policy" subtitle={`Effective date: ${EFFECTIVE_DATE}`}>
+      <>
 
           {/* 1 */}
           <section>
@@ -141,7 +112,7 @@ export default function CookiePolicyPage() {
             </h2>
 
             {/* 3a */}
-            <h3 className="text-base font-semibold text-[#E0E0F0] mt-5 mb-3">
+            <h3 className="text-base font-semibold text-white mt-5 mb-3">
               3a. Essential Authentication Cookies
             </h3>
             <p>
@@ -151,14 +122,14 @@ export default function CookiePolicyPage() {
               authentication library, after a successful login. Without them,
               the authenticated features of AgentHub cannot function.
             </p>
-            <div className="mt-4 overflow-x-auto rounded-xl border border-[#2A2A3E]">
+            <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.06]">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#2A2A3E] bg-[#0E0E16]">
-                    <th className="text-left px-4 py-3 text-[#8888AA] font-medium">Cookie Name</th>
-                    <th className="text-left px-4 py-3 text-[#8888AA] font-medium">Purpose</th>
-                    <th className="text-left px-4 py-3 text-[#8888AA] font-medium">Duration</th>
-                    <th className="text-left px-4 py-3 text-[#8888AA] font-medium">Type</th>
+                  <tr className="border-b border-white/[0.06] bg-white/[0.03]">
+                    <th className="text-left px-4 py-3 text-white/55 font-medium text-xs uppercase tracking-wider">Cookie Name</th>
+                    <th className="text-left px-4 py-3 text-white/55 font-medium text-xs uppercase tracking-wider">Purpose</th>
+                    <th className="text-left px-4 py-3 text-white/55 font-medium text-xs uppercase tracking-wider">Duration</th>
+                    <th className="text-left px-4 py-3 text-white/55 font-medium text-xs uppercase tracking-wider">Type</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -167,21 +138,21 @@ export default function CookiePolicyPage() {
                       key={row.name}
                       className={
                         i < authCookies.length - 1
-                          ? "border-b border-[#2A2A3E]"
+                          ? "border-b border-white/[0.05]"
                           : ""
                       }
                     >
-                      <td className="px-4 py-3 font-mono text-xs text-[#00D4FF] align-top whitespace-nowrap">
+                      <td className="px-4 py-3 font-mono text-xs ah-gradient-text align-top whitespace-nowrap">
                         {row.name}
                       </td>
-                      <td className="px-4 py-3 text-[#C0C0D8] align-top">
+                      <td className="px-4 py-3 text-white/75 align-top">
                         {row.purpose}
                       </td>
-                      <td className="px-4 py-3 text-[#8888AA] align-top whitespace-nowrap">
+                      <td className="px-4 py-3 text-white/55 align-top whitespace-nowrap">
                         {row.duration}
                       </td>
                       <td className="px-4 py-3 align-top">
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-[#6366F1]/15 text-[#6366F1]">
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-violet-500/15 text-violet-300 border border-violet-300/20">
                           {row.type}
                         </span>
                       </td>
@@ -192,37 +163,37 @@ export default function CookiePolicyPage() {
             </div>
 
             {/* 3b */}
-            <h3 className="text-base font-semibold text-[#E0E0F0] mt-8 mb-3">
+            <h3 className="text-base font-semibold text-white mt-8 mb-3">
               3b. Functional Cookies
             </h3>
             <p>
               These cookies remember your preferences to improve your experience.
               They are not essential but help the platform work better for you.
             </p>
-            <div className="mt-4 overflow-x-auto rounded-xl border border-[#2A2A3E]">
+            <div className="mt-4 overflow-x-auto rounded-2xl border border-white/[0.06]">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#2A2A3E] bg-[#0E0E16]">
-                    <th className="text-left px-4 py-3 text-[#8888AA] font-medium">Cookie Name</th>
-                    <th className="text-left px-4 py-3 text-[#8888AA] font-medium">Purpose</th>
-                    <th className="text-left px-4 py-3 text-[#8888AA] font-medium">Duration</th>
-                    <th className="text-left px-4 py-3 text-[#8888AA] font-medium">Type</th>
+                  <tr className="border-b border-white/[0.06] bg-white/[0.03]">
+                    <th className="text-left px-4 py-3 text-white/55 font-medium text-xs uppercase tracking-wider">Cookie Name</th>
+                    <th className="text-left px-4 py-3 text-white/55 font-medium text-xs uppercase tracking-wider">Purpose</th>
+                    <th className="text-left px-4 py-3 text-white/55 font-medium text-xs uppercase tracking-wider">Duration</th>
+                    <th className="text-left px-4 py-3 text-white/55 font-medium text-xs uppercase tracking-wider">Type</th>
                   </tr>
                 </thead>
                 <tbody>
                   {functionalCookies.map((row) => (
                     <tr key={row.name}>
-                      <td className="px-4 py-3 font-mono text-xs text-[#00D4FF] align-top whitespace-nowrap">
+                      <td className="px-4 py-3 font-mono text-xs ah-gradient-text align-top whitespace-nowrap">
                         {row.name}
                       </td>
-                      <td className="px-4 py-3 text-[#C0C0D8] align-top">
+                      <td className="px-4 py-3 text-white/75 align-top">
                         {row.purpose}
                       </td>
-                      <td className="px-4 py-3 text-[#8888AA] align-top whitespace-nowrap">
+                      <td className="px-4 py-3 text-white/55 align-top whitespace-nowrap">
                         {row.duration}
                       </td>
                       <td className="px-4 py-3 align-top">
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-[#00D4FF]/10 text-[#00D4FF]">
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-cyan-500/15 text-cyan-300 border border-cyan-300/20">
                           {row.type}
                         </span>
                       </td>
@@ -233,7 +204,7 @@ export default function CookiePolicyPage() {
             </div>
 
             {/* 3c */}
-            <h3 className="text-base font-semibold text-[#E0E0F0] mt-8 mb-3">
+            <h3 className="text-base font-semibold text-white mt-8 mb-3">
               3c. Analytics and Advertising Cookies
             </h3>
             <p>
@@ -262,7 +233,7 @@ export default function CookiePolicyPage() {
                   href="https://policies.google.com/privacy"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#00D4FF] hover:underline"
+                  className="ah-gradient-text font-medium hover:opacity-80"
                 >
                   Google Privacy Policy
                 </a>
@@ -272,7 +243,7 @@ export default function CookiePolicyPage() {
                   href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#00D4FF] hover:underline"
+                  className="ah-gradient-text font-medium hover:opacity-80"
                 >
                   GitHub Privacy Statement
                 </a>
@@ -295,11 +266,11 @@ export default function CookiePolicyPage() {
               playback) is managed in-memory using{" "}
               <strong className="text-white">React state and Zustand</strong>.
               No cookies are set for Callers. We do not use{" "}
-              <code className="text-xs bg-[#1A1A2E] px-1.5 py-0.5 rounded text-[#00D4FF]">
+              <code className="text-xs bg-black/40 px-1.5 py-0.5 rounded ah-gradient-text font-mono">
                 localStorage
               </code>{" "}
               or{" "}
-              <code className="text-xs bg-[#1A1A2E] px-1.5 py-0.5 rounded text-[#00D4FF]">
+              <code className="text-xs bg-black/40 px-1.5 py-0.5 rounded ah-gradient-text font-mono">
                 sessionStorage
               </code>{" "}
               to persist Caller data between sessions.
@@ -326,7 +297,7 @@ export default function CookiePolicyPage() {
                   href="https://support.google.com/chrome/answer/95647"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#00D4FF] hover:underline"
+                  className="ah-gradient-text font-medium hover:opacity-80"
                 >
                   Google Chrome
                 </a>
@@ -336,7 +307,7 @@ export default function CookiePolicyPage() {
                   href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#00D4FF] hover:underline"
+                  className="ah-gradient-text font-medium hover:opacity-80"
                 >
                   Mozilla Firefox
                 </a>
@@ -346,7 +317,7 @@ export default function CookiePolicyPage() {
                   href="https://support.apple.com/guide/safari/manage-cookies-sfri11471/mac"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#00D4FF] hover:underline"
+                  className="ah-gradient-text font-medium hover:opacity-80"
                 >
                   Apple Safari
                 </a>
@@ -356,7 +327,7 @@ export default function CookiePolicyPage() {
                   href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#00D4FF] hover:underline"
+                  className="ah-gradient-text font-medium hover:opacity-80"
                 >
                   Microsoft Edge
                 </a>
@@ -391,30 +362,20 @@ export default function CookiePolicyPage() {
               If you have questions about our use of cookies or this policy,
               please contact us:
             </p>
-            <div className="mt-3 p-4 rounded-xl border border-[#2A2A3E] bg-[#0E0E16]">
+            <div className="mt-3 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.03]">
               <p className="text-white font-medium">AgentHub</p>
               <p className="mt-1">
                 Email:{" "}
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  className="text-[#00D4FF] hover:underline"
+                  className="ah-gradient-text font-medium hover:opacity-80"
                 >
                   {CONTACT_EMAIL}
                 </a>
               </p>
             </div>
           </section>
-        </div>
-
-        {/* Footer nav */}
-        <div className="mt-16 pt-8 border-t border-[#2A2A3E] flex flex-wrap gap-6 text-sm text-[#8888AA]">
-          <Link href="/" className="hover:text-white transition-colors">Home</Link>
-          <Link href="/legal/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-          <Link href="/legal/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link>
-          <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
-          <span>© {new Date().getFullYear()} AgentHub</span>
-        </div>
-      </main>
-    </div>
+      </>
+    </LegalShell>
   );
 }

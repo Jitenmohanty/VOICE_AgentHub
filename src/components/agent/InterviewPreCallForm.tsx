@@ -3,11 +3,15 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Code, ArrowRight, User, Target, FileText, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GlassPanel } from "@/components/ui/glass-panel";
+import { GradientButton } from "@/components/ui/gradient-button";
 
 const EXPERIENCE_LEVELS = ["Junior", "Mid", "Senior", "Lead", "Principal"];
+
+const inputClass =
+  "mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
 
 export interface CandidateContext {
   name: string;
@@ -21,7 +25,6 @@ export interface CandidateContext {
 interface InterviewPreCallFormProps {
   agentName: string;
   accentColor: string;
-  /** Owner-configured tech stack options */
   ownerTechStack: string[];
   onSubmit: (ctx: CandidateContext) => void;
   loading?: boolean;
@@ -29,7 +32,6 @@ interface InterviewPreCallFormProps {
 
 export function InterviewPreCallForm({
   agentName,
-  accentColor,
   ownerTechStack,
   onSubmit,
   loading = false,
@@ -62,11 +64,10 @@ export function InterviewPreCallForm({
         const data = await res.json();
         if (data.skills) setResumeSkills(data.skills);
         if (data.summary) setResumeSummary(data.summary);
-        // Auto-fill name if the field is still empty
         if (data.name && !name.trim()) setName(data.name);
       }
     } catch {
-      // Non-critical — interview works without resume
+      /* Non-critical — interview works without resume */
     } finally {
       setUploadingResume(false);
     }
@@ -84,115 +85,89 @@ export function InterviewPreCallForm({
     });
   };
 
+  const ChipButton = ({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-xl text-xs transition-all border ${
+        active
+          ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40 text-white"
+          : "bg-white/[0.03] border-white/10 text-white/60 hover:bg-white/[0.06] hover:border-white/14 hover:text-white/85"
+      }`}
+    >
+      {children}
+    </button>
+  );
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="w-full max-w-md mx-auto space-y-5"
     >
-      {/* Header */}
       <div className="text-center">
-        <div
-          className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
-          style={{ backgroundColor: `${accentColor}15` }}
-        >
-          <Code className="w-6 h-6" style={{ color: accentColor }} />
+        <div className="w-12 h-12 rounded-2xl ah-gradient-bg flex items-center justify-center mx-auto mb-3 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
+          <Code className="w-5 h-5 text-white" strokeWidth={2} />
         </div>
-        <h2 className="text-lg font-semibold text-white">{agentName}</h2>
-        <p className="text-sm text-[#8888AA] mt-1">
-          Tell us about yourself before we start
-        </p>
+        <h2 className="text-lg font-semibold tracking-tight text-white">{agentName}</h2>
+        <p className="text-xs text-white/55 mt-0.5">Tell us about yourself before we start</p>
       </div>
 
-      {/* Form */}
-      <div className="glass rounded-2xl p-5 space-y-4">
-        {/* Name */}
+      <GlassPanel elevation="raised" radius="lg" className="p-5 space-y-5">
         <div>
-          <Label className="text-[#8888AA] flex items-center gap-1.5 mb-1.5">
-            <User className="w-3.5 h-3.5" /> Your Name *
+          <Label className="flex items-center gap-1.5 text-xs font-medium text-white/60">
+            <User className="w-3.5 h-3.5" /> Your name *
           </Label>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., Alex Johnson"
-            className="bg-white/5 border-[#2A2A3E] text-white"
+            className={inputClass}
           />
         </div>
 
-        {/* Experience Level */}
         <div>
-          <Label className="text-[#8888AA] mb-2 block">Experience Level *</Label>
+          <Label className="text-xs font-medium text-white/60 mb-2 block">Experience level *</Label>
           <div className="flex flex-wrap gap-2">
-            {EXPERIENCE_LEVELS.map((lvl) => {
-              const sel = level === lvl;
-              return (
-                <button
-                  key={lvl}
-                  type="button"
-                  onClick={() => setLevel(lvl)}
-                  className="px-3 py-1.5 rounded-lg text-sm transition-all"
-                  style={{
-                    backgroundColor: sel ? `${accentColor}20` : "rgba(255,255,255,0.05)",
-                    color: sel ? accentColor : "#8888AA",
-                    border: `1px solid ${sel ? `${accentColor}40` : "transparent"}`,
-                  }}
-                >
-                  {lvl}
-                </button>
-              );
-            })}
+            {EXPERIENCE_LEVELS.map((lvl) => (
+              <ChipButton key={lvl} active={level === lvl} onClick={() => setLevel(lvl)}>
+                {lvl}
+              </ChipButton>
+            ))}
           </div>
         </div>
 
-        {/* Tech Stack */}
         {ownerTechStack.length > 0 && (
           <div>
-            <Label className="text-[#8888AA] mb-2 block">
-              Your Tech Stack{" "}
-              <span className="text-[#666680] font-normal">(select what applies to you)</span>
+            <Label className="text-xs font-medium text-white/60 mb-2 block">
+              Your tech stack <span className="text-white/35 font-normal">(select what applies)</span>
             </Label>
             <div className="flex flex-wrap gap-2">
-              {ownerTechStack.map((tech) => {
-                const sel = selectedStack.includes(tech);
-                return (
-                  <button
-                    key={tech}
-                    type="button"
-                    onClick={() => toggleStack(tech)}
-                    className="px-3 py-1.5 rounded-lg text-sm transition-all"
-                    style={{
-                      backgroundColor: sel ? `${accentColor}20` : "rgba(255,255,255,0.05)",
-                      color: sel ? accentColor : "#8888AA",
-                      border: `1px solid ${sel ? `${accentColor}40` : "transparent"}`,
-                    }}
-                  >
-                    {tech}
-                  </button>
-                );
-              })}
+              {ownerTechStack.map((tech) => (
+                <ChipButton key={tech} active={selectedStack.includes(tech)} onClick={() => toggleStack(tech)}>
+                  {tech}
+                </ChipButton>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Target Role */}
         <div>
-          <Label className="text-[#8888AA] flex items-center gap-1.5 mb-1.5">
-            <Target className="w-3.5 h-3.5" /> Target Role{" "}
-            <span className="text-[#666680] font-normal">(optional)</span>
+          <Label className="flex items-center gap-1.5 text-xs font-medium text-white/60">
+            <Target className="w-3.5 h-3.5" /> Target role <span className="text-white/35 font-normal">(optional)</span>
           </Label>
           <Input
             value={targetRole}
             onChange={(e) => setTargetRole(e.target.value)}
             placeholder="e.g., Frontend Engineer at Google"
-            className="bg-white/5 border-[#2A2A3E] text-white"
+            className={inputClass}
           />
         </div>
 
-        {/* Resume Upload */}
         <div>
-          <Label className="text-[#8888AA] flex items-center gap-1.5 mb-1.5">
-            <FileText className="w-3.5 h-3.5" /> Resume{" "}
-            <span className="text-[#666680] font-normal">(optional, PDF)</span>
+          <Label className="flex items-center gap-1.5 text-xs font-medium text-white/60 mb-1.5">
+            <FileText className="w-3.5 h-3.5" /> Resume <span className="text-white/35 font-normal">(optional, PDF)</span>
           </Label>
           <input
             ref={fileInputRef}
@@ -205,19 +180,22 @@ export function InterviewPreCallForm({
             }}
           />
           {resumeFile ? (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-[#2A2A3E]">
-              <FileText className="w-4 h-4 shrink-0" style={{ color: accentColor }} />
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/10">
+              <FileText className="w-4 h-4 shrink-0 text-violet-300" />
               <span className="text-sm text-white truncate flex-1">{resumeFile.name}</span>
               {uploadingResume && (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
               )}
               {resumeSkills && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 shrink-0">Parsed</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-300/20 shrink-0">
+                  Parsed
+                </span>
               )}
               <button
                 type="button"
                 onClick={() => { setResumeFile(null); setResumeSkills(null); setResumeSummary(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                className="p-0.5 rounded hover:bg-white/10 text-[#8888AA]"
+                className="p-1 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors"
+                aria-label="Remove resume"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -226,35 +204,34 @@ export function InterviewPreCallForm({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full px-3 py-2.5 rounded-lg border border-dashed border-[#2A2A3E] text-sm text-[#8888AA] hover:border-[#444] hover:text-white transition-colors"
+              className="w-full px-3 py-3 rounded-xl border border-dashed border-white/15 text-sm text-white/55 hover:border-white/30 hover:text-white/85 hover:bg-white/[0.03] transition-all"
             >
               Click to upload PDF resume
             </button>
           )}
         </div>
-      </div>
+      </GlassPanel>
 
-      {/* Submit */}
-      <Button
+      <GradientButton
         onClick={handleSubmit}
         disabled={!name.trim() || loading}
-        className="w-full text-white border-0 hover:opacity-90 py-6 text-base font-semibold"
-        style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)` }}
+        className="w-full"
+        size="lg"
       >
         {loading ? (
           <span className="flex items-center gap-2">
             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Starting Interview...
+            Starting interview…
           </span>
         ) : (
-          <span className="flex items-center gap-2">
-            Start Interview <ArrowRight className="w-5 h-5" />
-          </span>
+          <>
+            Start interview <ArrowRight className="w-4 h-4" />
+          </>
         )}
-      </Button>
+      </GradientButton>
 
-      <p className="text-center text-xs text-[#666680]">
-        No sign-up needed · Voice interview · Usually 15-30 minutes
+      <p className="text-center text-[11px] text-white/40">
+        No sign-up needed · Voice interview · Usually 15–30 minutes
       </p>
     </motion.div>
   );

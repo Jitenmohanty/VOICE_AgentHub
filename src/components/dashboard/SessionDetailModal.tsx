@@ -26,12 +26,12 @@ interface SessionDetailModalProps {
 }
 
 const LEAD_STATUSES = [
-  { value: "new", label: "New", color: "#00D4FF" },
-  { value: "contacted", label: "Contacted", color: "#6366F1" },
-  { value: "qualified", label: "Qualified", color: "#FFB800" },
-  { value: "won", label: "Won", color: "#10B981" },
-  { value: "lost", label: "Lost", color: "#EF4444" },
-  { value: "archived", label: "Archived", color: "#666680" },
+  { value: "new", label: "New", color: "#A78BFA" },
+  { value: "contacted", label: "Contacted", color: "#60A5FA" },
+  { value: "qualified", label: "Qualified", color: "#FCD34D" },
+  { value: "won", label: "Won", color: "#34D399" },
+  { value: "lost", label: "Lost", color: "#FB7185" },
+  { value: "archived", label: "Archived", color: "#94A3B8" },
 ] as const;
 
 type LeadStatus = (typeof LEAD_STATUSES)[number]["value"];
@@ -99,48 +99,43 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-[#050816]/80 backdrop-blur-md p-4"
         onClick={onClose}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.96, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          exit={{ opacity: 0, scale: 0.96, y: 16 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-2xl max-h-[85vh] glass rounded-2xl flex flex-col overflow-hidden"
+          className="w-full max-w-2xl max-h-[85vh] glass-floating rounded-3xl flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-[#2A2A3E]">
+          <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
             <div className="flex items-center gap-3">
               {template && (
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ background: `${template?.accentColor || "#6366F1"}20` }}
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${template?.accentColor || "#7C3AED"}30, ${template?.accentColor || "#3B82F6"}10)`,
+                    border: `1px solid ${template?.accentColor || "#7C3AED"}30`,
+                  }}
                 >
-                  <Bot className="w-5 h-5" style={{ color: template?.accentColor || "#6366F1" }} />
+                  <Bot className="w-4 h-4" style={{ color: template?.accentColor || "#A78BFA" }} strokeWidth={2} />
                 </div>
               )}
               <div>
-                <h2 className="font-(family-name:--font-heading) font-bold text-lg text-white">
+                <h2 className="font-semibold text-lg tracking-tight text-white">
                   {session?.title || agentName}
                 </h2>
                 {session && (
                   <span
-                    className="text-xs px-2 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor:
-                        session.status === "completed"
-                          ? "rgba(16,185,129,0.1)"
-                          : session.status === "active"
-                            ? "rgba(0,212,255,0.1)"
-                            : "rgba(239,68,68,0.1)",
-                      color:
-                        session.status === "completed"
-                          ? "#10B981"
-                          : session.status === "active"
-                            ? "#00D4FF"
-                            : "#EF4444",
-                    }}
+                    className={`text-[10px] mt-0.5 inline-block px-2 py-0.5 rounded-full font-medium border capitalize ${
+                      session.status === "completed"
+                        ? "bg-emerald-500/15 text-emerald-300 border-emerald-300/20"
+                        : session.status === "active"
+                          ? "bg-violet-500/15 text-violet-300 border-violet-300/20"
+                          : "bg-rose-500/15 text-rose-300 border-rose-300/20"
+                    }`}
                   >
                     {session.status}
                   </span>
@@ -149,20 +144,21 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/5 text-[#8888AA] transition-colors"
+              className="p-2 rounded-xl hover:bg-white/[0.06] text-white/55 hover:text-white transition-colors"
+              aria-label="Close"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {loading ? (
             <div className="p-8 space-y-4 animate-pulse">
-              <div className="h-5 w-1/3 bg-white/5 rounded" />
-              <div className="h-4 w-2/3 bg-white/5 rounded" />
-              <div className="h-32 w-full bg-white/5 rounded" />
+              <div className="h-5 w-1/3 bg-white/[0.06] rounded" />
+              <div className="h-4 w-2/3 bg-white/[0.06] rounded" />
+              <div className="h-32 w-full bg-white/[0.06] rounded" />
             </div>
           ) : !session ? (
-            <div className="p-8 text-center text-[#8888AA]">
+            <div className="p-8 text-center text-white/55">
               Session not found.
             </div>
           ) : (
@@ -173,46 +169,44 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                   icon={Calendar}
                   label="Started"
                   value={startTime ? formatIST(startTime) : "—"}
-                  color="#00D4FF"
+                  color="#A78BFA"
                 />
                 <StatCard
                   icon={StopCircle}
                   label="Ended"
                   value={endTime ? formatISTTime(endTime) : "—"}
-                  color="#EF4444"
+                  color="#FB7185"
                 />
                 <StatCard
                   icon={Clock}
                   label="Duration"
                   value={session.duration != null ? formatDuration(session.duration) : "—"}
-                  color="#FFB800"
+                  color="#FCD34D"
                 />
                 <StatCard
                   icon={MessageSquare}
                   label="Messages"
                   value={String(transcript.length)}
-                  color="#6366F1"
+                  color="#22D3EE"
                 />
               </div>
 
               {/* Rating */}
               {typeof session.rating === "number" && session.rating > 0 && (
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-[#8888AA]">Rating:</span>
+                  <span className="text-white/55">Rating:</span>
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <Star
                         key={s}
-                        className="w-4 h-4"
-                        style={{
-                          color: s <= session.rating! ? "#FFB800" : "#2A2A3E",
-                          fill: s <= session.rating! ? "#FFB800" : "transparent",
-                        }}
+                        className={`w-4 h-4 ${s <= session.rating! ? "text-amber-300" : "text-white/15"}`}
+                        style={{ fill: s <= session.rating! ? "currentColor" : "transparent" }}
+                        strokeWidth={1.5}
                       />
                     ))}
                   </div>
                   {session.feedback && (
-                    <span className="text-[#666680] italic ml-2">
+                    <span className="text-white/40 italic ml-2">
                       &ldquo;{session.feedback}&rdquo;
                     </span>
                   )}
@@ -221,7 +215,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 
               {/* Captured Lead + status workflow */}
               {(session.capturedLead || session.callerName || session.callerPhone || session.callerEmail) && (
-                <div className="bg-white/[0.03] rounded-xl p-4 border border-[#2A2A3E] space-y-3">
+                <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06] space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                       <UserCheck className="w-4 h-4 text-[#10B981]" />
@@ -231,13 +225,13 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                       value={(session.leadStatus as LeadStatus) || "new"}
                       onChange={(e) => updateLeadStatus(e.target.value as LeadStatus)}
                       disabled={updatingStatus}
-                      className="text-xs h-7 bg-white/5 border border-[#2A2A3E] rounded-md px-2 text-white focus:outline-none focus:border-[#00D4FF]"
+                      className="text-xs h-8 bg-white/[0.04] border border-white/10 rounded-xl px-2.5 text-white focus:outline-none focus:border-violet-300/50 disabled:opacity-50"
                       style={{
-                        color: LEAD_STATUSES.find((s) => s.value === session.leadStatus)?.color ?? "#00D4FF",
+                        color: LEAD_STATUSES.find((s) => s.value === session.leadStatus)?.color ?? "#A78BFA",
                       }}
                     >
                       {LEAD_STATUSES.map((s) => (
-                        <option key={s.value} value={s.value} className="bg-[#1A1A2E] text-white">
+                        <option key={s.value} value={s.value} className="bg-[#0B1020] text-white">
                           {s.label}
                         </option>
                       ))}
@@ -246,7 +240,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 
                   {session.capturedLead?.intent && (
                     <div>
-                      <p className="text-[11px] text-[#8888AA] uppercase tracking-wider">Intent</p>
+                      <p className="text-[11px] text-white/55 uppercase tracking-wider">Intent</p>
                       <p className="text-sm text-white mt-0.5">{session.capturedLead.intent}</p>
                       {session.capturedLead.urgency && (
                         <span
@@ -271,22 +265,22 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     {session.callerName && (
                       <div>
-                        <p className="text-[10px] text-[#666680] uppercase tracking-wider">Name</p>
+                        <p className="text-[10px] text-white/40 uppercase tracking-wider">Name</p>
                         <p className="text-white mt-0.5">{session.callerName}</p>
                       </div>
                     )}
                     {session.callerPhone && (
                       <div>
-                        <p className="text-[10px] text-[#666680] uppercase tracking-wider">Phone</p>
-                        <a href={`tel:${session.callerPhone}`} className="text-[#00D4FF] hover:underline mt-0.5 block">
+                        <p className="text-[10px] text-white/40 uppercase tracking-wider">Phone</p>
+                        <a href={`tel:${session.callerPhone}`} className="ah-gradient-text font-medium hover:opacity-80 mt-0.5 block">
                           {session.callerPhone}
                         </a>
                       </div>
                     )}
                     {session.callerEmail && (
                       <div>
-                        <p className="text-[10px] text-[#666680] uppercase tracking-wider">Email</p>
-                        <a href={`mailto:${session.callerEmail}`} className="text-[#00D4FF] hover:underline mt-0.5 block">
+                        <p className="text-[10px] text-white/40 uppercase tracking-wider">Email</p>
+                        <a href={`mailto:${session.callerEmail}`} className="ah-gradient-text font-medium hover:opacity-80 mt-0.5 block">
                           {session.callerEmail}
                         </a>
                       </div>
@@ -295,8 +289,8 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 
                   {session.capturedLead?.notes && (
                     <div>
-                      <p className="text-[11px] text-[#8888AA] uppercase tracking-wider">Notes</p>
-                      <p className="text-xs text-[#C0C0D8] mt-0.5 leading-relaxed">{session.capturedLead.notes}</p>
+                      <p className="text-[11px] text-white/55 uppercase tracking-wider">Notes</p>
+                      <p className="text-xs text-white/75 mt-0.5 leading-relaxed">{session.capturedLead.notes}</p>
                     </div>
                   )}
                 </div>
@@ -304,9 +298,9 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 
               {/* Summary */}
               {summary && (
-                <div className="bg-white/[0.03] rounded-xl p-4 border border-[#2A2A3E]">
+                <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06]">
                   <h3 className="text-sm font-semibold text-white mb-2">Summary</h3>
-                  <p className="text-sm text-[#8888AA] leading-relaxed">{summary}</p>
+                  <p className="text-sm text-white/55 leading-relaxed">{summary}</p>
                 </div>
               )}
 
@@ -317,33 +311,29 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 
               {/* AI Analysis (from Claude) */}
               {Boolean(session.sentiment || (session.topics && session.topics.length > 0) || (session.actionItems && !isInterviewData(session.actionItems))) && (
-                <div className="bg-white/[0.03] rounded-xl p-4 border border-[#2A2A3E] space-y-3">
+                <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06] space-y-3">
                   <h3 className="text-sm font-semibold text-white">AI Analysis</h3>
 
                   {/* Sentiment */}
                   {session.sentiment && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-[#8888AA]">Sentiment:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-white/55">Sentiment:</span>
                       <span
-                        className="text-xs font-medium px-2 py-0.5 rounded-full capitalize"
-                        style={{
-                          backgroundColor:
-                            session.sentiment === "positive" ? "rgba(16,185,129,0.15)" :
-                            session.sentiment === "negative" ? "rgba(239,68,68,0.15)" :
-                            session.sentiment === "mixed" ? "rgba(255,184,0,0.15)" :
-                            "rgba(136,136,170,0.15)",
-                          color:
-                            session.sentiment === "positive" ? "#10B981" :
-                            session.sentiment === "negative" ? "#EF4444" :
-                            session.sentiment === "mixed" ? "#FFB800" :
-                            "#8888AA",
-                        }}
+                        className={`text-xs font-medium px-2.5 py-0.5 rounded-full capitalize border ${
+                          session.sentiment === "positive"
+                            ? "bg-emerald-500/15 text-emerald-300 border-emerald-300/20"
+                            : session.sentiment === "negative"
+                              ? "bg-rose-500/15 text-rose-300 border-rose-300/20"
+                              : session.sentiment === "mixed"
+                                ? "bg-amber-500/15 text-amber-300 border-amber-300/20"
+                                : "bg-white/[0.06] text-white/55 border-white/10"
+                        }`}
                       >
                         {String(session.sentiment)}
                         {session.sentimentScore != null && ` (${(Number(session.sentimentScore) * 100).toFixed(0)}%)`}
                       </span>
                       {session.escalated && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/15 text-red-400">
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-300/20">
                           Escalation needed
                         </span>
                       )}
@@ -353,9 +343,12 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                   {/* Topics */}
                   {session.topics && session.topics.length > 0 && (
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-[#8888AA]">Topics:</span>
+                      <span className="text-xs text-white/55">Topics:</span>
                       {session.topics.map((topic: string, i: number) => (
-                        <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-[#6366F1]/10 text-[#6366F1]">
+                        <span
+                          key={i}
+                          className="text-xs px-2.5 py-0.5 rounded-full bg-violet-500/10 text-violet-200 border border-violet-300/20"
+                        >
                           {String(topic)}
                         </span>
                       ))}
@@ -365,7 +358,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                   {/* Action Items */}
                   {Array.isArray(session.actionItems) && (session.actionItems as { action: string; priority: string }[]).length > 0 && (
                     <div>
-                      <span className="text-xs text-[#8888AA] block mb-1">Action Items:</span>
+                      <span className="text-xs text-white/55 block mb-1">Action Items:</span>
                       <ul className="space-y-1">
                         {(session.actionItems as { action: string; priority: string }[]).map((item, i) => (
                           <li key={i} className="flex items-start gap-2 text-xs">
@@ -378,7 +371,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                                   "#10B981",
                               }}
                             />
-                            <span className="text-[#E0E0F0]">{item.action}</span>
+                            <span className="text-white/85">{item.action}</span>
                           </li>
                         ))}
                       </ul>
@@ -403,33 +396,38 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                         className={`flex gap-3 ${msg.speaker === "user" ? "flex-row-reverse" : ""}`}
                       >
                         <div
-                          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                          className="w-7 h-7 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
                           style={{
                             background:
                               msg.speaker === "user"
-                                ? "rgba(0,212,255,0.1)"
-                                : `${template?.accentColor || "#6366F1"}20`,
+                                ? "rgba(124,58,237,0.15)"
+                                : `${template?.accentColor || "#7C3AED"}25`,
+                            border:
+                              msg.speaker === "user"
+                                ? "1px solid rgba(167,139,250,0.25)"
+                                : `1px solid ${template?.accentColor || "#7C3AED"}30`,
                           }}
                         >
                           {msg.speaker === "user" ? (
-                            <User className="w-3.5 h-3.5 text-[#00D4FF]" />
+                            <User className="w-3.5 h-3.5 text-violet-300" strokeWidth={2} />
                           ) : (
                             <Bot
                               className="w-3.5 h-3.5"
-                              style={{ color: template?.accentColor || "#6366F1" }}
+                              style={{ color: template?.accentColor || "#A78BFA" }}
+                              strokeWidth={2}
                             />
                           )}
                         </div>
                         <div
-                          className={`max-w-[80%] rounded-xl px-4 py-2.5 text-sm ${
+                          className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
                             msg.speaker === "user"
-                              ? "bg-[#00D4FF]/10 text-white"
-                              : "bg-white/[0.04] text-[#E0E0F0]"
+                              ? "bg-violet-500/12 border border-violet-300/20 text-white"
+                              : "bg-white/[0.04] border border-white/10 text-white/85"
                           }`}
                         >
                           <p className="leading-relaxed">{msg.text}</p>
                           {msg.timestamp && (
-                            <p className="text-[10px] text-[#666680] mt-1">
+                            <p className="text-[10px] text-white/40 mt-1">
                               {formatISTTime(msg.timestamp)}
                             </p>
                           )}
@@ -439,7 +437,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8 text-[#8888AA]">
+                <div className="text-center py-8 text-white/55">
                   <MessageSquare className="w-10 h-10 mx-auto mb-3 opacity-30" />
                   <p className="text-sm">No transcript recorded for this session.</p>
                 </div>
@@ -466,10 +464,10 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div className="bg-white/[0.03] rounded-xl p-3 text-center border border-[#2A2A3E]">
-      <Icon className="w-4 h-4 mx-auto mb-1" style={{ color }} />
-      <p className="text-white text-sm font-semibold">{value}</p>
-      <p className="text-[10px] text-[#8888AA]">{label}</p>
+    <div className="bg-white/[0.03] rounded-2xl p-3.5 border border-white/[0.06] text-center">
+      <Icon className="w-4 h-4 mx-auto mb-1.5" style={{ color }} />
+      <p className="text-white text-sm font-semibold tracking-tight">{value}</p>
+      <p className="text-[10px] text-white/45 uppercase tracking-wider mt-0.5">{label}</p>
     </div>
   );
 }
@@ -559,7 +557,7 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
     "#FFB800";
 
   return (
-    <div className="bg-white/[0.03] rounded-xl p-4 border border-[#2A2A3E] space-y-4">
+    <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06] space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-white flex items-center gap-2">
           <Target className="w-4 h-4 text-[#6366F1]" />
@@ -567,7 +565,7 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
         </h3>
         {scores.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#8888AA]">Average:</span>
+            <span className="text-xs text-white/55">Average:</span>
             <span className="text-sm font-bold text-white">{avgScore}/10</span>
           </div>
         )}
@@ -585,7 +583,7 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
               {result.overallImpression.replace("_", " ")}
             </span>
             {result.overallFeedback && (
-              <p className="text-xs text-[#8888AA] mt-1 leading-relaxed">{result.overallFeedback}</p>
+              <p className="text-xs text-white/55 mt-1 leading-relaxed">{result.overallFeedback}</p>
             )}
           </div>
         </div>
@@ -607,7 +605,7 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
                 </span>
               </div>
               {/* Score bar */}
-              <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all"
                   style={{
@@ -629,8 +627,8 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
                     {q.score}
                   </span>
                   <div className="flex-1 min-w-0">
-                    {q.question && <p className="text-[11px] text-[#E0E0F0] truncate">{q.question}</p>}
-                    {q.feedback && <p className="text-[10px] text-[#666680] truncate">{q.feedback}</p>}
+                    {q.question && <p className="text-[11px] text-white/85 truncate">{q.question}</p>}
+                    {q.feedback && <p className="text-[10px] text-white/40 truncate">{q.feedback}</p>}
                   </div>
                 </div>
               ))}

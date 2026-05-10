@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { GradientButton } from "@/components/ui/gradient-button";
 
 interface Props {
   businessId: string;
@@ -33,22 +33,19 @@ export function BillingActions({
   // ── Current plan ────────────────────────────────────────────────────
   if (isCurrent) {
     if (isFree) {
-      return <p className="text-xs text-center text-[#666680]">You&apos;re on the free plan</p>;
+      return <p className="text-xs text-center text-white/40">You&apos;re on the free plan</p>;
     }
-    // Stripe has a customer portal we can redirect to. Razorpay does not —
-    // owners manage Razorpay subscriptions from the email confirmation or
-    // their Razorpay-side account. Surface a hint instead of a broken button.
     if (paymentProvider !== "stripe") {
       return (
-        <p className="text-xs text-center text-[#666680]">
+        <p className="text-xs text-center text-white/40 leading-relaxed">
           Active on Razorpay — manage from your Razorpay account
         </p>
       );
     }
     return (
-      <Button
+      <GradientButton
         variant="outline"
-        className="w-full border-[#2A2A3E] text-white"
+        className="w-full"
         disabled={busy !== null || !hasSubscription}
         onClick={async () => {
           setBusy("portal");
@@ -67,15 +64,15 @@ export function BillingActions({
           }
         }}
       >
-        {busy === "portal" ? "Opening..." : "Manage subscription"}
-      </Button>
+        {busy === "portal" ? "Opening…" : "Manage subscription"}
+      </GradientButton>
     );
   }
 
   // ── Free plan card (when on a paid plan) ────────────────────────────
   if (isFree) {
     return (
-      <p className="text-xs text-center text-[#666680]">
+      <p className="text-xs text-center text-white/40">
         Cancel a paid plan from its &ldquo;Manage&rdquo; button
       </p>
     );
@@ -84,9 +81,9 @@ export function BillingActions({
   // ── Paid plan, neither provider configured ─────────────────────────
   if (!stripeReady && !razorpayReady) {
     return (
-      <Button disabled className="w-full" variant="outline">
+      <GradientButton disabled variant="outline" className="w-full">
         Not available
-      </Button>
+      </GradientButton>
     );
   }
 
@@ -115,30 +112,31 @@ export function BillingActions({
   return (
     <>
       {stripeReady && (
-        <Button
-          className="w-full bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 hover:opacity-90"
+        <GradientButton
+          className="w-full"
           disabled={busy !== null}
           onClick={() => startCheckout("stripe")}
         >
           {busy === "stripe"
-            ? "Loading..."
+            ? "Loading…"
             : razorpayReady
               ? "Pay with Stripe (USD)"
               : "Upgrade"}
-        </Button>
+        </GradientButton>
       )}
       {razorpayReady && (
-        <Button
-          className="w-full bg-linear-to-r from-[#0B5CFF] to-[#3395FF] text-white border-0 hover:opacity-90"
+        <GradientButton
+          variant={stripeReady ? "outline" : "primary"}
+          className="w-full"
           disabled={busy !== null}
           onClick={() => startCheckout("razorpay")}
         >
           {busy === "razorpay"
-            ? "Loading..."
+            ? "Loading…"
             : stripeReady
               ? "Pay with Razorpay (INR)"
               : "Upgrade with Razorpay"}
-        </Button>
+        </GradientButton>
       )}
     </>
   );

@@ -10,8 +10,9 @@ import {
   Bot,
   History,
   Settings,
+  CreditCard,
   LogOut,
-  Zap,
+  Sparkles,
   Menu,
   X,
 } from "lucide-react";
@@ -21,8 +22,34 @@ const navItems = [
   { href: "/business/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/business/agents", icon: Bot, label: "Agents" },
   { href: "/business/sessions", icon: History, label: "Sessions" },
+  { href: "/business/billing", icon: CreditCard, label: "Billing" },
   { href: "/business/settings", icon: Settings, label: "Settings" },
 ];
+
+function Brand({ size = "md", onClick }: { size?: "sm" | "md"; onClick?: () => void }) {
+  const dim = size === "sm" ? 28 : 32;
+  const iconDim = size === "sm" ? 14 : 16;
+  return (
+    <Link
+      href="/business/dashboard"
+      onClick={onClick}
+      className="flex items-center gap-2.5 group"
+    >
+      <div className="relative">
+        <div
+          className="rounded-2xl ah-gradient-bg flex items-center justify-center shadow-[0_8px_24px_-8px_rgba(124,58,237,0.6)]"
+          style={{ width: dim, height: dim }}
+        >
+          <Sparkles style={{ width: iconDim, height: iconDim }} className="text-white" strokeWidth={2.5} />
+        </div>
+        <div className="absolute inset-0 rounded-2xl ah-gradient-bg blur-md opacity-40 group-hover:opacity-70 transition-opacity -z-10" />
+      </div>
+      <span className={`font-semibold tracking-tight text-white ${size === "sm" ? "text-base" : "text-lg"}`}>
+        AgentHub
+      </span>
+    </Link>
+  );
+}
 
 function NavLinks({ onNavClick }: { onNavClick?: () => void }) {
   const pathname = usePathname();
@@ -31,21 +58,23 @@ function NavLinks({ onNavClick }: { onNavClick?: () => void }) {
       {navItems.map((item) => {
         const isActive =
           pathname === item.href ||
-          (item.href !== "/business/dashboard" &&
-            pathname.startsWith(item.href));
+          (item.href !== "/business/dashboard" && pathname.startsWith(item.href));
         return (
           <Link
             key={item.href}
             href={item.href}
             onClick={onNavClick}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all",
+              "relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all",
               isActive
-                ? "bg-[#00D4FF]/10 text-[#00D4FF]"
-                : "text-[#8888AA] hover:text-white hover:bg-white/5"
+                ? "bg-white/[0.06] text-white"
+                : "text-white/55 hover:text-white hover:bg-white/[0.04]",
             )}
           >
-            <item.icon className="w-5 h-5" />
+            {isActive && (
+              <span className="absolute inset-y-2 left-0 w-0.5 rounded-full ah-gradient-bg" />
+            )}
+            <item.icon className={`w-[18px] h-[18px] ${isActive ? "text-violet-300" : ""}`} strokeWidth={1.75} />
             {item.label}
           </Link>
         );
@@ -61,92 +90,64 @@ export function Sidebar() {
     <>
       {/* ── Desktop sidebar ─────────────────────────────────── */}
       <motion.aside
-        initial={{ x: -20, opacity: 0 }}
+        initial={{ x: -16, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="hidden md:flex flex-col w-64 h-screen sticky top-0 bg-[#0E0E16] border-r border-[#2A2A3E] p-4 overflow-y-auto"
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-white/[0.06] p-5 overflow-y-auto bg-[#0B1020]/60 backdrop-blur-2xl"
       >
-        <Link
-          href="/business/dashboard"
-          className="flex items-center gap-2 mb-8 px-2"
-        >
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-(family-name:--font-heading) font-bold text-lg text-white">
-            AgentHub
-          </span>
-        </Link>
+        <div className="mb-8 px-1">
+          <Brand />
+        </div>
 
         <NavLinks />
 
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#8888AA] hover:text-red-400 hover:bg-red-400/5 transition-all"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/55 hover:text-rose-300 hover:bg-rose-500/5 transition-all"
         >
-          <LogOut className="w-5 h-5" />
-          Sign Out
+          <LogOut className="w-[18px] h-[18px]" strokeWidth={1.75} />
+          Sign out
         </button>
       </motion.aside>
 
       {/* ── Mobile top bar ──────────────────────────────────── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-[#0E0E16]/95 backdrop-blur-md border-b border-[#2A2A3E] flex items-center px-4 gap-3">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-[#050816]/85 backdrop-blur-xl border-b border-white/[0.06] flex items-center px-4 gap-3">
         <button
           onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-lg text-[#8888AA] hover:text-white hover:bg-white/5 transition-all"
+          className="p-2 rounded-xl text-white/55 hover:text-white hover:bg-white/[0.06] transition-all"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </button>
-        <Link href="/business/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
-            <Zap className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="font-(family-name:--font-heading) font-bold text-base text-white">
-            AgentHub
-          </span>
-        </Link>
+        <Brand size="sm" />
       </div>
 
       {/* ── Mobile drawer ────────────────────────────────────── */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               key="backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+              className="md:hidden fixed inset-0 z-50 bg-[#050816]/80 backdrop-blur-md"
               onClick={() => setMobileOpen(false)}
             />
 
-            {/* Drawer panel */}
             <motion.aside
               key="drawer"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 220 }}
-              className="md:hidden fixed top-0 left-0 z-50 h-full w-72 bg-[#0E0E16] border-r border-[#2A2A3E] p-4 flex flex-col overflow-y-auto"
+              className="md:hidden fixed top-0 left-0 z-50 h-full w-72 bg-[#0B1020] border-r border-white/[0.08] p-5 flex flex-col overflow-y-auto"
             >
-              {/* Drawer header */}
               <div className="flex items-center justify-between mb-8">
-                <Link
-                  href="/business/dashboard"
-                  className="flex items-center gap-2 px-2"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="font-(family-name:--font-heading) font-bold text-lg text-white">
-                    AgentHub
-                  </span>
-                </Link>
+                <Brand size="sm" onClick={() => setMobileOpen(false)} />
                 <button
                   onClick={() => setMobileOpen(false)}
-                  className="p-2 rounded-lg text-[#8888AA] hover:text-white hover:bg-white/5 transition-all"
+                  className="p-2 rounded-xl text-white/55 hover:text-white hover:bg-white/[0.06] transition-all"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
@@ -157,10 +158,10 @@ export function Sidebar() {
 
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#8888AA] hover:text-red-400 hover:bg-red-400/5 transition-all"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/55 hover:text-rose-300 hover:bg-rose-500/5 transition-all"
               >
-                <LogOut className="w-5 h-5" />
-                Sign Out
+                <LogOut className="w-[18px] h-[18px]" strokeWidth={1.75} />
+                Sign out
               </button>
             </motion.aside>
           </>

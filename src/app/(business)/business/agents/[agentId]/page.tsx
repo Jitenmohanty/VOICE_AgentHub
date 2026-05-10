@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GlassPanel } from "@/components/ui/glass-panel";
+import { GradientButton } from "@/components/ui/gradient-button";
 import { toast } from "sonner";
 import Link from "next/link";
 import { getTemplateById } from "@/lib/templates";
@@ -156,53 +158,68 @@ export default function AgentConfigPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto space-y-4">
+      <div className="max-w-3xl mx-auto p-6 md:p-10 space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="glass rounded-xl p-6 animate-pulse">
-            <div className="h-5 w-1/4 bg-white/5 rounded mb-3" />
-            <div className="h-10 w-full bg-white/5 rounded" />
+          <div key={i} className="glass-raised rounded-3xl p-7 animate-pulse">
+            <div className="h-5 w-1/4 bg-white/[0.06] rounded mb-3" />
+            <div className="h-10 w-full bg-white/[0.06] rounded" />
           </div>
         ))}
       </div>
     );
   }
 
-  if (!agent) return <div className="text-center py-16 text-[#8888AA]">Agent not found</div>;
+  if (!agent) return <div className="text-center py-16 text-white/55">Agent not found</div>;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto p-6 md:p-10">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <Link href="/business/agents" className="flex items-center gap-1 text-sm text-[#8888AA] hover:text-white mb-4">
-          <ArrowLeft className="w-4 h-4" /> Back to Agents
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8">
+        <Link href="/business/agents" className="inline-flex items-center gap-1.5 text-sm text-white/55 hover:text-white mb-5 transition-colors">
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to agents
         </Link>
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: `${template?.accentColor || "#6366F1"}15` }}>
-            <Bot className="w-6 h-6" style={{ color: template?.accentColor || "#6366F1" }} />
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center"
+            style={{
+              background: `linear-gradient(135deg, ${template?.accentColor || "#7C3AED"}30, ${template?.accentColor || "#3B82F6"}10)`,
+              border: `1px solid ${template?.accentColor || "#7C3AED"}30`,
+            }}
+          >
+            <Bot className="w-5 h-5" style={{ color: template?.accentColor || "#A78BFA" }} strokeWidth={2} />
           </div>
           <div>
-            <h1 className="font-(family-name:--font-heading) text-2xl font-bold text-white">{agent.name}</h1>
-            <p className="text-sm text-[#8888AA] capitalize">{agent.templateType} template</p>
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-white">{agent.name}</h1>
+            <p className="text-xs text-white/55 capitalize mt-0.5">{agent.templateType} template</p>
           </div>
         </div>
       </motion.div>
 
       {/* Quick links */}
       <div className="grid grid-cols-3 gap-3 mb-8">
-        <Link href={`/business/agents/${agentId}/knowledge?bid=${businessId}`} className="glass rounded-xl p-4 text-center hover:bg-white/[0.04] transition-colors">
-          <BookOpen className="w-5 h-5 mx-auto mb-1 text-[#00D4FF]" />
-          <p className="text-sm text-white font-medium">{agent._count.knowledgeItems}</p>
-          <p className="text-[10px] text-[#8888AA]">Knowledge Items</p>
+        <Link
+          href={`/business/agents/${agentId}/knowledge?bid=${businessId}`}
+          className="glass rounded-2xl p-4 text-center hover:bg-white/[0.07] transition-all"
+        >
+          <BookOpen className="w-4 h-4 mx-auto mb-1.5 text-violet-300" />
+          <p className="text-lg font-semibold tracking-tight text-white tabular-nums">{agent._count.knowledgeItems}</p>
+          <p className="text-[10px] text-white/45 uppercase tracking-wider mt-0.5">Knowledge</p>
         </Link>
-        <Link href={`/business/agents/${agentId}/data?bid=${businessId}`} className="glass rounded-xl p-4 text-center hover:bg-white/[0.04] transition-colors">
-          <Database className="w-5 h-5 mx-auto mb-1 text-[#FFB800]" />
-          <p className="text-sm text-white font-medium">{agent._count.businessData}</p>
-          <p className="text-[10px] text-[#8888AA]">Data Sets</p>
+        <Link
+          href={`/business/agents/${agentId}/data?bid=${businessId}`}
+          className="glass rounded-2xl p-4 text-center hover:bg-white/[0.07] transition-all"
+        >
+          <Database className="w-4 h-4 mx-auto mb-1.5 text-cyan-300" />
+          <p className="text-lg font-semibold tracking-tight text-white tabular-nums">{agent._count.businessData}</p>
+          <p className="text-[10px] text-white/45 uppercase tracking-wider mt-0.5">Data sets</p>
         </Link>
-        <Link href={`/business/agents/${agentId}/sessions?bid=${businessId}`} className="glass rounded-xl p-4 text-center hover:bg-white/[0.04] transition-colors">
-          <MessageSquare className="w-5 h-5 mx-auto mb-1 text-[#6366F1]" />
-          <p className="text-sm text-white font-medium">{agent._count.agentSessions}</p>
-          <p className="text-[10px] text-[#8888AA]">Sessions</p>
+        <Link
+          href={`/business/agents/${agentId}/sessions?bid=${businessId}`}
+          className="glass rounded-2xl p-4 text-center hover:bg-white/[0.07] transition-all"
+        >
+          <MessageSquare className="w-4 h-4 mx-auto mb-1.5 text-blue-300" />
+          <p className="text-lg font-semibold tracking-tight text-white tabular-nums">{agent._count.agentSessions}</p>
+          <p className="text-[10px] text-white/45 uppercase tracking-wider mt-0.5">Sessions</p>
         </Link>
       </div>
 
@@ -212,69 +229,71 @@ export default function AgentConfigPage() {
         <EmbedInstallCard slug={agent.business.slug} accentColor={template?.accentColor} />
 
         {/* ── Section 1: Business Location & Contact ── */}
-        <div className="glass rounded-2xl p-6 space-y-5">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-[#00D4FF]" />
-            <h2 className="font-semibold text-white text-lg">Business Location & Contact</h2>
+        <div className="glass-raised rounded-3xl p-7 space-y-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-300/20 flex items-center justify-center">
+              <Building2 className="w-4 h-4 text-violet-300" strokeWidth={2} />
+            </div>
+            <h2 className="font-semibold text-white text-lg tracking-tight">Business Location & Contact</h2>
           </div>
-          <p className="text-xs text-[#666680] -mt-3">Your agent will share these details when customers ask</p>
+          <p className="text-xs text-white/40 -mt-3">Your agent will share these details when customers ask</p>
 
           <div>
-            <Label className="text-[#8888AA]">About Your Business</Label>
-            <textarea value={bizDescription} onChange={(e) => setBizDescription(e.target.value)} placeholder="e.g., A luxury 5-star hotel in the heart of Mumbai with 200 rooms and world-class dining..." rows={2} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
+            <Label className="text-xs font-medium text-white/60">About Your Business</Label>
+            <textarea value={bizDescription} onChange={(e) => setBizDescription(e.target.value)} placeholder="e.g., A luxury 5-star hotel in the heart of Mumbai with 200 rooms and world-class dining..." rows={2} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-white/40 resize-none focus:outline-none focus:border-[#00D4FF]" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-[#8888AA] flex items-center gap-1"><Phone className="w-3 h-3" /> Phone Number</Label>
-              <Input value={bizPhone} onChange={(e) => setBizPhone(e.target.value)} placeholder="+91 98765 43210" className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
+              <Input value={bizPhone} onChange={(e) => setBizPhone(e.target.value)} placeholder="+91 98765 43210" className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
             </div>
             <div>
               <Label className="text-[#8888AA] flex items-center gap-1"><Globe className="w-3 h-3" /> Website</Label>
-              <Input value={bizWebsite} onChange={(e) => setBizWebsite(e.target.value)} placeholder="https://www.yourhotel.com" className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
+              <Input value={bizWebsite} onChange={(e) => setBizWebsite(e.target.value)} placeholder="https://www.yourhotel.com" className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
             </div>
           </div>
 
           <div>
             <Label className="text-[#8888AA] flex items-center gap-1"><MapPin className="w-3 h-3" /> Address</Label>
-            <Input value={bizAddress} onChange={(e) => setBizAddress(e.target.value)} placeholder="123 Marine Drive, Mumbai, Maharashtra 400001" className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
+            <Input value={bizAddress} onChange={(e) => setBizAddress(e.target.value)} placeholder="123 Marine Drive, Mumbai, Maharashtra 400001" className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
           </div>
         </div>
 
         {/* ── Section 2: How Your Agent Talks ── */}
-        <div className="glass rounded-2xl p-6 space-y-5">
-          <h2 className="font-semibold text-white text-lg">How Your Agent Talks</h2>
+        <div className="glass-raised rounded-3xl p-7 space-y-5">
+          <h2 className="font-semibold text-white text-lg tracking-tight">How Your Agent Talks</h2>
 
           <div>
-            <Label className="text-[#8888AA]">Agent Name</Label>
-            <p className="text-xs text-[#666680] mb-1">The name customers will see</p>
-            <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 bg-white/5 border-[#2A2A3E] text-white" />
+            <Label className="text-xs font-medium text-white/60">Agent Name</Label>
+            <p className="text-xs text-white/40 mb-1">The name customers will see</p>
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
           </div>
 
           <div>
-            <Label className="text-[#8888AA]">Welcome Message</Label>
-            <p className="text-xs text-[#666680] mb-1">First thing the agent says when a customer calls</p>
-            <Input value={greeting} onChange={(e) => setGreeting(e.target.value)} placeholder={template?.defaultGreeting} className="mt-1 bg-white/5 border-[#2A2A3E] text-white" />
+            <Label className="text-xs font-medium text-white/60">Welcome Message</Label>
+            <p className="text-xs text-white/40 mb-1">First thing the agent says when a customer calls</p>
+            <Input value={greeting} onChange={(e) => setGreeting(e.target.value)} placeholder={template?.defaultGreeting} className="mt-1 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
           </div>
 
           <div>
-            <Label className="text-[#8888AA]">Tone & Style</Label>
-            <p className="text-xs text-[#666680] mb-1">How should the agent sound? Formal, friendly, casual?</p>
-            <textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder={template?.defaultPersonality} rows={2} className="w-full bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
+            <Label className="text-xs font-medium text-white/60">Tone & Style</Label>
+            <p className="text-xs text-white/40 mb-1">How should the agent sound? Formal, friendly, casual?</p>
+            <textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder={template?.defaultPersonality} rows={2} className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50" />
           </div>
 
           <div>
-            <Label className="text-[#8888AA]">Important Instructions</Label>
-            <p className="text-xs text-[#666680] mb-1">Things the agent must always do or never do</p>
-            <textarea value={rules} onChange={(e) => setRules(e.target.value)} placeholder={"Examples:\n- Always greet by name if the caller introduces themselves\n- Never share room prices, direct to website\n- For complaints, apologize and offer to connect with manager"} rows={4} className="w-full bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
+            <Label className="text-xs font-medium text-white/60">Important Instructions</Label>
+            <p className="text-xs text-white/40 mb-1">Things the agent must always do or never do</p>
+            <textarea value={rules} onChange={(e) => setRules(e.target.value)} placeholder={"Examples:\n- Always greet by name if the caller introduces themselves\n- Never share room prices, direct to website\n- For complaints, apologize and offer to connect with manager"} rows={4} className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50" />
           </div>
         </div>
 
         {/* ── Section 3: Template-Specific Details ── */}
         {template && template.configFields.length > 0 && (
-          <div className="glass rounded-2xl p-6 space-y-5">
-            <h2 className="font-semibold text-white text-lg capitalize">{agent.templateType} Details</h2>
-            <p className="text-xs text-[#666680] -mt-3">Specific information about your {agent.templateType} business</p>
+          <div className="glass-raised rounded-3xl p-7 space-y-5">
+            <h2 className="font-semibold text-white text-lg tracking-tight capitalize">{agent.templateType} Details</h2>
+            <p className="text-xs text-white/40 -mt-3">Specific information about your {agent.templateType} business</p>
 
             {(() => {
               const sections: { name: string; fields: AgentConfigField[] }[] = [];
@@ -286,41 +305,45 @@ export default function AgentConfigPage() {
               }
               return sections.map((section) => (
                 <div key={section.name} className="space-y-4">
-                  <p className="text-xs font-medium text-[#666680] uppercase tracking-wider pt-2 border-t border-[#2A2A3E]/50">{section.name}</p>
+                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider pt-2 border-t border-[#2A2A3E]/50">{section.name}</p>
                   {section.fields.map((field: AgentConfigField) => (
                     <div key={field.id}>
-                      <Label className="text-[#8888AA]">{field.label}</Label>
-                      {field.description && <p className="text-xs text-[#666680] mt-0.5">{field.description}</p>}
+                      <Label className="text-xs font-medium text-white/60">{field.label}</Label>
+                      {field.description && <p className="text-xs text-white/40 mt-0.5">{field.description}</p>}
 
                       {field.type === "text" && (
-                        <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : `Enter ${field.label.toLowerCase()}`)} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white" />
+                        <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : `Enter ${field.label.toLowerCase()}`)} className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
                       )}
 
                       {field.type === "number" && (
-                        <Input type="number" value={config[field.id] !== undefined ? String(config[field.id]) : ""} onChange={(e) => updateConfig(field.id, e.target.value === "" ? 0 : Number(e.target.value))} min={field.min} max={field.max} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white w-32" />
+                        <Input type="number" value={config[field.id] !== undefined ? String(config[field.id]) : ""} onChange={(e) => updateConfig(field.id, e.target.value === "" ? 0 : Number(e.target.value))} min={field.min} max={field.max} className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl w-32" />
                       )}
 
                       {field.type === "time" && (
-                        <Input type="time" value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white w-40" />
+                        <Input type="time" value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl w-40" />
                       )}
 
                       {field.type === "textarea" && (
-                        <textarea value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || ""} rows={3} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
+                        <textarea value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || ""} rows={3} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-white/40 resize-none focus:outline-none focus:border-[#00D4FF]" />
                       )}
 
                       {field.type === "toggle" && (
-                        <button type="button" onClick={() => updateConfig(field.id, !config[field.id])} className="mt-1.5 flex items-center gap-2">
-                          <div className={`w-10 h-5 rounded-full transition-colors relative ${config[field.id] ? "bg-[#00D4FF]" : "bg-[#2A2A3E]"}`}>
-                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${config[field.id] ? "translate-x-5" : "translate-x-0.5"}`} />
+                        <button
+                          type="button"
+                          onClick={() => updateConfig(field.id, !config[field.id])}
+                          className="mt-2 flex items-center gap-2.5"
+                        >
+                          <div className={`w-11 h-6 rounded-full transition-all relative border ${config[field.id] ? "ah-gradient-bg border-violet-300/40 shadow-[0_0_16px_-4px_rgba(124,58,237,0.5)]" : "bg-white/[0.06] border-white/10"}`}>
+                            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${config[field.id] ? "translate-x-5" : "translate-x-0.5"}`} />
                           </div>
-                          <span className="text-sm text-[#8888AA]">{config[field.id] ? "Yes" : "No"}</span>
+                          <span className="text-sm text-white/65">{config[field.id] ? "Yes" : "No"}</span>
                         </button>
                       )}
 
                       {field.type === "select" && field.options && (
-                        <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-10 bg-white/5 border border-[#2A2A3E] rounded-lg px-3 text-sm text-white focus:outline-none focus:border-[#00D4FF]">
-                          <option value="" className="bg-[#1A1A2E]">Select {field.label.toLowerCase()}</option>
-                          {field.options.map((opt) => <option key={opt} value={opt} className="bg-[#1A1A2E]">{opt}</option>)}
+                        <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50">
+                          <option value="" className="bg-[#0B1020]">Select {field.label.toLowerCase()}</option>
+                          {field.options.map((opt) => <option key={opt} value={opt} className="bg-[#0B1020]">{opt}</option>)}
                         </select>
                       )}
 
@@ -329,7 +352,16 @@ export default function AgentConfigPage() {
                           {field.options.map((opt) => {
                             const selected = ((config[field.id] as string[]) || []).includes(opt);
                             return (
-                              <button key={opt} type="button" onClick={() => toggleMultiSelect(field.id, opt)} className="px-3 py-1.5 rounded-lg text-sm transition-all" style={{ backgroundColor: selected ? `${template.accentColor}20` : "rgba(255,255,255,0.05)", color: selected ? template.accentColor : "#8888AA", borderWidth: "1px", borderColor: selected ? `${template.accentColor}40` : "transparent" }}>
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() => toggleMultiSelect(field.id, opt)}
+                                className={`px-3 py-1.5 rounded-xl text-sm transition-all border ${
+                                  selected
+                                    ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40 text-white"
+                                    : "bg-white/[0.03] border-white/10 text-white/55 hover:bg-white/[0.06] hover:text-white/85"
+                                }`}
+                              >
                                 {opt}
                               </button>
                             );
@@ -363,66 +395,80 @@ export default function AgentConfigPage() {
         )}
 
         {/* ── Section 4: Voice & Language ── */}
-        <div className="glass rounded-2xl p-6 space-y-5">
-          <div className="flex items-center gap-2">
-            <Volume2 className="w-5 h-5 text-[#FFB800]" />
-            <h2 className="font-semibold text-white text-lg">Voice & Language</h2>
+        <div className="glass-raised rounded-3xl p-7 space-y-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-300/20 flex items-center justify-center">
+              <Volume2 className="w-4 h-4 text-cyan-300" strokeWidth={2} />
+            </div>
+            <h2 className="font-semibold text-white text-lg tracking-tight">Voice & Language</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-[#8888AA]">Language</Label>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="mt-1.5 w-full h-10 bg-white/5 border border-[#2A2A3E] rounded-lg px-3 text-sm text-white focus:outline-none focus:border-[#00D4FF]">
-                {LANGUAGES.map((l) => <option key={l.code} value={l.code} className="bg-[#1A1A2E]">{l.label}</option>)}
+              <Label className="text-xs font-medium text-white/60">Language</Label>
+              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="mt-1.5 w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50">
+                {LANGUAGES.map((l) => <option key={l.code} value={l.code} className="bg-[#0B1020]">{l.label}</option>)}
               </select>
             </div>
             <div>
-              <Label className="text-[#8888AA]">Voice Style</Label>
-              <select value={voiceName} onChange={(e) => setVoiceName(e.target.value)} className="mt-1.5 w-full h-10 bg-white/5 border border-[#2A2A3E] rounded-lg px-3 text-sm text-white focus:outline-none focus:border-[#00D4FF]">
-                <option value="" className="bg-[#1A1A2E]">Default</option>
-                {VOICES.map((v) => <option key={v.id} value={v.id} className="bg-[#1A1A2E]">{v.label}</option>)}
+              <Label className="text-xs font-medium text-white/60">Voice Style</Label>
+              <select value={voiceName} onChange={(e) => setVoiceName(e.target.value)} className="mt-1.5 w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50">
+                <option value="" className="bg-[#0B1020]">Default</option>
+                {VOICES.map((v) => <option key={v.id} value={v.id} className="bg-[#0B1020]">{v.label}</option>)}
               </select>
             </div>
           </div>
         </div>
 
         {/* ── Section 5: Developer Mode (collapsed) ── */}
-        <div className="glass rounded-2xl overflow-hidden">
+        <GlassPanel elevation="raised" radius="lg" className="overflow-hidden">
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
+            className="w-full p-5 flex items-center justify-between text-left hover:bg-white/[0.03] transition-colors"
           >
-            <div className="flex items-center gap-2">
-              <Code className="w-4 h-4 text-[#8888AA]" />
-              <span className="text-sm text-[#8888AA]">Developer Mode</span>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center">
+                <Code className="w-3.5 h-3.5 text-white/55" />
+              </div>
+              <span className="text-sm font-medium text-white/65">Developer mode</span>
             </div>
-            <ChevronDown className={`w-4 h-4 text-[#8888AA] transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+            <ChevronDown className={`w-4 h-4 text-white/40 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
           </button>
 
           {showAdvanced && (
-            <div className="px-6 pb-6 space-y-4">
+            <div className="px-7 pb-7 space-y-5">
               <div>
-                <Label className="text-[#8888AA]">Custom System Prompt</Label>
-                <p className="text-xs text-[#666680] mb-1">
+                <Label className="text-xs font-medium text-white/60">Custom system prompt</Label>
+                <p className="text-xs text-white/40 mb-1.5 mt-0.5">
                   Override the auto-generated AI instructions. Leave empty to use your settings above.
-                  This is the raw instruction text sent to the AI model.
                 </p>
-                <textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} placeholder="Leave empty — your agent&apos;s prompt is automatically built from your business details, tone, rules, and knowledge base above." rows={8} className="w-full bg-black/30 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white font-mono placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]" />
+                <textarea
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  placeholder="Leave empty — your agent's prompt is built automatically from the settings above."
+                  rows={8}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 text-xs text-white font-mono placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50"
+                />
               </div>
               <div>
-                <Label className="text-[#8888AA]">Agent Description</Label>
-                <p className="text-xs text-[#666680] mb-1">Internal description (not shown to customers)</p>
-                <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="e.g., Handles booking inquiries and room service" className="bg-white/5 border-[#2A2A3E] text-white" />
+                <Label className="text-xs font-medium text-white/60">Agent description</Label>
+                <p className="text-xs text-white/40 mb-1.5 mt-0.5">Internal description (not shown to customers)</p>
+                <Input
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="e.g., Handles booking inquiries and room service"
+                  className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl"
+                />
               </div>
             </div>
           )}
-        </div>
+        </GlassPanel>
 
         {/* Save */}
         <div className="flex justify-end pb-8">
-          <Button onClick={handleSave} disabled={saving} className="px-8 bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 hover:opacity-90">
-            {saving ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save All Changes</>}
-          </Button>
+          <GradientButton onClick={handleSave} disabled={saving} size="default">
+            {saving ? "Saving…" : <><Save className="w-4 h-4" /> Save all changes</>}
+          </GradientButton>
         </div>
       </motion.div>
     </div>
