@@ -124,7 +124,7 @@ export class GeminiLiveSession {
     this.prebuiltPrompt = options?.systemPrompt || null;
     this.prebuiltTools = options?.tools || null;
     this.voiceName = options?.voiceName ?? null;
-    this.language = options?.language || "en";
+    this.language = options?.language || "en-US";
     this.sessionId = options?.sessionId ?? null;
     this.updateToken = options?.updateToken ?? null;
   }
@@ -204,18 +204,20 @@ export class GeminiLiveSession {
           // feature can replay state. We don't actively reconnect yet —
           // see handleMessage() for handle capture.
           sessionResumption: {},
-          // Voice selection — uses business owner's configured voice or Gemini default
-          ...(this.voiceName ? {
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: this.voiceName },
-              },
-            },
-          } : {}),
-          // Language — sets the model's spoken output language
-          ...(this.language && this.language !== "en" ? {
-            systemLanguageCode: this.language,
-          } : {}),
+          // Voice + spoken-output language. Both live under speechConfig.
+          // languageCode is BCP-47 (e.g. "hi-IN"). The previous implementation
+          // passed `systemLanguageCode` at the top level — that field doesn't
+          // exist on LiveConnectConfig, so the SDK silently dropped it. The
+          // system prompt also carries an explicit "Respond in X" directive
+          // (see api/public/agent/[slug]/session/route.ts) so the very first
+          // turn lands in the chosen language even if the speech-config
+          // takes a beat to kick in.
+          speechConfig: {
+            ...(this.voiceName
+              ? { voiceConfig: { prebuiltVoiceConfig: { voiceName: this.voiceName } } }
+              : {}),
+            ...(this.language ? { languageCode: this.language } : {}),
+          },
         },
         callbacks: {
           onopen: () => {

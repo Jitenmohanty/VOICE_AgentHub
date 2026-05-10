@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Link from "next/link";
 import { getTemplateById } from "@/lib/templates";
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE_CODE, normalizeLanguage } from "@/lib/languages";
 import { MenuBuilder } from "@/components/business/MenuBuilder";
 import { DoctorRoster } from "@/components/business/DoctorRoster";
 import { EmbedInstallCard } from "@/components/business/EmbedInstallCard";
@@ -36,13 +37,9 @@ interface AgentFullData {
   _count: { agentSessions: number; knowledgeItems: number; businessData: number };
 }
 
-const LANGUAGES = [
-  { code: "en", label: "English" }, { code: "hi", label: "Hindi" },
-  { code: "es", label: "Spanish" }, { code: "fr", label: "French" },
-  { code: "de", label: "German" }, { code: "ja", label: "Japanese" },
-  { code: "zh", label: "Chinese" }, { code: "ar", label: "Arabic" },
-  { code: "pt", label: "Portuguese" }, { code: "ko", label: "Korean" },
-];
+// Language list lives in src/lib/languages.ts — single source of truth shared
+// with the caller-side picker and Gemini Live's speechConfig.languageCode.
+const LANGUAGES = SUPPORTED_LANGUAGES;
 
 const VOICES = [
   { id: "Puck", label: "Puck (Energetic)" }, { id: "Charon", label: "Charon (Calm)" },
@@ -67,7 +64,7 @@ export default function AgentConfigPage() {
   const [personality, setPersonality] = useState("");
   const [rules, setRules] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState(DEFAULT_LANGUAGE_CODE);
   const [voiceName, setVoiceName] = useState("");
   const [config, setConfig] = useState<Record<string, string | string[] | number | boolean>>({});
 
@@ -90,7 +87,7 @@ export default function AgentConfigPage() {
         setPersonality(a.personality || "");
         setRules(a.rules || "");
         setSystemPrompt(a.systemPrompt || "");
-        setLanguage(a.language || "en");
+        setLanguage(normalizeLanguage(a.language));
         setVoiceName(a.voiceName || "");
         setConfig((a.config || {}) as Record<string, string | string[] | number | boolean>);
         // Business fields

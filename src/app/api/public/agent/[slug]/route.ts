@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { normalizeLanguage } from "@/lib/languages";
 
 /** GET public agent info — no auth required */
 export async function GET(
@@ -22,6 +23,7 @@ export async function GET(
             greeting: true,
             description: true,
             config: true,
+            language: true,
           },
         },
       },
@@ -47,6 +49,9 @@ export async function GET(
         config: agent.config || {},
         accentColor: template?.accentColor || "#00D4FF",
         icon: template?.icon || "Bot",
+        // Owner-configured default language. Normalized so legacy bare codes
+        // (e.g. "en") become BCP-47 ("en-US") before reaching the caller.
+        defaultLanguage: normalizeLanguage(agent.language),
       },
       business: {
         name: business.name,

@@ -5,6 +5,7 @@ import { getAgentSystemPrompt, getAgentTools } from "@/lib/gemini/agent-prompts"
 import { queryKnowledge, buildRAGContext, buildBusinessDataContext } from "@/lib/rag";
 import { checkSessionRateLimit, checkBusinessPlanQuota } from "@/lib/ratelimit";
 import { SessionCreateSchema } from "@/lib/schemas";
+import { getLanguage, normalizeLanguage } from "@/lib/languages";
 
 /** POST — create anonymous session + return API key with RAG-enhanced prompt. No auth. */
 export async function POST(
@@ -55,6 +56,14 @@ export async function POST(
     const body = parse.data;
     const candidateContext = body.candidateContext as Record<string, string> | undefined;
     const callContext = body.callContext;
+
+    // Caller's chosen language wins over the agent's owner-configured default.
+    // Both pass through normalizeLanguage so legacy bare codes ("en", "hi")
+    // become BCP-47 ("en-US", "hi-IN") before they reach Gemini.
+    const chosenLanguage = body.language
+      ? normalizeLanguage(body.language)
+      : normalizeLanguage(agent.language);
+    const languageOption = getLanguage(chosenLanguage);
 
     // For interview agents, inject per-session variety hints so the same
     // candidate + tech stack doesn't get the same questions on every session.
@@ -114,6 +123,15 @@ export async function POST(
     // Inject caller's pre-call context (e.g., "ordering food" or "book appointment with Dr. Smith")
     if (callContext) {
       systemPrompt += `\n\nCaller Context: The caller selected "${callContext}" before starting the call. Address this intent immediately.`;
+    }
+
+    // Language directive — paired with speechConfig.languageCode in the Live
+    // connect config. Speech-config alone occasionally takes a turn or two to
+    // kick in; the prompt directive makes the very first reply land in the
+    // right language. Native-script label is included so the model recognizes
+    // the language even if the BCP-47 code is unfamiliar to it.
+    if (languageOption.code !== "en-US") {
+      systemPrompt += `\n\nLanguage: Respond exclusively in ${languageOption.label} (${languageOption.nativeLabel}). Every reply — including the greeting — must be in ${languageOption.label}. Do not switch to English unless the caller explicitly asks you to.`;
     }
 
     // 2. Inject personality and rules
@@ -190,7 +208,7 @@ export async function POST(
       systemPrompt,
       tools,
       voiceName: agent.voiceName || null,
-      language: agent.language || "en",
+      language: chosenLanguage,
       agent: {
         id: agent.id,
         name: agent.name,

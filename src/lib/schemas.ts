@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { TEMPLATES } from "@/lib/templates";
+import { SUPPORTED_LANGUAGES } from "@/lib/languages";
 
 const TEMPLATE_IDS = TEMPLATES.map((t) => t.id) as [string, ...string[]];
+const LANGUAGE_CODES = SUPPORTED_LANGUAGES.map((l) => l.code) as [string, ...string[]];
 
 // ── Reusable primitives ─────────────────────────────────────────────────────
 
@@ -28,6 +30,9 @@ export const SessionCreateSchema = z.object({
     .max(20)
     .regex(/^[+\d\s\-()]*$/, "Invalid phone format")
     .optional(),
+  // Caller-chosen language for this call (BCP-47). Falls back to agent.language
+  // when omitted. Validated against the centralized SUPPORTED_LANGUAGES list.
+  language: z.enum(LANGUAGE_CODES).optional(),
 });
 
 // ── Public: PATCH /api/public/agent/[slug]/session/[sessionId] ──────────────

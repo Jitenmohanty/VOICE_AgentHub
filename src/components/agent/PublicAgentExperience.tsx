@@ -16,6 +16,8 @@ import { RestaurantPreCall, type MenuItem } from "@/components/public/Restaurant
 import { MedicalPreCall, type DoctorInfo } from "@/components/public/MedicalPreCall";
 import { LegalPreCall } from "@/components/public/LegalPreCall";
 import { PersonalPreCall } from "@/components/public/PersonalPreCall";
+import { LanguagePicker } from "@/components/agent/LanguagePicker";
+import { DEFAULT_LANGUAGE_CODE, normalizeLanguage } from "@/lib/languages";
 import type { TranscriptMessage } from "@/types/session";
 import type { ConnectionState } from "@/types/gemini";
 
@@ -27,6 +29,7 @@ interface AgentInfo {
   config: Record<string, unknown>;
   accentColor: string;
   icon: string;
+  defaultLanguage?: string;
 }
 
 interface BusinessInfo {
@@ -59,6 +62,11 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
   const [publicData, setPublicData] = useState<{ templateType: string; data: { dataType: string; data: unknown }[] } | null>(null);
   const [candidateContext, setCandidateContext] = useState<CandidateContext | null>(null);
   const [preCallDone, setPreCallDone] = useState(false);
+
+  // Caller-chosen language (BCP-47). Defaults to the agent's owner-configured
+  // default once the metadata fetch lands; caller can override it before
+  // tapping Start Call. Locked once the call begins.
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(DEFAULT_LANGUAGE_CODE);
 
   const [connectionState, setConnectionState] = useState<ConnectionState>("disconnected");
   const [isAgentSpeaking, setAgentSpeaking] = useState(false);
@@ -97,6 +105,11 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
         setAgentInfo(agentData.agent);
         setBusinessInfo(agentData.business);
         if (data) setPublicData(data);
+        // Seed the caller's picker with the owner's default. Normalized to
+        // tolerate legacy bare codes ("en" → "en-US").
+        if (agentData.agent?.defaultLanguage) {
+          setSelectedLanguage(normalizeLanguage(agentData.agent.defaultLanguage));
+        }
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -164,7 +177,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
       setElapsedSeconds(0);
       savedRef.current = false;
 
-      const body: Record<string, unknown> = {};
+      const body: Record<string, unknown> = { language: selectedLanguage };
       if (candidateContext) body.candidateContext = candidateContext;
       if (callContext) body.callContext = callContext;
 
@@ -186,7 +199,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
           tools: data.tools,
           agentSlug: slug,
           voiceName: data.voiceName ?? null,
-          language: data.language ?? "en",
+          language: data.language ?? selectedLanguage,
           sessionId: data.sessionId,
           updateToken: data.updateToken,
         },
@@ -245,7 +258,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
       setError(err instanceof Error ? err.message : "Connection failed");
       setConnectionState("error");
     }
-  }, [agentInfo, slug, startCapture, stopCapture, candidateContext]);
+  }, [agentInfo, slug, startCapture, stopCapture, candidateContext, selectedLanguage]);
 
   const disconnect = useCallback(() => {
     activeRef.current = false;
@@ -350,8 +363,18 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex-1 flex flex-col items-center justify-center gap-6 w-full"
+              className="flex-1 flex flex-col items-center justify-center gap-4 w-full"
             >
+              {/* Universal language picker — caller selects the language they
+                  want to speak in. Sits above every pre-call template so the
+                  UX is consistent across hotel/restaurant/medical/legal/
+                  personal/interview. */}
+              <LanguagePicker
+                value={selectedLanguage}
+                onChange={setSelectedLanguage}
+                accentColor={accentColor}
+              />
+
               {/* Interview: pre-call form */}
               {agentInfo.templateType === "interview" && !preCallDone ? (
                 <InterviewPreCallForm
