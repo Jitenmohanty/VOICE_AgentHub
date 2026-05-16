@@ -25,7 +25,7 @@ export function Navbar() {
       className={[
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
         scrolled
-          ? "bg-[#050816]/85 backdrop-blur-2xl border-b border-white/8"
+          ? "bg-[var(--ah-bg-deep)]/85 backdrop-blur-2xl border-b border-white/8"
           : "bg-transparent backdrop-blur-md border-b border-transparent",
       ].join(" ")}
     >

@@ -7,9 +7,9 @@ import {
   Bot, Save, BookOpen, Database, MessageSquare, ArrowLeft,
   Globe, Volume2, Building2, Phone, MapPin, ChevronDown, Code,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { toast } from "sonner";
@@ -158,7 +158,7 @@ export default function AgentConfigPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto p-6 md:p-10 space-y-4">
+      <div className="max-w-3xl mx-auto p-6 md:p-10 space-y-6">
         {[1, 2, 3].map((i) => (
           <div key={i} className="glass-raised rounded-3xl p-7 animate-pulse">
             <div className="h-5 w-1/4 bg-white/[0.06] rounded mb-3" />
@@ -179,14 +179,8 @@ export default function AgentConfigPage() {
           <ArrowLeft className="w-3.5 h-3.5" /> Back to agents
         </Link>
         <div className="flex items-center gap-4">
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${template?.accentColor || "#7C3AED"}30, ${template?.accentColor || "#3B82F6"}10)`,
-              border: `1px solid ${template?.accentColor || "#7C3AED"}30`,
-            }}
-          >
-            <Bot className="w-5 h-5" style={{ color: template?.accentColor || "#A78BFA" }} strokeWidth={2} />
+          <div className="w-12 h-12 rounded-2xl ah-gradient-bg flex items-center justify-center shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
+            <Bot className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-white">{agent.name}</h1>
@@ -239,24 +233,24 @@ export default function AgentConfigPage() {
           <p className="text-xs text-white/40 -mt-3">Your agent will share these details when customers ask</p>
 
           <div>
-            <Label className="text-xs font-medium text-white/60">About Your Business</Label>
-            <textarea value={bizDescription} onChange={(e) => setBizDescription(e.target.value)} placeholder="e.g., A luxury 5-star hotel in the heart of Mumbai with 200 rooms and world-class dining..." rows={2} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-white/40 resize-none focus:outline-none focus:border-[#00D4FF]" />
+            <Label>About Your Business</Label>
+            <Textarea value={bizDescription} onChange={(e) => setBizDescription(e.target.value)} placeholder="e.g., A luxury 5-star hotel in the heart of Mumbai with 200 rooms and world-class dining..." rows={2} className="mt-1.5" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-[#8888AA] flex items-center gap-1"><Phone className="w-3 h-3" /> Phone Number</Label>
-              <Input value={bizPhone} onChange={(e) => setBizPhone(e.target.value)} placeholder="+91 98765 43210" className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
+              <Label className="gap-1"><Phone className="w-3 h-3" /> Phone Number</Label>
+              <Input value={bizPhone} onChange={(e) => setBizPhone(e.target.value)} placeholder="+91 98765 43210" className="mt-1.5" />
             </div>
             <div>
-              <Label className="text-[#8888AA] flex items-center gap-1"><Globe className="w-3 h-3" /> Website</Label>
-              <Input value={bizWebsite} onChange={(e) => setBizWebsite(e.target.value)} placeholder="https://www.yourhotel.com" className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
+              <Label className="gap-1"><Globe className="w-3 h-3" /> Website</Label>
+              <Input value={bizWebsite} onChange={(e) => setBizWebsite(e.target.value)} placeholder="https://www.yourhotel.com" className="mt-1.5" />
             </div>
           </div>
 
           <div>
-            <Label className="text-[#8888AA] flex items-center gap-1"><MapPin className="w-3 h-3" /> Address</Label>
-            <Input value={bizAddress} onChange={(e) => setBizAddress(e.target.value)} placeholder="123 Marine Drive, Mumbai, Maharashtra 400001" className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
+            <Label className="gap-1"><MapPin className="w-3 h-3" /> Address</Label>
+            <Input value={bizAddress} onChange={(e) => setBizAddress(e.target.value)} placeholder="123 Marine Drive, Mumbai, Maharashtra 400001" className="mt-1.5" />
           </div>
         </div>
 
@@ -265,27 +259,27 @@ export default function AgentConfigPage() {
           <h2 className="font-semibold text-white text-lg tracking-tight">How Your Agent Talks</h2>
 
           <div>
-            <Label className="text-xs font-medium text-white/60">Agent Name</Label>
+            <Label>Agent Name</Label>
             <p className="text-xs text-white/40 mb-1">The name customers will see</p>
-            <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5" />
           </div>
 
           <div>
-            <Label className="text-xs font-medium text-white/60">Welcome Message</Label>
+            <Label>Welcome Message</Label>
             <p className="text-xs text-white/40 mb-1">First thing the agent says when a customer calls</p>
-            <Input value={greeting} onChange={(e) => setGreeting(e.target.value)} placeholder={template?.defaultGreeting} className="mt-1 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
+            <Input value={greeting} onChange={(e) => setGreeting(e.target.value)} placeholder={template?.defaultGreeting} className="mt-1.5" />
           </div>
 
           <div>
-            <Label className="text-xs font-medium text-white/60">Tone & Style</Label>
+            <Label>Tone & Style</Label>
             <p className="text-xs text-white/40 mb-1">How should the agent sound? Formal, friendly, casual?</p>
-            <textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder={template?.defaultPersonality} rows={2} className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50" />
+            <Textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder={template?.defaultPersonality} rows={2} className="mt-1.5" />
           </div>
 
           <div>
-            <Label className="text-xs font-medium text-white/60">Important Instructions</Label>
+            <Label>Important Instructions</Label>
             <p className="text-xs text-white/40 mb-1">Things the agent must always do or never do</p>
-            <textarea value={rules} onChange={(e) => setRules(e.target.value)} placeholder={"Examples:\n- Always greet by name if the caller introduces themselves\n- Never share room prices, direct to website\n- For complaints, apologize and offer to connect with manager"} rows={4} className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50" />
+            <Textarea value={rules} onChange={(e) => setRules(e.target.value)} placeholder={"Examples:\n- Always greet by name if the caller introduces themselves\n- Never share room prices, direct to website\n- For complaints, apologize and offer to connect with manager"} rows={4} className="mt-1.5" />
           </div>
         </div>
 
@@ -305,26 +299,26 @@ export default function AgentConfigPage() {
               }
               return sections.map((section) => (
                 <div key={section.name} className="space-y-4">
-                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider pt-2 border-t border-[#2A2A3E]/50">{section.name}</p>
+                  <p className="text-xs font-medium text-white/40 uppercase tracking-wider pt-2 border-t border-white/[0.06]">{section.name}</p>
                   {section.fields.map((field: AgentConfigField) => (
                     <div key={field.id}>
-                      <Label className="text-xs font-medium text-white/60">{field.label}</Label>
+                      <Label>{field.label}</Label>
                       {field.description && <p className="text-xs text-white/40 mt-0.5">{field.description}</p>}
 
                       {field.type === "text" && (
-                        <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : `Enter ${field.label.toLowerCase()}`)} className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl" />
+                        <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : `Enter ${field.label.toLowerCase()}`)} className="mt-1.5" />
                       )}
 
                       {field.type === "number" && (
-                        <Input type="number" value={config[field.id] !== undefined ? String(config[field.id]) : ""} onChange={(e) => updateConfig(field.id, e.target.value === "" ? 0 : Number(e.target.value))} min={field.min} max={field.max} className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl w-32" />
+                        <Input type="number" value={config[field.id] !== undefined ? String(config[field.id]) : ""} onChange={(e) => updateConfig(field.id, e.target.value === "" ? 0 : Number(e.target.value))} min={field.min} max={field.max} className="mt-1.5 w-32" />
                       )}
 
                       {field.type === "time" && (
-                        <Input type="time" value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl w-40" />
+                        <Input type="time" value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-40" />
                       )}
 
                       {field.type === "textarea" && (
-                        <textarea value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || ""} rows={3} className="w-full mt-1.5 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-white/40 resize-none focus:outline-none focus:border-[#00D4FF]" />
+                        <Textarea value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || ""} rows={3} className="mt-1.5" />
                       )}
 
                       {field.type === "toggle" && (
@@ -341,9 +335,9 @@ export default function AgentConfigPage() {
                       )}
 
                       {field.type === "select" && field.options && (
-                        <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50">
-                          <option value="" className="bg-[#0B1020]">Select {field.label.toLowerCase()}</option>
-                          {field.options.map((opt) => <option key={opt} value={opt} className="bg-[#0B1020]">{opt}</option>)}
+                        <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-10 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white outline-none transition-[border-color,box-shadow,background-color] duration-200 hover:bg-white/[0.06] hover:border-white/14 focus-visible:border-violet-300/55 focus-visible:bg-white/[0.06] focus-visible:shadow-[0_0_0_3px_rgba(124,58,237,0.18)]">
+                          <option value="" className="bg-[var(--ah-bg-raised)]">Select {field.label.toLowerCase()}</option>
+                          {field.options.map((opt) => <option key={opt} value={opt} className="bg-[var(--ah-bg-raised)]">{opt}</option>)}
                         </select>
                       )}
 
@@ -405,16 +399,16 @@ export default function AgentConfigPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-xs font-medium text-white/60">Language</Label>
-              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="mt-1.5 w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50">
-                {LANGUAGES.map((l) => <option key={l.code} value={l.code} className="bg-[#0B1020]">{l.label}</option>)}
+              <Label>Language</Label>
+              <select value={language} onChange={(e) => setLanguage(e.target.value)} className="mt-1.5 w-full h-10 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white outline-none transition-[border-color,box-shadow,background-color] duration-200 hover:bg-white/[0.06] hover:border-white/14 focus-visible:border-violet-300/55 focus-visible:bg-white/[0.06] focus-visible:shadow-[0_0_0_3px_rgba(124,58,237,0.18)]">
+                {LANGUAGES.map((l) => <option key={l.code} value={l.code} className="bg-[var(--ah-bg-raised)]">{l.label}</option>)}
               </select>
             </div>
             <div>
-              <Label className="text-xs font-medium text-white/60">Voice Style</Label>
-              <select value={voiceName} onChange={(e) => setVoiceName(e.target.value)} className="mt-1.5 w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50">
-                <option value="" className="bg-[#0B1020]">Default</option>
-                {VOICES.map((v) => <option key={v.id} value={v.id} className="bg-[#0B1020]">{v.label}</option>)}
+              <Label>Voice Style</Label>
+              <select value={voiceName} onChange={(e) => setVoiceName(e.target.value)} className="mt-1.5 w-full h-10 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white outline-none transition-[border-color,box-shadow,background-color] duration-200 hover:bg-white/[0.06] hover:border-white/14 focus-visible:border-violet-300/55 focus-visible:bg-white/[0.06] focus-visible:shadow-[0_0_0_3px_rgba(124,58,237,0.18)]">
+                <option value="" className="bg-[var(--ah-bg-raised)]">Default</option>
+                {VOICES.map((v) => <option key={v.id} value={v.id} className="bg-[var(--ah-bg-raised)]">{v.label}</option>)}
               </select>
             </div>
           </div>
@@ -438,27 +432,26 @@ export default function AgentConfigPage() {
           {showAdvanced && (
             <div className="px-7 pb-7 space-y-5">
               <div>
-                <Label className="text-xs font-medium text-white/60">Custom system prompt</Label>
+                <Label>Custom system prompt</Label>
                 <p className="text-xs text-white/40 mb-1.5 mt-0.5">
                   Override the auto-generated AI instructions. Leave empty to use your settings above.
                 </p>
-                <textarea
+                <Textarea
                   value={systemPrompt}
                   onChange={(e) => setSystemPrompt(e.target.value)}
                   placeholder="Leave empty — your agent's prompt is built automatically from the settings above."
                   rows={8}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl p-3.5 text-xs text-white font-mono placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50"
+                  className="mt-1.5 bg-[var(--ah-bg-deep)]/60 text-xs font-mono"
                 />
               </div>
               <div>
-                <Label className="text-xs font-medium text-white/60">Agent description</Label>
+                <Label>Agent description</Label>
                 <p className="text-xs text-white/40 mb-1.5 mt-0.5">Internal description (not shown to customers)</p>
                 <Input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="e.g., Handles booking inquiries and room service"
-                  className="bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl"
-                />
+                                  />
               </div>
             </div>
           )}

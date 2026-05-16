@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Building2, Save, Globe, Phone, MapPin, Mail, Webhook, Eye, EyeOff, Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
@@ -23,9 +24,6 @@ interface BusinessInfo {
   webhookUrl: string | null;
   webhookSecret: string | null;
 }
-
-const inputClass =
-  "mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
 
 export default function BusinessSettingsPage() {
   const [business, setBusiness] = useState<BusinessInfo | null>(null);
@@ -104,7 +102,7 @@ export default function BusinessSettingsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto p-6 md:p-10 space-y-4">
+      <div className="max-w-2xl mx-auto p-6 md:p-10 space-y-6">
         {[1, 2].map((i) => (
           <div key={i} className="glass-raised rounded-3xl p-7 animate-pulse">
             <div className="h-10 bg-white/[0.06] rounded" />
@@ -134,41 +132,41 @@ export default function BusinessSettingsPage() {
           </div>
 
           <div>
-            <Label className="text-xs font-medium text-white/60">Business name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
+            <Label >Business name</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5" />
           </div>
 
           <div>
-            <Label className="text-xs font-medium text-white/60">Description</Label>
-            <textarea
+            <Label >Description</Label>
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Tell customers about your business…"
               rows={3}
-              className="w-full mt-1.5 bg-white/[0.04] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50"
+              className="mt-1.5"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+              <Label >
                 <Globe className="w-3 h-3" /> Website
               </Label>
-              <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" className={inputClass} />
+              <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" className="mt-1.5" />
             </div>
             <div>
-              <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+              <Label >
                 <Phone className="w-3 h-3" /> Phone
               </Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91…" className={inputClass} />
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91…" className="mt-1.5" />
             </div>
           </div>
 
           <div>
-            <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+            <Label >
               <MapPin className="w-3 h-3" /> Address
             </Label>
-            <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Your business address" className={inputClass} />
+            <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Your business address" className="mt-1.5" />
           </div>
 
           <div className="pt-1">
@@ -192,7 +190,7 @@ export default function BusinessSettingsPage() {
           </p>
 
           <div>
-            <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+            <Label >
               <Mail className="w-3 h-3" /> Notification email
             </Label>
             <p className="text-[11px] text-white/40 mb-1.5 mt-0.5">Defaults to your account email if blank.</p>
@@ -201,12 +199,12 @@ export default function BusinessSettingsPage() {
               value={notificationEmail}
               onChange={(e) => setNotificationEmail(e.target.value)}
               placeholder="leads@yourbusiness.com"
-              className={inputClass}
+              className="mt-1.5"
             />
           </div>
 
           <div>
-            <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+            <Label >
               <Webhook className="w-3 h-3" /> Webhook URL (optional)
             </Label>
             <p className="text-[11px] text-white/40 mb-1.5 mt-0.5 leading-relaxed">
@@ -217,10 +215,10 @@ export default function BusinessSettingsPage() {
               value={webhookUrl}
               onChange={(e) => setWebhookUrl(e.target.value)}
               placeholder="https://hooks.slack.com/services/…"
-              className={inputClass}
+              className="mt-1.5"
             />
             {business.webhookSecret && (
-              <div className="mt-3 p-4 rounded-2xl bg-black/40 border border-white/10">
+              <div className="mt-3 p-4 rounded-2xl bg-[var(--ah-bg-deep)]/60 border border-white/10">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-medium text-white/45 uppercase tracking-[0.18em]">Signing secret</span>
                   <div className="flex gap-1">

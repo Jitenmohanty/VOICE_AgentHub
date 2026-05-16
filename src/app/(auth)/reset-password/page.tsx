@@ -12,9 +12,6 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
 
-const inputClass =
-  "mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
-
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -97,7 +94,7 @@ function ResetPasswordForm() {
     <GlassPanel elevation="raised" radius="lg" className="p-8">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="password" className="text-xs font-medium text-white/60">New password</Label>
+          <Label htmlFor="password">New password</Label>
           <div className="relative mt-1.5">
             <Input
               id="password"
@@ -107,7 +104,7 @@ function ResetPasswordForm() {
               placeholder="Min. 8 characters"
               required
               minLength={8}
-              className={`${inputClass} mt-0 pr-10`}
+              className="pr-10"
             />
             <button
               type="button"
@@ -123,7 +120,7 @@ function ResetPasswordForm() {
         </div>
 
         <div>
-          <Label htmlFor="confirm" className="text-xs font-medium text-white/60">Confirm new password</Label>
+          <Label htmlFor="confirm">Confirm new password</Label>
           <Input
             id="confirm"
             type={showPassword ? "text" : "password"}
@@ -131,7 +128,7 @@ function ResetPasswordForm() {
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="••••••••"
             required
-            className={inputClass}
+            className="mt-1.5"
           />
           {confirm.length > 0 && confirm !== password && (
             <p className="mt-1.5 text-xs text-rose-400/90">Passwords do not match</p>
@@ -145,7 +142,7 @@ function ResetPasswordForm() {
         >
           {loading ? (
             <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="ah-spinner" />
               Updating…
             </span>
           ) : (

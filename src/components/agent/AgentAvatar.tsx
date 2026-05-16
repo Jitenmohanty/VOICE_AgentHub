@@ -86,7 +86,7 @@ export function AgentAvatar({ icon, accentColor, connectionState, isSpeaking }: 
         style={{
           width: 112,
           height: 112,
-          background: `radial-gradient(circle at 30% 30%, ${accentColor}40, ${accentColor}08 70%), rgba(11, 16, 32, 0.7)`,
+          background: `radial-gradient(circle at 30% 30%, ${accentColor}40, ${accentColor}08 70%), var(--ah-bg-raised, rgba(11, 16, 32, 0.7))`,
           border: `1px solid ${accentColor}30`,
           boxShadow: isConnected
             ? `0 8px 32px -8px ${accentColor}66, inset 0 1px 0 rgba(255,255,255,0.1)`
@@ -106,18 +106,15 @@ export function AgentAvatar({ icon, accentColor, connectionState, isSpeaking }: 
 
       {/* Status dot */}
       <div
-        className="absolute bottom-1 right-1 z-20 w-4 h-4 rounded-full border-2 border-[#050816]"
-        style={{
-          background:
-            connectionState === "connected"
-              ? "linear-gradient(135deg, #10B981, #34D399)"
-              : connectionState === "connecting"
-                ? "linear-gradient(135deg, #F59E0B, #FCD34D)"
-                : connectionState === "error"
-                  ? "linear-gradient(135deg, #EF4444, #F87171)"
-                  : "rgba(255,255,255,0.25)",
-          boxShadow: isConnected ? "0 0 12px rgba(16, 185, 129, 0.6)" : "none",
-        }}
+        className={`absolute bottom-1 right-1 z-20 w-4 h-4 rounded-full border-2 border-[var(--ah-bg-deep)] ${
+          connectionState === "connected"
+            ? "bg-gradient-to-br from-emerald-400 to-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.6)]"
+            : connectionState === "connecting"
+              ? "bg-gradient-to-br from-amber-400 to-amber-300"
+              : connectionState === "error"
+                ? "bg-gradient-to-br from-rose-500 to-rose-400"
+                : "bg-white/25"
+        }`}
       />
     </div>
   );

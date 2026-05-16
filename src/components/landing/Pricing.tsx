@@ -86,7 +86,7 @@ export function Pricing() {
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-4">
             Simple, capped pricing
           </p>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
+          <h2 className="font-(family-name:--font-heading) text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
             Pay per <GradientText>minute</GradientText>, not per lead
           </h2>
           <p className="text-lg text-white/60 max-w-2xl mx-auto">
@@ -120,7 +120,7 @@ export function Pricing() {
                 className={`p-8 flex flex-col h-full ${plan.highlight ? "glow-aurora" : ""}`}
               >
                 <div className="mb-7">
-                  <h3 className="font-semibold text-white text-2xl tracking-tight mb-1">
+                  <h3 className="font-(family-name:--font-heading) font-semibold text-white text-2xl tracking-tight mb-1">
                     {plan.name}
                   </h3>
                   <p className="text-sm text-white/55">{plan.tagline}</p>

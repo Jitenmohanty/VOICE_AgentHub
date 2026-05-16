@@ -8,7 +8,8 @@ interface ControlBarProps {
   isMuted: boolean;
   elapsedSeconds: number;
   isConnected: boolean;
-  accentColor: string;
+  /** Reserved for backwards-compat — palette is brand-fixed. */
+  accentColor?: string;
   onToggleMute: () => void;
   onEndCall: () => void;
   onSettings?: () => void;
@@ -24,7 +25,6 @@ export function ControlBar({
   isMuted,
   elapsedSeconds,
   isConnected,
-  accentColor,
   onToggleMute,
   onEndCall,
   onSettings,
@@ -36,7 +36,7 @@ export function ControlBar({
       className="flex items-center justify-center gap-4"
     >
       {/* Timer */}
-      <div className="flex items-center gap-1.5 text-[#8888AA] text-sm font-(family-name:--font-mono)">
+      <div className="flex items-center gap-1.5 text-white/55 text-sm font-(family-name:--font-mono)">
         <Clock className="w-4 h-4" />
         {formatTime(elapsedSeconds)}
       </div>
@@ -47,7 +47,7 @@ export function ControlBar({
         disabled={!isConnected}
         variant="outline"
         size="icon"
-        className={`w-12 h-12 rounded-full border-[#2A2A3E] ${
+        className={`w-12 h-12 rounded-full border-white/10 ${
           isMuted
             ? "bg-red-500/10 text-red-400 border-red-500/30"
             : "bg-white/5 text-white"
@@ -72,7 +72,7 @@ export function ControlBar({
           onClick={onSettings}
           variant="outline"
           size="icon"
-          className="w-12 h-12 rounded-full bg-white/5 text-white border-[#2A2A3E]"
+          className="w-12 h-12 rounded-full bg-white/5 text-white border-white/10"
         >
           <Settings className="w-5 h-5" />
         </Button>

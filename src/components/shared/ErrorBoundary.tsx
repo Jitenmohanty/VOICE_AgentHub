@@ -34,13 +34,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <h3 className="text-lg font-semibold text-white mb-2">
             Something went wrong
           </h3>
-          <p className="text-sm text-[#8888AA] mb-4 max-w-md">
+          <p className="text-sm text-white/55 mb-4 max-w-md">
             {this.state.error?.message || "An unexpected error occurred"}
           </p>
           <Button
             onClick={() => this.setState({ hasError: false, error: null })}
             variant="outline"
-            className="border-[#2A2A3E] text-white"
+            className="border-white/10 text-white"
           >
             Try Again
           </Button>

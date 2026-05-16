@@ -56,7 +56,7 @@ export function SessionHistory() {
 
   if (sessions.length === 0) {
     return (
-      <div className="text-center py-12 text-[#8888AA]">
+      <div className="text-center py-12 text-white/55">
         <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
         <p>No conversations yet. Start chatting with an agent!</p>
       </div>
@@ -94,13 +94,13 @@ export function SessionHistory() {
                           ? "rgba(16,185,129,0.1)"
                           : "rgba(0,212,255,0.1)",
                       color:
-                        session.status === "completed" ? "#10B981" : "#00D4FF",
+                        session.status === "completed" ? "#10B981" : "#7C3AED",
                     }}
                   >
                     {session.status}
                   </span>
                 </div>
-                <div className="flex items-center gap-4 mt-1 text-xs text-[#8888AA]">
+                <div className="flex items-center gap-4 mt-1 text-xs text-white/55">
                   <span>{formatIST(session.createdAt)}</span>
                   {session.duration != null && session.duration > 0 && (
                     <span className="flex items-center gap-1">
@@ -124,7 +124,7 @@ export function SessionHistory() {
                     <span className="text-sm">{session.rating}</span>
                   </div>
                 )}
-                <ChevronRight className="w-4 h-4 text-[#8888AA] opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ChevronRight className="w-4 h-4 text-white/55 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </motion.button>
           );
@@ -139,12 +139,12 @@ export function SessionHistory() {
             disabled={page <= 1 || loading}
             variant="outline"
             size="sm"
-            className="border-[#2A2A3E] text-white disabled:opacity-30 gap-1"
+            className="border-white/10 text-white disabled:opacity-30 gap-1"
           >
             <ChevronLeft className="w-4 h-4" />
             Prev
           </Button>
-          <span className="text-xs text-[#8888AA]">
+          <span className="text-xs text-white/55">
             Page {page} of {totalPages}
           </span>
           <Button
@@ -152,7 +152,7 @@ export function SessionHistory() {
             disabled={page >= totalPages || loading}
             variant="outline"
             size="sm"
-            className="border-[#2A2A3E] text-white disabled:opacity-30 gap-1"
+            className="border-white/10 text-white disabled:opacity-30 gap-1"
           >
             Next
             <ChevronRight className="w-4 h-4" />

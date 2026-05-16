@@ -28,8 +28,7 @@ interface MenuBuilderProps {
   accentColor?: string;
 }
 
-const inputClass =
-  "mt-1 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl text-sm h-9";
+const inputClass = "mt-1.5 h-9";
 
 export function MenuBuilder({ businessId, agentId }: MenuBuilderProps) {
   const [items, setItems] = useState<MenuItem[]>([]);
@@ -163,7 +162,7 @@ export function MenuBuilder({ businessId, agentId }: MenuBuilderProps) {
         <p className="text-xs font-medium text-white/55 uppercase tracking-wider">Add menu item</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs font-medium text-white/60">Item name *</Label>
+            <Label>Item name *</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -172,7 +171,7 @@ export function MenuBuilder({ businessId, agentId }: MenuBuilderProps) {
             />
           </div>
           <div>
-            <Label className="text-xs font-medium text-white/60">Price *</Label>
+            <Label>Price *</Label>
             <Input
               value={form.price}
               onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
@@ -183,19 +182,19 @@ export function MenuBuilder({ businessId, agentId }: MenuBuilderProps) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs font-medium text-white/60">Category</Label>
+            <Label>Category</Label>
             <select
               value={form.category}
               onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-              className="mt-1 w-full h-9 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50"
+              className="mt-1.5 w-full h-9 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white outline-none transition-[border-color,box-shadow,background-color] duration-200 hover:bg-white/[0.06] hover:border-white/14 focus-visible:border-violet-300/55 focus-visible:bg-white/[0.06] focus-visible:shadow-[0_0_0_3px_rgba(124,58,237,0.18)]"
             >
               {CATEGORIES.map((c) => (
-                <option key={c} value={c} className="bg-[#0B1020]">{c}</option>
+                <option key={c} value={c} className="bg-[var(--ah-bg-raised)]">{c}</option>
               ))}
             </select>
           </div>
           <div>
-            <Label className="text-xs font-medium text-white/60">Description</Label>
+            <Label>Description</Label>
             <Input
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -205,7 +204,7 @@ export function MenuBuilder({ businessId, agentId }: MenuBuilderProps) {
           </div>
         </div>
         <div>
-          <Label className="text-xs font-medium text-white/60 mb-2 block">Allergens / dietary tags</Label>
+          <Label className="mb-2">Allergens / dietary tags</Label>
           <div className="flex flex-wrap gap-1.5">
             {ALLERGENS.map((a) => {
               const sel = form.allergens.includes(a);

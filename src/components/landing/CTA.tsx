@@ -50,7 +50,7 @@ export function CTA() {
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-4">
             How it works
           </p>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
+          <h2 className="font-(family-name:--font-heading) text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
             Live in <GradientText>four steps</GradientText>
           </h2>
           <p className="text-lg text-white/60 max-w-2xl mx-auto">
@@ -80,7 +80,7 @@ export function CTA() {
                 {/* Step number + icon */}
                 <div className="relative mx-auto w-14 h-14 mb-5">
                   <div className="absolute inset-0 ah-gradient-bg rounded-2xl opacity-90 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]" />
-                  <div className="relative w-full h-full rounded-2xl bg-[#0B1020] m-px flex items-center justify-center">
+                  <div className="relative w-full h-full rounded-2xl bg-[var(--ah-bg-raised)] m-px flex items-center justify-center">
                     <step.icon className="w-6 h-6 text-white" strokeWidth={1.75} />
                   </div>
                 </div>
@@ -120,7 +120,7 @@ export function CTA() {
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(124,58,237,0.22),transparent_60%)] pointer-events-none" />
 
             <div className="relative">
-              <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-6 leading-[1.05]">
+              <h2 className="font-(family-name:--font-heading) text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-6 leading-[1.05]">
                 Stop missing <GradientText>customers.</GradientText>
               </h2>
               <p className="text-lg text-white/65 mb-10 max-w-xl mx-auto leading-relaxed">

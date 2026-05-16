@@ -20,7 +20,7 @@ export function LegalShell({ title, subtitle, children }: Props) {
     <div className="relative min-h-screen text-white">
       <AuroraBackground density="subtle" />
 
-      <header className="relative z-10 border-b border-white/[0.06] bg-[#050816]/70 backdrop-blur-xl sticky top-0">
+      <header className="relative z-10 border-b border-white/[0.06] bg-[var(--ah-bg-deep)]/70 backdrop-blur-xl sticky top-0">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 text-white/55 hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" />

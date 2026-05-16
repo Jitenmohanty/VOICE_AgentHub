@@ -99,7 +99,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-[#050816]/80 backdrop-blur-md p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ah-bg-deep)]/80 backdrop-blur-md p-4"
         onClick={onClose}
       >
         <motion.div
@@ -231,7 +231,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                       }}
                     >
                       {LEAD_STATUSES.map((s) => (
-                        <option key={s.value} value={s.value} className="bg-[#0B1020] text-white">
+                        <option key={s.value} value={s.value} className="bg-[var(--ah-bg-raised)] text-white">
                           {s.label}
                         </option>
                       ))}
@@ -573,7 +573,7 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
 
       {/* Overall Result */}
       {result?.overallImpression && (
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.02] border border-[#2A2A3E]">
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.02] border border-white/10">
           <Award className="w-5 h-5 shrink-0" style={{ color: impressionColor }} />
           <div>
             <span

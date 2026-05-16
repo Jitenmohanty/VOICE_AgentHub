@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Sparkles,
   Hotel,
@@ -32,6 +33,7 @@ import { MenuBuilder } from "@/components/business/MenuBuilder";
 import { DoctorRoster } from "@/components/business/DoctorRoster";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
+import { SelectableCard } from "@/components/ui/selectable-card";
 
 const INDUSTRY_OPTIONS = [
   { id: "hotel", name: "Hotel", icon: Hotel, desc: "Concierge & bookings" },
@@ -54,11 +56,6 @@ interface BusinessInfo {
 }
 
 const TOTAL_STEPS = 4;
-
-const inputClass =
-  "mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
-const textareaClass =
-  "w-full mt-1.5 bg-white/[0.04] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -234,7 +231,7 @@ export default function OnboardingPage() {
   if (checking) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-violet-300/30 border-t-violet-300 rounded-full animate-spin" />
+        <span className="ah-spinner ah-spinner-violet text-2xl" />
       </div>
     );
   }
@@ -263,7 +260,7 @@ export default function OnboardingPage() {
             />
           ))}
         </div>
-        <p className="text-[11px] text-white/40 mt-2">Step {step} of {TOTAL_STEPS}</p>
+        <p className="text-xs text-white/40 mt-2">Step {step} of {TOTAL_STEPS}</p>
       </motion.div>
 
       <AnimatePresence mode="wait">
@@ -279,33 +276,27 @@ export default function OnboardingPage() {
               </div>
 
               <div>
-                <Label className="text-xs font-medium text-white/60">Business name *</Label>
-                <Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="e.g., Grand Hotel Mumbai" required className={inputClass} />
+                <Label>Business name *</Label>
+                <Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="e.g., Grand Hotel Mumbai" required className="mt-1.5" />
               </div>
 
               {!business && (
                 <div>
-                  <Label className="text-xs font-medium text-white/60 mb-2.5 block">Industry *</Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  <Label className="mb-2.5">Industry *</Label>
+                  <div role="radiogroup" className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                     {INDUSTRY_OPTIONS.map((opt) => {
                       const Icon = opt.icon;
                       const sel = industry === opt.id;
                       return (
-                        <button
+                        <SelectableCard
                           key={opt.id}
-                          type="button"
-                          onClick={() => setIndustry(opt.id)}
-                          className={`p-3.5 rounded-2xl text-left transition-all border relative ${
-                            sel
-                              ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40 shadow-[0_0_16px_-4px_rgba(124,58,237,0.4)]"
-                              : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-white/15"
-                          }`}
+                          selected={sel}
+                          onSelect={() => setIndustry(opt.id)}
                         >
-                          {sel && <Check className="w-3.5 h-3.5 absolute top-2 right-2 text-violet-300" strokeWidth={2.5} />}
                           <Icon className={`w-4 h-4 mb-1.5 ${sel ? "text-violet-300" : "text-white/55"}`} strokeWidth={2} />
                           <p className={`text-xs font-medium ${sel ? "text-white" : "text-white/75"}`}>{opt.name}</p>
                           <p className="text-[10px] text-white/40 mt-0.5">{opt.desc}</p>
-                        </button>
+                        </SelectableCard>
                       );
                     })}
                   </div>
@@ -313,30 +304,30 @@ export default function OnboardingPage() {
               )}
 
               <div>
-                <Label className="text-xs font-medium text-white/60">Description</Label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description of your business…" rows={2} className={textareaClass} />
+                <Label>Description</Label>
+                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description of your business…" rows={2} className="mt-1.5" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+                  <Label>
                     <Phone className="w-3 h-3" /> Phone
                   </Label>
-                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className={inputClass} />
+                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" className="mt-1.5" />
                 </div>
                 <div>
-                  <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+                  <Label>
                     <Globe className="w-3 h-3" /> Website
                   </Label>
-                  <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" className={inputClass} />
+                  <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" className="mt-1.5" />
                 </div>
               </div>
 
               <div>
-                <Label className="text-xs font-medium text-white/60 flex items-center gap-1.5">
+                <Label>
                   <MapPin className="w-3 h-3" /> Address
                 </Label>
-                <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full business address" className={inputClass} />
+                <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full business address" className="mt-1.5" />
               </div>
             </GlassPanel>
           </motion.div>
@@ -347,31 +338,25 @@ export default function OnboardingPage() {
           <motion.div key="step2" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35 }}>
             <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
               <div className="flex items-center gap-2.5">
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{
-                    background: `linear-gradient(135deg, ${template.accentColor}30, ${template.accentColor}10)`,
-                    border: `1px solid ${template.accentColor}30`,
-                  }}
-                >
-                  <Bot className="w-4 h-4" style={{ color: template.accentColor }} strokeWidth={2} />
+                <div className="w-9 h-9 rounded-xl ah-gradient-bg flex items-center justify-center shadow-[0_4px_16px_-4px_rgba(124,58,237,0.5)]">
+                  <Bot className="w-4 h-4 text-white" strokeWidth={2} />
                 </div>
                 <h2 className="font-semibold text-white text-lg tracking-tight">Configure your agent</h2>
               </div>
 
               <div>
-                <Label className="text-xs font-medium text-white/60">Agent name</Label>
-                <Input value={agentName} onChange={(e) => setAgentName(e.target.value)} className={inputClass} />
+                <Label>Agent name</Label>
+                <Input value={agentName} onChange={(e) => setAgentName(e.target.value)} className="mt-1.5" />
               </div>
 
               <div>
-                <Label className="text-xs font-medium text-white/60">Greeting message</Label>
-                <Input value={greeting} onChange={(e) => setGreeting(e.target.value)} placeholder={template.defaultGreeting} className={inputClass} />
+                <Label>Greeting message</Label>
+                <Input value={greeting} onChange={(e) => setGreeting(e.target.value)} placeholder={template.defaultGreeting} className="mt-1.5" />
               </div>
 
               <div>
-                <Label className="text-xs font-medium text-white/60">Personality &amp; tone</Label>
-                <textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder={template.defaultPersonality} rows={2} className={textareaClass} />
+                <Label>Personality &amp; tone</Label>
+                <Textarea value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder={template.defaultPersonality} rows={2} className="mt-1.5" />
               </div>
 
               {(() => {
@@ -387,20 +372,20 @@ export default function OnboardingPage() {
                     <p className="text-[10px] font-medium text-white/40 uppercase tracking-[0.18em] pt-2 border-t border-white/[0.06]">{section.name}</p>
                     {section.fields.map((field) => (
                       <div key={field.id}>
-                        <Label className="text-xs font-medium text-white/60">{field.label}</Label>
+                        <Label>{field.label}</Label>
                         {field.description && <p className="text-[11px] text-white/40 mt-0.5">{field.description}</p>}
 
                         {field.type === "text" && (
-                          <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : "")} className={inputClass} />
+                          <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : "")} className="mt-1.5" />
                         )}
                         {field.type === "number" && (
-                          <Input type="number" value={config[field.id] !== undefined ? String(config[field.id]) : ""} onChange={(e) => updateConfig(field.id, e.target.value === "" ? 0 : Number(e.target.value))} min={field.min} max={field.max} className={`${inputClass} w-32`} />
+                          <Input type="number" value={config[field.id] !== undefined ? String(config[field.id]) : ""} onChange={(e) => updateConfig(field.id, e.target.value === "" ? 0 : Number(e.target.value))} min={field.min} max={field.max} className="mt-1.5 w-32" />
                         )}
                         {field.type === "time" && (
-                          <Input type="time" value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className={`${inputClass} w-40`} />
+                          <Input type="time" value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-40" />
                         )}
                         {field.type === "textarea" && (
-                          <textarea value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || ""} rows={3} className={textareaClass} />
+                          <Textarea value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || ""} rows={3} className="mt-1.5" />
                         )}
                         {field.type === "toggle" && (
                           <button type="button" onClick={() => updateConfig(field.id, !config[field.id])} className="mt-2 flex items-center gap-2.5">
@@ -411,9 +396,9 @@ export default function OnboardingPage() {
                           </button>
                         )}
                         {field.type === "select" && field.options && (
-                          <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50">
-                            <option value="" className="bg-[#0B1020]">Select…</option>
-                            {field.options.map((o) => <option key={o} value={o} className="bg-[#0B1020]">{o}</option>)}
+                          <select value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} className="mt-1.5 w-full h-10 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white outline-none transition-[border-color,box-shadow,background-color] duration-200 hover:bg-white/[0.06] hover:border-white/14 focus-visible:border-violet-300/55 focus-visible:bg-white/[0.06] focus-visible:shadow-[0_0_0_3px_rgba(124,58,237,0.18)]">
+                            <option value="" className="bg-[var(--ah-bg-raised)]">Select…</option>
+                            {field.options.map((o) => <option key={o} value={o} className="bg-[var(--ah-bg-raised)]">{o}</option>)}
                           </select>
                         )}
                         {field.type === "multi-select" && field.options && (
@@ -493,8 +478,8 @@ export default function OnboardingPage() {
               )}
 
               <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06] space-y-3">
-                <Input value={newFaqTitle} onChange={(e) => setNewFaqTitle(e.target.value)} placeholder="Question (e.g., What is check-in time?)" className={`${inputClass} mt-0`} />
-                <textarea value={newFaqContent} onChange={(e) => setNewFaqContent(e.target.value)} placeholder="Answer (e.g., Check-in is at 2:00 PM and check-out is at 11:00 AM)" rows={2} className={`${textareaClass} mt-0`} />
+                <Input value={newFaqTitle} onChange={(e) => setNewFaqTitle(e.target.value)} placeholder="Question (e.g., What is check-in time?)" />
+                <Textarea value={newFaqContent} onChange={(e) => setNewFaqContent(e.target.value)} placeholder="Answer (e.g., Check-in is at 2:00 PM and check-out is at 11:00 AM)" rows={2} />
                 <GradientButton type="button" onClick={addFaq} disabled={!newFaqTitle.trim() || !newFaqContent.trim()} size="sm">
                   <Plus className="w-3.5 h-3.5" /> Add FAQ
                 </GradientButton>
@@ -595,7 +580,7 @@ export default function OnboardingPage() {
             >
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="ah-spinner" />
                   Saving…
                 </span>
               ) : (

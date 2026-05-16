@@ -51,7 +51,7 @@ export function InterviewSpotlight() {
               </span>
             </div>
 
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.03em] text-white mb-6 leading-[1.05]">
+            <h2 className="font-(family-name:--font-heading) text-4xl md:text-5xl lg:text-6xl font-semibold tracking-[-0.03em] text-white mb-6 leading-[1.05]">
               AI mock interviews
               <br />
               <GradientText>that actually score you</GradientText>

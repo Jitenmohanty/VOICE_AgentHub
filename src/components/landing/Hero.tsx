@@ -30,7 +30,7 @@ export function Hero() {
           </motion.div>
 
           {/* Headline */}
-          <h1 className="font-semibold text-5xl md:text-7xl lg:text-[88px] leading-[1.02] tracking-[-0.03em] mb-8 text-white">
+          <h1 className="font-(family-name:--font-heading) font-semibold text-5xl md:text-7xl lg:text-[88px] leading-[1.02] tracking-[-0.03em] mb-8 text-white">
             Never miss a customer.
             <br />
             <GradientText>Your AI takes the call.</GradientText>

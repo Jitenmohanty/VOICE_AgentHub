@@ -18,8 +18,8 @@ export default function GlobalError({
         style={{
           margin: 0,
           minHeight: "100vh",
-          background: "#0A0A0F",
-          color: "#F0F0F5",
+          background: "#050816",
+          color: "#FFFFFF",
           fontFamily:
             "'Helvetica Neue', Arial, sans-serif, system-ui",
           display: "flex",
@@ -39,13 +39,13 @@ export default function GlobalError({
           >
             Something went wrong
           </h1>
-          <p style={{ color: "#8888AA", fontSize: 15, lineHeight: 1.6 }}>
+          <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 15, lineHeight: 1.6 }}>
             We&apos;ve been notified and are looking into it. Please try again.
           </p>
           {error.digest ? (
             <p
               style={{
-                color: "#555577",
+                color: "rgba(255,255,255,0.4)",
                 fontSize: 12,
                 fontFamily: "monospace",
                 marginTop: 16,

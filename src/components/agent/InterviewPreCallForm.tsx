@@ -10,8 +10,7 @@ import { GradientButton } from "@/components/ui/gradient-button";
 
 const EXPERIENCE_LEVELS = ["Junior", "Mid", "Senior", "Lead", "Principal"];
 
-const inputClass =
-  "mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
+const inputClass = "mt-1.5";
 
 export interface CandidateContext {
   name: string;
@@ -116,7 +115,7 @@ export function InterviewPreCallForm({
 
       <GlassPanel elevation="raised" radius="lg" className="p-5 space-y-5">
         <div>
-          <Label className="flex items-center gap-1.5 text-xs font-medium text-white/60">
+          <Label>
             <User className="w-3.5 h-3.5" /> Your name *
           </Label>
           <Input
@@ -128,7 +127,7 @@ export function InterviewPreCallForm({
         </div>
 
         <div>
-          <Label className="text-xs font-medium text-white/60 mb-2 block">Experience level *</Label>
+          <Label className="mb-2">Experience level *</Label>
           <div className="flex flex-wrap gap-2">
             {EXPERIENCE_LEVELS.map((lvl) => (
               <ChipButton key={lvl} active={level === lvl} onClick={() => setLevel(lvl)}>
@@ -140,7 +139,7 @@ export function InterviewPreCallForm({
 
         {ownerTechStack.length > 0 && (
           <div>
-            <Label className="text-xs font-medium text-white/60 mb-2 block">
+            <Label className="mb-2">
               Your tech stack <span className="text-white/35 font-normal">(select what applies)</span>
             </Label>
             <div className="flex flex-wrap gap-2">
@@ -154,7 +153,7 @@ export function InterviewPreCallForm({
         )}
 
         <div>
-          <Label className="flex items-center gap-1.5 text-xs font-medium text-white/60">
+          <Label>
             <Target className="w-3.5 h-3.5" /> Target role <span className="text-white/35 font-normal">(optional)</span>
           </Label>
           <Input
@@ -166,7 +165,7 @@ export function InterviewPreCallForm({
         </div>
 
         <div>
-          <Label className="flex items-center gap-1.5 text-xs font-medium text-white/60 mb-1.5">
+          <Label className="mb-1.5">
             <FileText className="w-3.5 h-3.5" /> Resume <span className="text-white/35 font-normal">(optional, PDF)</span>
           </Label>
           <input
@@ -184,7 +183,7 @@ export function InterviewPreCallForm({
               <FileText className="w-4 h-4 shrink-0 text-violet-300" />
               <span className="text-sm text-white truncate flex-1">{resumeFile.name}</span>
               {uploadingResume && (
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                <span className="ah-spinner shrink-0" />
               )}
               {resumeSkills && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-300/20 shrink-0">
@@ -220,7 +219,7 @@ export function InterviewPreCallForm({
       >
         {loading ? (
           <span className="flex items-center gap-2">
-            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span className="ah-spinner" />
             Starting interview…
           </span>
         ) : (

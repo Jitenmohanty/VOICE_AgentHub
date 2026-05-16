@@ -54,8 +54,8 @@ export function AgentCard({ agent, index, onStart }: AgentCardProps) {
       <h3 className="font-(family-name:--font-heading) font-semibold text-lg text-white mb-1">
         {agent.name}
       </h3>
-      <p className="text-sm text-[#8888AA] mb-3">{agent.tagline}</p>
-      <p className="text-sm text-[#666680] mb-4 flex-1">{agent.description}</p>
+      <p className="text-sm text-white/55 mb-3">{agent.tagline}</p>
+      <p className="text-sm text-white/40 mb-4 flex-1">{agent.description}</p>
 
       <div className="flex flex-wrap gap-1.5 mb-4">
         {agent.capabilities.map((cap) => (

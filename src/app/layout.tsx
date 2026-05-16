@@ -45,7 +45,7 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${ibmPlexSans.variable} ${jetbrainsMono.variable} dark h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#050816] text-white">
+      <body className="min-h-full flex flex-col bg-[var(--ah-bg-deep)] text-white">
         <SessionProvider>
           {children}
           <Toaster theme="dark" position="top-right" richColors />

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
@@ -34,9 +35,6 @@ const categories: { id: Category; label: string; icon: typeof Mail }[] = [
   { id: "billing", label: "Billing", icon: Mail },
   { id: "security", label: "Security", icon: ShieldCheck },
 ];
-
-const inputClass =
-  "mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
 
 export default function ContactPage() {
   const [category, setCategory] = useState<Category>("general");
@@ -72,7 +70,7 @@ export default function ContactPage() {
     <div className="relative min-h-screen text-white">
       <AuroraBackground density="subtle" />
 
-      <header className="relative z-10 border-b border-white/[0.06] bg-[#050816]/70 backdrop-blur-xl sticky top-0">
+      <header className="relative z-10 border-b border-white/[0.06] bg-[var(--ah-bg-deep)]/70 backdrop-blur-xl sticky top-0">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 text-white/55 hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -179,7 +177,7 @@ export default function ContactPage() {
                 <h2 className="text-lg font-semibold text-white tracking-tight mb-6">Send us a message</h2>
 
                 <div className="mb-6">
-                  <Label className="text-xs font-medium text-white/60 mb-2.5 block">Category</Label>
+                  <Label className="mb-2.5">Category</Label>
                   <div className="flex flex-wrap gap-2">
                     {categories.map((cat) => {
                       const Icon = cat.icon;
@@ -227,37 +225,37 @@ export default function ContactPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="name" className="text-xs font-medium text-white/60">Your name</Label>
-                      <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Smith" required className={inputClass} />
+                      <Label htmlFor="name">Your name</Label>
+                      <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Smith" required className="mt-1.5" />
                     </div>
                     <div>
-                      <Label htmlFor="contact-email" className="text-xs font-medium text-white/60">Email address</Label>
-                      <Input id="contact-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className={inputClass} />
+                      <Label htmlFor="contact-email">Email address</Label>
+                      <Input id="contact-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="mt-1.5" />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="message" className="text-xs font-medium text-white/60">
+                    <Label htmlFor="message">
                       Message
                       {category === "bug" && (
                         <span className="text-white/40 ml-1 font-normal">(include repro steps & browser)</span>
                       )}
                     </Label>
-                    <textarea
+                    <Textarea
                       id="message"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder={category === "bug" ? "1. Go to…\n2. Click on…\n3. See error…" : "How can we help?"}
                       required
                       rows={6}
-                      className="mt-1.5 w-full rounded-xl bg-white/[0.04] border border-white/10 focus:border-violet-300/50 focus:outline-none text-white text-sm px-3.5 py-3 resize-none placeholder:text-white/30 transition-colors"
+                      className="mt-1.5"
                     />
                   </div>
 
                   <GradientButton type="submit" disabled={loading} className="w-full">
                     {loading ? (
                       <span className="flex items-center gap-2">
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span className="ah-spinner" />
                         Opening email client…
                       </span>
                     ) : (

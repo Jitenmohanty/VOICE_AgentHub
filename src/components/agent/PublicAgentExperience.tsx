@@ -303,8 +303,8 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
   // ── Loading ──
   if (loading) {
     return (
-      <div className={`${rootHeight} flex items-center justify-center bg-[#050816]`}>
-        <div className="w-8 h-8 border-2 border-violet-300/30 border-t-violet-300 rounded-full animate-spin" />
+      <div className={`${rootHeight} flex items-center justify-center bg-[var(--ah-bg-deep)]`}>
+        <span className="ah-spinner ah-spinner-violet text-2xl" />
       </div>
     );
   }
@@ -312,7 +312,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
   // ── Not found ──
   if (notFound || !agentInfo || !businessInfo) {
     return (
-      <div className={`${rootHeight} flex flex-col items-center justify-center bg-[#050816] text-center px-6`}>
+      <div className={`${rootHeight} flex flex-col items-center justify-center bg-[var(--ah-bg-deep)] text-center px-6`}>
         <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mb-4">
           <Phone className="w-6 h-6 text-white/40" strokeWidth={1.75} />
         </div>
@@ -332,7 +332,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
     <div
       className={`${rootHeight} flex flex-col overflow-hidden relative`}
       style={{
-        background: `radial-gradient(ellipse 80% 50% at 50% 0%, ${accentColor}10, transparent 60%), #050816`,
+        background: `radial-gradient(ellipse 80% 50% at 50% 0%, ${accentColor}10, transparent 60%), var(--ah-bg-deep)`,
       }}
     >
       {/* Soft aurora orbs — fixed, low opacity */}

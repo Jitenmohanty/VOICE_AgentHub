@@ -62,17 +62,24 @@ export default function BusinessSessionsPage() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="glass rounded-2xl p-5 animate-pulse">
-              <div className="h-5 w-1/4 bg-white/[0.06] rounded mb-2" />
-              <div className="h-4 w-1/3 bg-white/[0.06] rounded" />
-            </div>
+            <GlassPanel key={i} elevation="subtle" radius="md" className="p-5 animate-pulse">
+              <div className="flex items-start justify-between">
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-1/3 bg-white/[0.06] rounded" />
+                  <div className="h-3 w-1/2 bg-white/[0.04] rounded" />
+                </div>
+                <div className="h-6 w-12 bg-white/[0.04] rounded-full ml-4" />
+              </div>
+            </GlassPanel>
           ))}
         </div>
       ) : sessions.length === 0 ? (
         <GlassPanel elevation="subtle" radius="lg" className="text-center py-16 px-6">
-          <MessageSquare className="w-12 h-12 text-white/15 mx-auto mb-4" strokeWidth={1.5} />
-          <p className="text-white/65 text-lg">No sessions yet</p>
-          <p className="text-white/40 text-sm mt-1">Share your agent link to start receiving calls.</p>
+          <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mx-auto mb-4">
+            <MessageSquare className="w-7 h-7 text-white/40" strokeWidth={1.5} />
+          </div>
+          <p className="text-white/85 text-lg">No sessions yet</p>
+          <p className="text-white/45 text-sm mt-1">Share your agent link to start receiving calls.</p>
         </GlassPanel>
       ) : (
         <>

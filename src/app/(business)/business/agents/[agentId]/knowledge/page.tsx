@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Plus, Trash2, BookOpen, Edit2, X, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import Link from "next/link";
 import { GlassPanel } from "@/components/ui/glass-panel";
@@ -22,9 +23,6 @@ interface KnowledgeItem {
 }
 
 const CATEGORIES = ["faq", "policy", "service", "general", "menu", "amenities", "procedures"];
-
-const inputClass =
-  "mt-1 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
 
 export default function KnowledgePage() {
   const { agentId } = useParams<{ agentId: string }>();
@@ -136,35 +134,35 @@ export default function KnowledgePage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-xs font-medium text-white/60">Title</Label>
+                <Label>Title</Label>
                 <Input
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="e.g., Check-in Policy"
-                  className={inputClass}
+                  className="mt-1.5"
                 />
               </div>
               <div>
-                <Label className="text-xs font-medium text-white/60">Category</Label>
+                <Label>Category</Label>
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="mt-1 w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white focus:outline-none focus:border-violet-300/50"
+                  className="mt-1.5 w-full h-10 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white outline-none transition-[border-color,box-shadow,background-color] duration-200 hover:bg-white/[0.06] hover:border-white/14 focus-visible:border-violet-300/55 focus-visible:bg-white/[0.06] focus-visible:shadow-[0_0_0_3px_rgba(124,58,237,0.18)]"
                 >
                   {CATEGORIES.map((c) => (
-                    <option key={c} value={c} className="bg-[#0B1020]">{c}</option>
+                    <option key={c} value={c} className="bg-[var(--ah-bg-raised)]">{c}</option>
                   ))}
                 </select>
               </div>
             </div>
             <div>
-              <Label className="text-xs font-medium text-white/60">Content</Label>
-              <textarea
+              <Label>Content</Label>
+              <Textarea
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
                 placeholder="Enter the information your agent should know…"
                 rows={4}
-                className="w-full mt-1 bg-white/[0.04] border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50"
+                className="mt-1.5"
               />
             </div>
             <GradientButton onClick={handleAdd} size="default">
@@ -238,7 +236,7 @@ function KnowledgeItemCard({
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="bg-white/[0.04] border-white/10 text-white h-9 text-sm rounded-xl"
+                className="h-9"
               />
             ) : (
               <h4 className="font-medium text-white tracking-tight truncate">{item.title}</h4>
@@ -270,11 +268,11 @@ function KnowledgeItemCard({
           </div>
         </div>
         {isEditing ? (
-          <textarea
+          <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={3}
-            className="w-full bg-white/[0.04] border border-white/10 rounded-xl p-2.5 text-sm text-white resize-none focus:outline-none focus:border-violet-300/50"
+            className="px-2.5 py-2.5"
           />
         ) : (
           <p className="text-sm text-white/55 line-clamp-3">{item.content}</p>

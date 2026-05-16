@@ -29,7 +29,7 @@ export function AgentShowcase() {
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-4">
             Templates
           </p>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
+          <h2 className="font-(family-name:--font-heading) text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
             Meet your <GradientText>AI agents</GradientText>
           </h2>
           <p className="text-lg text-white/60 max-w-2xl mx-auto">

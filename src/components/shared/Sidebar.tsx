@@ -93,7 +93,7 @@ export function Sidebar() {
         initial={{ x: -16, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-white/[0.06] p-5 overflow-y-auto bg-[#0B1020]/60 backdrop-blur-2xl"
+        className="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-white/[0.06] p-5 overflow-y-auto bg-[var(--ah-bg-raised)]/60 backdrop-blur-2xl"
       >
         <div className="mb-8 px-1">
           <Brand />
@@ -111,7 +111,7 @@ export function Sidebar() {
       </motion.aside>
 
       {/* ── Mobile top bar ──────────────────────────────────── */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-[#050816]/85 backdrop-blur-xl border-b border-white/[0.06] flex items-center px-4 gap-3">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-[var(--ah-bg-deep)]/85 backdrop-blur-xl border-b border-white/[0.06] flex items-center px-4 gap-3">
         <button
           onClick={() => setMobileOpen(true)}
           className="p-2 rounded-xl text-white/55 hover:text-white hover:bg-white/[0.06] transition-all"
@@ -131,7 +131,7 @@ export function Sidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="md:hidden fixed inset-0 z-50 bg-[#050816]/80 backdrop-blur-md"
+              className="md:hidden fixed inset-0 z-50 bg-[var(--ah-bg-deep)]/80 backdrop-blur-md"
               onClick={() => setMobileOpen(false)}
             />
 
@@ -141,7 +141,7 @@ export function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 220 }}
-              className="md:hidden fixed top-0 left-0 z-50 h-full w-72 bg-[#0B1020] border-r border-white/[0.08] p-5 flex flex-col overflow-y-auto"
+              className="md:hidden fixed top-0 left-0 z-50 h-full w-72 bg-[var(--ah-bg-raised)] border-r border-white/[0.08] p-5 flex flex-col overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-8">
                 <Brand size="sm" onClick={() => setMobileOpen(false)} />

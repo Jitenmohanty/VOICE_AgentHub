@@ -18,9 +18,6 @@ interface DataItem {
   createdAt: string;
 }
 
-const inputClass =
-  "mt-1 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
-
 export default function BusinessDataPage() {
   const { agentId } = useParams<{ agentId: string }>();
   const businessId = useSearchParams().get("bid") || "";
@@ -114,12 +111,12 @@ export default function BusinessDataPage() {
           <GlassPanel elevation="raised" radius="lg" className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <Label className="text-xs font-medium text-white/60">Data type name</Label>
+                <Label>Data type name</Label>
                 <Input
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
                   placeholder="e.g., rooms, menu_items, doctors"
-                  className={inputClass}
+                  className="mt-1.5"
                 />
               </div>
               <GradientButton onClick={handleAdd} size="default" className="mt-6">

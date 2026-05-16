@@ -37,7 +37,7 @@ export function LanguagePicker({ value, onChange, disabled, compact }: Props) {
         aria-label="Select language for this call"
       >
         {SUPPORTED_LANGUAGES.map((l) => (
-          <option key={l.code} value={l.code} className="bg-[#0B1020]">
+          <option key={l.code} value={l.code} className="bg-[var(--ah-bg-raised)]">
             {l.nativeLabel} {l.nativeLabel !== l.label ? `· ${l.label}` : ""}
           </option>
         ))}

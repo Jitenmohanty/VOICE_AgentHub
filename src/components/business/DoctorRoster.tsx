@@ -27,8 +27,7 @@ interface DoctorRosterProps {
   accentColor?: string;
 }
 
-const inputClass =
-  "mt-1 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl text-sm h-9";
+const inputClass = "mt-1.5 h-9";
 
 export function DoctorRoster({ businessId, agentId }: DoctorRosterProps) {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -151,7 +150,7 @@ export function DoctorRoster({ businessId, agentId }: DoctorRosterProps) {
         <p className="text-xs font-medium text-white/55 uppercase tracking-wider">Add doctor</p>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs font-medium text-white/60">Doctor name *</Label>
+            <Label>Doctor name *</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -160,7 +159,7 @@ export function DoctorRoster({ businessId, agentId }: DoctorRosterProps) {
             />
           </div>
           <div>
-            <Label className="text-xs font-medium text-white/60">Specialization</Label>
+            <Label>Specialization</Label>
             <Input
               value={form.specialization}
               onChange={(e) => setForm((f) => ({ ...f, specialization: e.target.value }))}
@@ -170,7 +169,7 @@ export function DoctorRoster({ businessId, agentId }: DoctorRosterProps) {
           </div>
         </div>
         <div>
-          <Label className="text-xs font-medium text-white/60 mb-2 block">Available days</Label>
+          <Label className="mb-2">Available days</Label>
           <div className="flex flex-wrap gap-1.5">
             {DAYS.map((day) => {
               const sel = form.availableDays.includes(day);
@@ -193,7 +192,7 @@ export function DoctorRoster({ businessId, agentId }: DoctorRosterProps) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-xs font-medium text-white/60">From</Label>
+            <Label>From</Label>
             <Input
               type="time"
               value={form.fromTime}
@@ -202,7 +201,7 @@ export function DoctorRoster({ businessId, agentId }: DoctorRosterProps) {
             />
           </div>
           <div>
-            <Label className="text-xs font-medium text-white/60">To</Label>
+            <Label>To</Label>
             <Input
               type="time"
               value={form.toTime}

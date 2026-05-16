@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star, X } from "lucide-react";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface RatingModalProps {
   agentName: string;
@@ -45,7 +46,7 @@ export function RatingModal({ agentName, sessionId, apiUrl, updateToken, onClose
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-[#050816]/80 backdrop-blur-md p-6"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ah-bg-deep)]/80 backdrop-blur-md p-6"
         onClick={onClose}
       >
         <motion.div
@@ -83,8 +84,7 @@ export function RatingModal({ agentName, sessionId, apiUrl, updateToken, onClose
                     className="p-1 transition-transform hover:scale-110"
                   >
                     <Star
-                      className={`w-9 h-9 transition-colors ${active ? "text-amber-300" : "text-white/15"}`}
-                      style={{ fill: active ? "currentColor" : "transparent" }}
+                      className={`w-9 h-9 transition-colors ${active ? "fill-current text-amber-300" : "text-white/15"}`}
                       strokeWidth={1.5}
                     />
                   </button>
@@ -92,11 +92,12 @@ export function RatingModal({ agentName, sessionId, apiUrl, updateToken, onClose
               })}
             </div>
 
-            <textarea
+            <Textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               placeholder="Any feedback? (optional)"
-              className="w-full h-24 bg-white/[0.04] border border-white/10 rounded-2xl p-3.5 text-sm text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-violet-300/50 mb-5"
+              rows={3}
+              className="mb-5"
             />
 
             <div className="flex gap-2.5">

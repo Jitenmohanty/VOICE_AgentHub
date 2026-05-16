@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { AuthShell, AuthStepDots } from "@/components/auth/AuthShell";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
+import { SelectableCard } from "@/components/ui/selectable-card";
 
 const INDUSTRY_OPTIONS = [
   { id: "hotel", name: "Hotel", icon: Hotel },
@@ -32,9 +33,6 @@ const INDUSTRY_OPTIONS = [
   { id: "legal", name: "Legal", icon: Scale },
   { id: "personal", name: "Personal", icon: User },
 ];
-
-const inputClass =
-  "mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -136,7 +134,7 @@ export default function RegisterPage() {
 
             <form onSubmit={handleStep1} className="space-y-4">
               <div>
-                <Label htmlFor="name" className="text-xs font-medium text-white/60">Name</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   type="text"
@@ -144,11 +142,11 @@ export default function RegisterPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
                   required
-                  className={inputClass}
+                  className="mt-1.5"
                 />
               </div>
               <div>
-                <Label htmlFor="email" className="text-xs font-medium text-white/60">Email</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -156,11 +154,11 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className={inputClass}
+                  className="mt-1.5"
                 />
               </div>
               <div>
-                <Label htmlFor="password" className="text-xs font-medium text-white/60">Password</Label>
+                <Label htmlFor="password">Password</Label>
                 <div className="relative mt-1.5">
                   <Input
                     id="password"
@@ -170,7 +168,7 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     required
                     minLength={8}
-                    className={`${inputClass} mt-0 pr-10`}
+                    className="pr-10"
                   />
                   <button
                     type="button"
@@ -196,7 +194,7 @@ export default function RegisterPage() {
         {step === 2 && (
           <form onSubmit={handleRegister} className="space-y-5">
             <div>
-              <Label htmlFor="businessName" className="text-xs font-medium text-white/60">Business name</Label>
+              <Label htmlFor="businessName">Business name</Label>
               <Input
                 id="businessName"
                 type="text"
@@ -204,26 +202,24 @@ export default function RegisterPage() {
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="e.g. Grand Hotel, City Clinic"
                 required
-                className={inputClass}
+                className="mt-1.5"
               />
             </div>
 
             <div>
-              <Label className="text-xs font-medium text-white/60 mb-2.5 block">Industry</Label>
-              <div className="grid grid-cols-2 gap-2.5">
+              <Label className="mb-2.5">Industry</Label>
+              <div role="radiogroup" className="grid grid-cols-2 gap-2.5">
                 {INDUSTRY_OPTIONS.map((opt) => {
                   const Icon = opt.icon;
                   const selected = industry === opt.id;
                   return (
-                    <button
+                    <SelectableCard
                       key={opt.id}
-                      type="button"
-                      onClick={() => setIndustry(opt.id)}
-                      className={`p-4 rounded-2xl text-left transition-all border ${
-                        selected
-                          ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40 shadow-[0_0_24px_-8px_rgba(124,58,237,0.4)]"
-                          : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-white/15"
-                      }`}
+                      selected={selected}
+                      onSelect={() => setIndustry(opt.id)}
+                      density="lg"
+                      showCheck={false}
+                      className="p-4 rounded-2xl"
                     >
                       <Icon
                         className={`w-5 h-5 mb-2 ${selected ? "text-violet-300" : "text-white/55"}`}
@@ -232,7 +228,7 @@ export default function RegisterPage() {
                       <p className={`text-sm font-medium ${selected ? "text-white" : "text-white/75"}`}>
                         {opt.name}
                       </p>
-                    </button>
+                    </SelectableCard>
                   );
                 })}
               </div>
@@ -253,7 +249,7 @@ export default function RegisterPage() {
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="ah-spinner" />
                     Creating…
                   </span>
                 ) : (

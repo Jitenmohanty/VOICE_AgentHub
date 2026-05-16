@@ -164,13 +164,13 @@ export function VoiceInterface({ agentType }: VoiceInterfaceProps) {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: `radial-gradient(ellipse at top, ${agent.accentColor}08, #0A0A0F 60%)` }}
+      style={{ background: `radial-gradient(ellipse at top, ${agent.accentColor}08, var(--ah-bg-deep) 60%)` }}
     >
       {/* Header */}
       <header className="flex items-center justify-between p-4 md:p-6">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 text-[#8888AA] hover:text-white transition-colors"
+          className="flex items-center gap-2 text-white/55 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="text-sm">Back</span>
@@ -179,7 +179,7 @@ export function VoiceInterface({ agentType }: VoiceInterfaceProps) {
           <h1 className="font-(family-name:--font-heading) font-semibold text-white">
             {agent.name}
           </h1>
-          <p className="text-xs text-[#8888AA]">{agent.tagline}</p>
+          <p className="text-xs text-white/55">{agent.tagline}</p>
         </div>
         <div className="w-16" /> {/* Spacer */}
       </header>
@@ -205,7 +205,7 @@ export function VoiceInterface({ agentType }: VoiceInterfaceProps) {
                 <h2 className="text-xl font-semibold text-white mb-2">
                   Ready to chat with {agent.name}?
                 </h2>
-                <p className="text-sm text-[#8888AA] max-w-md">
+                <p className="text-sm text-white/55 max-w-md">
                   Click the button below to start a voice conversation.
                   Make sure your microphone is ready.
                 </p>
@@ -286,7 +286,7 @@ export function VoiceInterface({ agentType }: VoiceInterfaceProps) {
                   <Button
                     onClick={handleBack}
                     variant="outline"
-                    className="border-[#2A2A3E] text-white"
+                    className="border-white/10 text-white"
                   >
                     Back to Dashboard
                   </Button>
@@ -306,7 +306,7 @@ export function VoiceInterface({ agentType }: VoiceInterfaceProps) {
                 <span className="text-red-400 text-2xl">!</span>
               </div>
               <p className="text-red-400 mb-2 font-medium">Connection Error</p>
-              <p className="text-[#8888AA] text-sm mb-4 max-w-md">{error}</p>
+              <p className="text-white/55 text-sm mb-4 max-w-md">{error}</p>
               <div className="flex gap-3 justify-center">
                 <Button
                   onClick={connect}
@@ -320,7 +320,7 @@ export function VoiceInterface({ agentType }: VoiceInterfaceProps) {
                 <Button
                   onClick={handleBack}
                   variant="outline"
-                  className="border-[#2A2A3E] text-white"
+                  className="border-white/10 text-white"
                 >
                   Go Back
                 </Button>

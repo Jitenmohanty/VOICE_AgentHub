@@ -12,9 +12,6 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
 
-const inputClass =
-  "mt-1.5 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30 focus-visible:border-violet-300/50 focus-visible:ring-violet-300/20 rounded-xl";
-
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -96,7 +93,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleCredentialsLogin} className="space-y-4">
           <div>
-            <Label htmlFor="email" className="text-xs font-medium text-white/60">Email</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
@@ -104,12 +101,12 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className={inputClass}
+              className="mt-1.5"
             />
           </div>
           <div>
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-xs font-medium text-white/60">Password</Label>
+              <Label htmlFor="password">Password</Label>
               <Link
                 href="/forgot-password"
                 className="text-xs text-white/55 hover:text-white transition-colors"
@@ -125,7 +122,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className={`${inputClass} mt-0 pr-10`}
+                className="pr-10"
               />
               <button
                 type="button"
@@ -141,7 +138,7 @@ export default function LoginPage() {
           <GradientButton type="submit" disabled={loading} className="w-full">
             {loading ? (
               <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="ah-spinner" />
                 Signing in…
               </span>
             ) : (
