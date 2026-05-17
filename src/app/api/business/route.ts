@@ -32,7 +32,8 @@ export async function GET() {
     });
 
     return NextResponse.json({ businesses });
-  } catch {
+  } catch (err) {
+    console.error("[GET /api/business] failed:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
