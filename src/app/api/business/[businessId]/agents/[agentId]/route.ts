@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 
 type Params = { params: Promise<{ businessId: string; agentId: string }> };
 
-async function verifyOwnership(userId: string, businessId: string, agentId: string) {
+async function verifyAccess(userId: string, businessId: string, agentId: string) {
   return prisma.agent.findFirst({
     where: {
       id: agentId,
       businessId,
-      business: { ownerId: userId },
+      business: businessAccessFilter(userId),
     },
     include: {
       business: { select: { id: true, slug: true, name: true, description: true, phone: true, address: true, website: true } },
@@ -26,7 +27,7 @@ export async function GET(_request: Request, { params }: Params) {
     }
 
     const { businessId, agentId } = await params;
-    const agent = await verifyOwnership(session.user.id, businessId, agentId);
+    const agent = await verifyAccess(session.user.id, businessId, agentId);
 
     if (!agent) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
@@ -46,7 +47,7 @@ export async function PATCH(request: Request, { params }: Params) {
     }
 
     const { businessId, agentId } = await params;
-    const existing = await verifyOwnership(session.user.id, businessId, agentId);
+    const existing = await verifyAccess(session.user.id, businessId, agentId);
     if (!existing) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }
@@ -84,7 +85,7 @@ export async function DELETE(_request: Request, { params }: Params) {
     }
 
     const { businessId, agentId } = await params;
-    const existing = await verifyOwnership(session.user.id, businessId, agentId);
+    const existing = await verifyAccess(session.user.id, businessId, agentId);
     if (!existing) {
       return NextResponse.json({ error: "Agent not found" }, { status: 404 });
     }

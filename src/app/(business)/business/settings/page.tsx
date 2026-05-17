@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
+import { WebhookDeliveriesLog } from "@/components/business/WebhookDeliveriesLog";
+import { NotificationPrefsCard, type NotificationPrefs } from "@/components/business/NotificationPrefsCard";
 
 interface BusinessInfo {
   id: string;
@@ -23,6 +25,7 @@ interface BusinessInfo {
   notificationEmail: string | null;
   webhookUrl: string | null;
   webhookSecret: string | null;
+  notificationPrefs: Partial<NotificationPrefs> | null;
 }
 
 export default function BusinessSettingsPage() {
@@ -264,6 +267,10 @@ export default function BusinessSettingsPage() {
           </div>
         </GlassPanel>
       </motion.div>
+
+      <NotificationPrefsCard businessId={business.id} initial={business.notificationPrefs} />
+
+      {business.webhookUrl && <WebhookDeliveriesLog businessId={business.id} />}
     </div>
   );
 }

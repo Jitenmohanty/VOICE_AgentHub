@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 
 export async function GET(
   _request: Request,
@@ -14,8 +15,9 @@ export async function GET(
 
     const { businessId } = await params;
 
+    // Reads are open to owner + members. PATCH below stays owner-only.
     const business = await prisma.business.findFirst({
-      where: { id: businessId, ownerId: session.user.id },
+      where: { id: businessId, ...businessAccessFilter(session.user.id) },
       include: {
         agents: {
           include: {
@@ -69,6 +71,16 @@ export async function PATCH(
       }
     }
 
+    // Coerce a partial prefs object so we never store anything richer than
+    // the documented shape (no surprise side fields).
+    let notificationPrefs: { leadCapture: boolean; quotaWarning: boolean } | undefined;
+    if (body.notificationPrefs && typeof body.notificationPrefs === "object") {
+      notificationPrefs = {
+        leadCapture: body.notificationPrefs.leadCapture !== false,
+        quotaWarning: body.notificationPrefs.quotaWarning !== false,
+      };
+    }
+
     const updated = await prisma.business.update({
       where: { id: businessId },
       data: {
@@ -80,6 +92,7 @@ export async function PATCH(
         ...(body.logoUrl !== undefined && { logoUrl: body.logoUrl }),
         ...(body.notificationEmail !== undefined && { notificationEmail: body.notificationEmail || null }),
         ...(body.webhookUrl !== undefined && { webhookUrl: body.webhookUrl || null }),
+        ...(notificationPrefs !== undefined && { notificationPrefs }),
       },
     });
 

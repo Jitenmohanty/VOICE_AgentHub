@@ -9,8 +9,11 @@ import {
   LayoutDashboard,
   Bot,
   History,
+  Inbox,
+  TrendingUp,
   Settings,
   CreditCard,
+  Users,
   LogOut,
   Sparkles,
   Menu,
@@ -21,7 +24,10 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/business/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/business/agents", icon: Bot, label: "Agents" },
+  { href: "/business/leads", icon: Inbox, label: "Leads" },
   { href: "/business/sessions", icon: History, label: "Sessions" },
+  { href: "/business/analytics", icon: TrendingUp, label: "Analytics" },
+  { href: "/business/team", icon: Users, label: "Team" },
   { href: "/business/billing", icon: CreditCard, label: "Billing" },
   { href: "/business/settings", icon: Settings, label: "Settings" },
 ];

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 import { getTemplateById } from "@/lib/templates";
 import { enforceAgentLimit } from "@/lib/ratelimit";
 
@@ -16,9 +17,9 @@ export async function GET(
 
     const { businessId } = await params;
 
-    // Verify ownership
+    // Reads open to owner + members.
     const business = await prisma.business.findFirst({
-      where: { id: businessId, ownerId: session.user.id },
+      where: { id: businessId, ...businessAccessFilter(session.user.id) },
     });
     if (!business) {
       return NextResponse.json({ error: "Business not found" }, { status: 404 });
@@ -51,8 +52,9 @@ export async function POST(
     const { businessId } = await params;
     const body = await request.json();
 
+    // Creating agents is owner-only — counts against the owner's plan limit.
     const business = await prisma.business.findFirst({
-      where: { id: businessId, ownerId: session.user.id },
+      where: { id: businessId, ...businessAccessFilter(session.user.id) },
     });
     if (!business) {
       return NextResponse.json({ error: "Business not found" }, { status: 404 });

@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 import { generateAndStoreEmbedding } from "@/lib/rag";
 
 type Params = { params: Promise<{ businessId: string; agentId: string; itemId: string }> };
 
 async function verifyItem(userId: string, businessId: string, agentId: string, itemId: string) {
   return prisma.knowledgeItem.findFirst({
-    where: { id: itemId, agentId, agent: { businessId, business: { ownerId: userId } } },
+    where: { id: itemId, agentId, agent: { businessId, business: businessAccessFilter(userId) } },
   });
 }
 

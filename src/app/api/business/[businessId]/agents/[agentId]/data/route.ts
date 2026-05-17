@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 
 type Params = { params: Promise<{ businessId: string; agentId: string }> };
 
 async function verifyAgent(userId: string, businessId: string, agentId: string) {
   return prisma.agent.findFirst({
-    where: { id: agentId, businessId, business: { ownerId: userId } },
+    where: { id: agentId, businessId, business: businessAccessFilter(userId) },
   });
 }
 

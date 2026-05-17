@@ -375,6 +375,10 @@ export async function notifyQuotaThresholds(businessId: string): Promise<void> {
     if (!sub) return;
     if (noticeRank(sub.lastQuotaNotice) >= noticeRank(tier.label)) return;
 
+    // Honour per-business opt-out. Missing key = default ON.
+    const prefs = sub.business.notificationPrefs as { quotaWarning?: boolean } | null;
+    if (prefs && prefs.quotaWarning === false) return;
+
     const recipient = sub.business.notificationEmail || sub.business.owner?.email;
     if (!recipient) return;
 

@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 
-/** GET current user's business(es) */
+/**
+ * GET current user's business(es). Returns businesses they own AND businesses
+ * they've been invited into as a team member.
+ */
 export async function GET() {
   try {
     const session = await auth();
@@ -11,7 +15,7 @@ export async function GET() {
     }
 
     const businesses = await prisma.business.findMany({
-      where: { ownerId: session.user.id },
+      where: businessAccessFilter(session.user.id),
       include: {
         agents: {
           select: {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 import { getAppUrl } from "@/lib/url";
 
 const ALLOWED_LEAD_STATUS = new Set(["new", "contacted", "qualified", "won", "lost", "archived"]);
@@ -40,7 +41,7 @@ export async function GET(
     const { businessId } = await params;
 
     const owns = await prisma.business.findFirst({
-      where: { id: businessId, ownerId: session.user.id },
+      where: { id: businessId, ...businessAccessFilter(session.user.id) },
       select: { id: true, slug: true },
     });
     if (!owns) {

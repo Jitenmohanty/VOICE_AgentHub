@@ -533,3 +533,61 @@ export async function sendPasswordResetEmail(opts: {
     html: body,
   });
 }
+
+// ── Team invite email ─────────────────────────────────────────────────────────
+
+export async function sendTeamInviteEmail(opts: {
+  to: string;
+  inviterName: string;
+  businessName: string;
+  token: string;
+}) {
+  const acceptUrl = `${BASE_URL}/invites/${opts.token}`;
+  const inviter = opts.inviterName || "Your teammate";
+
+  const body = emailShell(`
+    <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#FFFFFF;letter-spacing:-0.5px;">
+      You're invited to ${escapeHtml(opts.businessName)}
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;color:#8888AA;line-height:1.6;">
+      ${escapeHtml(inviter)} has invited you to join <strong style="color:#F0F0F5;">${escapeHtml(opts.businessName)}</strong>
+      on Voxie. Once you accept, you'll be able to view leads, sessions, and analytics for the business.
+    </p>
+
+    ${primaryButton(acceptUrl, "Accept invitation")}
+
+    <p style="margin:0 0 8px;font-size:13px;color:#8888AA;line-height:1.6;">
+      This invite expires in <strong style="color:#F0F0F5;">7 days</strong>.
+      If you weren't expecting this, you can safely ignore it.
+    </p>
+
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:10px;border:1px solid #2A2A3E;margin:24px 0;">
+      <tr>
+        <td style="padding:16px 20px;">
+          <p style="margin:0 0 6px;font-size:12px;color:#555577;text-transform:uppercase;letter-spacing:0.5px;">
+            Or copy this link into your browser
+          </p>
+          <p style="margin:0;font-size:12px;color:#00D4FF;word-break:break-all;font-family:monospace;">
+            ${acceptUrl}
+          </p>
+        </td>
+      </tr>
+    </table>
+  `);
+
+  return sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: `${inviter} invited you to ${opts.businessName} on Voxie`,
+    html: body,
+  });
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
