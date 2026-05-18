@@ -109,7 +109,7 @@ export default function RegisterPage() {
         </>
       }
     >
-      <GlassPanel elevation="raised" radius="lg" className="p-8">
+      <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8">
         {step === 1 && (
           <>
             <button

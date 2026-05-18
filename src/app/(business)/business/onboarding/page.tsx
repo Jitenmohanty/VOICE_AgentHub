@@ -237,7 +237,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4 md:py-12">
+    <div className="max-w-2xl mx-auto py-8 px-2 md:py-12 md:px-4">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-8">
         <div className="relative inline-block mb-4">
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
         {/* STEP 1 */}
         {step === 1 && (
           <motion.div key="step1" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35 }}>
-            <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
+            <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-5">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-300/20 flex items-center justify-center">
                   <Building2 className="w-4 h-4 text-violet-300" strokeWidth={2} />
@@ -336,7 +336,7 @@ export default function OnboardingPage() {
         {/* STEP 2 */}
         {step === 2 && template && (
           <motion.div key="step2" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35 }}>
-            <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
+            <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-5">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl ah-gradient-bg flex items-center justify-center shadow-[0_4px_16px_-4px_rgba(124,58,237,0.5)]">
                   <Bot className="w-4 h-4 text-white" strokeWidth={2} />
@@ -450,7 +450,7 @@ export default function OnboardingPage() {
         {/* STEP 3 */}
         {step === 3 && (
           <motion.div key="step3" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35 }}>
-            <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
+            <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-5">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-300/20 flex items-center justify-center">
                   <BookOpen className="w-4 h-4 text-cyan-300" strokeWidth={2} />
@@ -512,7 +512,7 @@ export default function OnboardingPage() {
         {/* STEP 4 */}
         {step === 4 && (
           <motion.div key="step4" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35 }}>
-            <GlassPanel elevation="floating" gradientBorder radius="lg" className="p-8 text-center space-y-6">
+            <GlassPanel elevation="floating" gradientBorder radius="lg" className="p-6 md:p-8 text-center space-y-6">
               <div className="relative inline-block mx-auto">
                 <div className="w-16 h-16 rounded-2xl ah-gradient-bg flex items-center justify-center shadow-[0_8px_32px_-8px_rgba(124,58,237,0.6)]">
                   <Check className="w-7 h-7 text-white" strokeWidth={2.5} />

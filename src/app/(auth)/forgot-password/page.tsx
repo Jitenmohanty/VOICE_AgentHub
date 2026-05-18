@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
         </Link>
       }
     >
-      <GlassPanel elevation="raised" radius="lg" className="p-8">
+      <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8">
         {sent ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}

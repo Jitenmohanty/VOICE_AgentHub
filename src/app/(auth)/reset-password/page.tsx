@@ -31,7 +31,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <GlassPanel elevation="raised" radius="lg" className="p-8 text-center">
+      <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8 text-center">
         <div className="w-14 h-14 rounded-2xl bg-rose-500/15 border border-rose-300/20 flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="w-7 h-7 text-rose-300" strokeWidth={2} />
         </div>
@@ -79,7 +79,7 @@ function ResetPasswordForm() {
   if (done) {
     return (
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
-        <GlassPanel elevation="raised" radius="lg" className="p-8 text-center">
+        <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8 text-center">
           <div className="w-14 h-14 rounded-2xl ah-gradient-bg flex items-center justify-center mx-auto mb-4 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
             <CheckCircle className="w-7 h-7 text-white" strokeWidth={2} />
           </div>
@@ -91,7 +91,7 @@ function ResetPasswordForm() {
   }
 
   return (
-    <GlassPanel elevation="raised" radius="lg" className="p-8">
+    <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label htmlFor="password">New password</Label>
@@ -173,7 +173,7 @@ export default function ResetPasswordPage() {
     >
       <Suspense
         fallback={
-          <GlassPanel elevation="raised" radius="lg" className="p-8 text-center text-sm text-white/55">
+          <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8 text-center text-sm text-white/55">
             Loading…
           </GlassPanel>
         }

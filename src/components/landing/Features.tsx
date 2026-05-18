@@ -426,7 +426,7 @@ const features: Feature[] = [
 
 export function Features() {
   return (
-    <section id="features" className="relative py-32 px-6">
+    <section id="features" className="relative py-20 px-2 md:py-32 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Section header */}
         <motion.div

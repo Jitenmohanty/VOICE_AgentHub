@@ -86,7 +86,7 @@ export default function BusinessDataPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-10">
+    <div className="max-w-4xl mx-auto px-2 py-6 md:p-10">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-7">
         <Link
           href={`/business/agents/${agentId}?bid=${businessId}`}

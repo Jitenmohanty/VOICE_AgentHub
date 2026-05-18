@@ -37,7 +37,7 @@ const steps = [
 
 export function CTA() {
   return (
-    <section className="relative py-32 px-6 overflow-hidden">
+    <section className="relative py-20 px-2 md:py-32 md:px-6 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* How it works */}
         <motion.div

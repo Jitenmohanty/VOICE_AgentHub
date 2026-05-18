@@ -31,7 +31,7 @@ const highlights = [
 
 export function InterviewSpotlight() {
   return (
-    <section className="relative py-32 px-6 overflow-hidden">
+    <section className="relative py-20 px-2 md:py-32 md:px-6 overflow-hidden">
       {/* Subtle aurora wash */}
       <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[700px] bg-[radial-gradient(ellipse_at_50%_50%,rgba(59,130,246,0.1),transparent_60%)] pointer-events-none" />
 

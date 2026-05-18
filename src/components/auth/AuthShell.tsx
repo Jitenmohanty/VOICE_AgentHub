@@ -27,7 +27,7 @@ interface AuthShellProps {
  */
 export function AuthShell({ title, subtitle, meta, footer, children }: AuthShellProps) {
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-6 py-12 overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center px-2 py-8 md:px-6 md:py-12 overflow-hidden">
       <AuroraBackground density="subtle" />
 
       <motion.div

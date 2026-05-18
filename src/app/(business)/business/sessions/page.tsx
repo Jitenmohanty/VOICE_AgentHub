@@ -49,7 +49,7 @@ export default function BusinessSessionsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-10">
+    <div className="max-w-4xl mx-auto px-2 py-6 md:p-10">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8">
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">All conversations</p>
         <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Sessions</h1>

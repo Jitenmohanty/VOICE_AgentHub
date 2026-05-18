@@ -81,7 +81,7 @@ export function WebhookDeliveriesLog({ businessId }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.15 }}
     >
-      <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
+      <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-5">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-300/20 flex items-center justify-center">
             <Webhook className="w-4 h-4 text-blue-300" strokeWidth={2} />

@@ -95,7 +95,7 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-10">
+    <div className="max-w-4xl mx-auto px-2 py-6 md:p-10">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-7">
         <Link
           href={`/business/agents/${agentId}?bid=${businessId}`}
@@ -121,7 +121,7 @@ export default function KnowledgePage() {
           animate={{ opacity: 1, height: "auto" }}
           className="mb-6"
         >
-          <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-4">
+          <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-white tracking-tight">New knowledge item</h3>
               <button

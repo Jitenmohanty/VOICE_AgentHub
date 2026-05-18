@@ -105,7 +105,7 @@ export default function BusinessSettingsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto p-6 md:p-10 space-y-6">
+      <div className="max-w-2xl mx-auto px-2 py-6 md:p-10 space-y-6">
         {[1, 2].map((i) => (
           <div key={i} className="glass-raised rounded-3xl p-7 animate-pulse">
             <div className="h-10 bg-white/[0.06] rounded" />
@@ -118,7 +118,7 @@ export default function BusinessSettingsPage() {
   if (!business) return <div className="text-center py-16 text-white/55">No business found</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 md:p-10 space-y-6">
+    <div className="max-w-2xl mx-auto px-2 py-6 md:p-10 space-y-6">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Settings</p>
         <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Business settings</h1>
@@ -126,7 +126,7 @@ export default function BusinessSettingsPage() {
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.05 }}>
-        <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
+        <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-5">
           <div className="flex items-center gap-2.5 mb-1">
             <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-300/20 flex items-center justify-center">
               <Building2 className="w-4 h-4 text-violet-300" strokeWidth={2} />
@@ -181,7 +181,7 @@ export default function BusinessSettingsPage() {
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-        <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-5">
+        <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-5">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-300/20 flex items-center justify-center">
               <Mail className="w-4 h-4 text-cyan-300" strokeWidth={2} />

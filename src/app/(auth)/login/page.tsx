@@ -58,7 +58,7 @@ export default function LoginPage() {
         </>
       }
     >
-      <GlassPanel elevation="raised" radius="lg" className="p-8">
+      <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8">
         <div className="flex flex-col gap-2.5 mb-6">
           <button
             type="button"

@@ -21,7 +21,7 @@ export function LegalShell({ title, subtitle, children }: Props) {
       <AuroraBackground density="subtle" />
 
       <header className="relative z-10 border-b border-white/[0.06] bg-[var(--ah-bg-deep)]/70 backdrop-blur-xl sticky top-0">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
+        <div className="max-w-4xl mx-auto px-2 py-4 md:px-6 flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 text-white/55 hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back to home</span>
@@ -36,7 +36,7 @@ export function LegalShell({ title, subtitle, children }: Props) {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-4xl mx-auto px-6 py-16">
+      <main className="relative z-10 max-w-4xl mx-auto px-2 py-12 md:px-6 md:py-16">
         <div className="mb-12">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Legal</p>
           <h1 className="text-4xl md:text-5xl font-semibold tracking-[-0.02em] text-white mb-3">{title}</h1>
@@ -46,7 +46,7 @@ export function LegalShell({ title, subtitle, children }: Props) {
         <div className="space-y-10 text-white/75 leading-relaxed">{children}</div>
       </main>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 pb-12 mt-8 pt-8 border-t border-white/[0.06] flex flex-wrap gap-6 text-sm text-white/45">
+      <div className="relative z-10 max-w-4xl mx-auto px-2 pb-10 mt-8 pt-8 md:px-6 md:pb-12 border-t border-white/[0.06] flex flex-wrap gap-6 text-sm text-white/45">
         <Link href="/" className="hover:text-white transition-colors">Home</Link>
         <Link href="/legal/privacy" className="hover:text-white transition-colors">Privacy</Link>
         <Link href="/legal/terms" className="hover:text-white transition-colors">Terms</Link>

@@ -176,7 +176,7 @@ export default function LeadsPage() {
 
   if (bootLoading) {
     return (
-      <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-6">
+      <div className="max-w-5xl mx-auto px-2 py-6 md:p-10 space-y-6">
         <div>
           <div className="h-3 w-12 bg-white/[0.06] rounded animate-pulse mb-3" />
           <div className="h-9 w-32 bg-white/[0.06] rounded-lg animate-pulse" />
@@ -190,7 +190,7 @@ export default function LeadsPage() {
 
   if (!business) {
     return (
-      <div className="max-w-5xl mx-auto p-6 md:p-10">
+      <div className="max-w-5xl mx-auto px-2 py-6 md:p-10">
         <GlassPanel elevation="subtle" radius="lg" className="text-center py-16 px-6">
           <Inbox className="w-12 h-12 text-white/15 mx-auto mb-4" strokeWidth={1.5} />
           <p className="text-white/65">No business yet</p>
@@ -201,7 +201,7 @@ export default function LeadsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-6">
+    <div className="max-w-5xl mx-auto px-2 py-6 md:p-10 space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}

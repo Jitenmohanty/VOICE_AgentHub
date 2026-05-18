@@ -45,7 +45,7 @@ function VerifySentInner() {
   };
 
   return (
-    <GlassPanel elevation="raised" radius="lg" className="p-8">
+    <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8">
       <div className="text-center mb-6">
         <div className="w-14 h-14 rounded-2xl ah-gradient-bg flex items-center justify-center mx-auto mb-4 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
           <MailCheck className="w-7 h-7 text-white" strokeWidth={2} />
@@ -112,7 +112,7 @@ export default function VerifyEmailSentPage() {
     >
       <Suspense
         fallback={
-          <GlassPanel elevation="raised" radius="lg" className="p-8 text-center text-sm text-white/55">
+          <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8 text-center text-sm text-white/55">
             Loading…
           </GlassPanel>
         }

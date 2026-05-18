@@ -30,7 +30,7 @@ export function Navbar() {
           : "bg-transparent backdrop-blur-md border-b border-transparent",
       ].join(" ")}
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-8 py-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-2 md:px-8 py-3 md:py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="relative">
             <div className="w-9 h-9 rounded-2xl ah-gradient-bg flex items-center justify-center shadow-[0_8px_24px_-8px_rgba(124,58,237,0.6)] group-hover:shadow-[0_8px_24px_-4px_rgba(59,130,246,0.7)] transition-shadow">

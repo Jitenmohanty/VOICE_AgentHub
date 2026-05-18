@@ -19,7 +19,7 @@ export default function Home() {
       <Features />
       <Pricing />
       <CTA />
-      <footer className="py-12 px-6 border-t border-white/[0.06] mt-12">
+      <footer className="py-10 px-2 md:py-12 md:px-6 border-t border-white/[0.06] mt-12">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-white/50">
           <span className="text-white/40">
             © {new Date().getFullYear()} Voxie · Powered by Gemini &amp; Claude

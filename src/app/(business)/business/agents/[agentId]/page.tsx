@@ -158,7 +158,7 @@ export default function AgentConfigPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto p-6 md:p-10 space-y-6">
+      <div className="max-w-3xl mx-auto px-2 py-6 md:p-10 space-y-6">
         {[1, 2, 3].map((i) => (
           <div key={i} className="glass-raised rounded-3xl p-7 animate-pulse">
             <div className="h-5 w-1/4 bg-white/[0.06] rounded mb-3" />
@@ -172,7 +172,7 @@ export default function AgentConfigPage() {
   if (!agent) return <div className="text-center py-16 text-white/55">Agent not found</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 md:p-10">
+    <div className="max-w-3xl mx-auto px-2 py-6 md:p-10">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8">
         <Link href="/business/agents" className="inline-flex items-center gap-1.5 text-sm text-white/55 hover:text-white mb-5 transition-colors">

@@ -181,7 +181,7 @@ export default function TeamPage() {
 
   if (bootLoading) {
     return (
-      <div className="max-w-4xl mx-auto p-6 md:p-10 space-y-6">
+      <div className="max-w-4xl mx-auto px-2 py-6 md:p-10 space-y-6">
         <div>
           <div className="h-3 w-12 bg-white/[0.06] rounded animate-pulse mb-3" />
           <div className="h-9 w-32 bg-white/[0.06] rounded-lg animate-pulse" />
@@ -195,7 +195,7 @@ export default function TeamPage() {
 
   if (!business) {
     return (
-      <div className="max-w-4xl mx-auto p-6 md:p-10">
+      <div className="max-w-4xl mx-auto px-2 py-6 md:p-10">
         <GlassPanel elevation="subtle" radius="lg" className="text-center py-16 px-6">
           <Users className="w-12 h-12 text-white/15 mx-auto mb-4" strokeWidth={1.5} />
           <p className="text-white/65">No business yet</p>
@@ -207,7 +207,7 @@ export default function TeamPage() {
   const isOwner = team?.currentUserIsOwner ?? false;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-10 space-y-6">
+    <div className="max-w-4xl mx-auto px-2 py-6 md:p-10 space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
@@ -228,7 +228,7 @@ export default function TeamPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
         >
-          <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-4">
+          <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-300/20 flex items-center justify-center">
                 <UserPlus className="w-4 h-4 text-violet-300" strokeWidth={2} />
@@ -305,7 +305,7 @@ export default function TeamPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-4">
+        <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-300/20 flex items-center justify-center">
               <Users className="w-4 h-4 text-cyan-300" strokeWidth={2} />
@@ -353,7 +353,7 @@ export default function TeamPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-4">
+          <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-300/20 flex items-center justify-center">
                 <Clock className="w-4 h-4 text-amber-300" strokeWidth={2} />

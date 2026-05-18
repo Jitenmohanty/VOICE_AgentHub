@@ -71,7 +71,7 @@ export default function ContactPage() {
       <AuroraBackground density="subtle" />
 
       <header className="relative z-10 border-b border-white/[0.06] bg-[var(--ah-bg-deep)]/70 backdrop-blur-xl sticky top-0">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
+        <div className="max-w-4xl mx-auto px-2 py-4 md:px-6 flex items-center gap-4">
           <Link href="/" className="flex items-center gap-2 text-white/55 hover:text-white transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Back to home</span>
@@ -86,7 +86,7 @@ export default function ContactPage() {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-4xl mx-auto px-6 py-16">
+      <main className="relative z-10 max-w-4xl mx-auto px-2 py-12 md:px-6 md:py-16">
         <div className="mb-12">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Support</p>
           <h1 className="text-4xl md:text-5xl font-semibold tracking-[-0.02em] text-white mb-3">Contact &amp; support</h1>
@@ -155,7 +155,7 @@ export default function ContactPage() {
           <div className="lg:col-span-3">
             {sent ? (
               <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
-                <GlassPanel elevation="raised" radius="lg" className="p-8 text-center">
+                <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8 text-center">
                   <div className="w-14 h-14 rounded-2xl ah-gradient-bg flex items-center justify-center mx-auto mb-4 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
                     <CheckCircle className="w-7 h-7 text-white" strokeWidth={2} />
                   </div>
@@ -173,7 +173,7 @@ export default function ContactPage() {
                 </GlassPanel>
               </motion.div>
             ) : (
-              <GlassPanel elevation="raised" radius="lg" className="p-8">
+              <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8">
                 <h2 className="text-lg font-semibold text-white tracking-tight mb-6">Send us a message</h2>
 
                 <div className="mb-6">
@@ -272,7 +272,7 @@ export default function ContactPage() {
         </div>
       </main>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 pb-12 mt-8 pt-8 border-t border-white/[0.06] flex flex-wrap gap-6 text-sm text-white/45">
+      <div className="relative z-10 max-w-4xl mx-auto px-2 pb-10 mt-8 pt-8 md:px-6 md:pb-12 border-t border-white/[0.06] flex flex-wrap gap-6 text-sm text-white/45">
         <Link href="/" className="hover:text-white transition-colors">Home</Link>
         <Link href="/legal/privacy" className="hover:text-white transition-colors">Privacy</Link>
         <Link href="/legal/terms" className="hover:text-white transition-colors">Terms</Link>

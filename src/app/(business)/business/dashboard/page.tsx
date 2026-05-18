@@ -75,13 +75,13 @@ export default function BusinessDashboardPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-6">
+      <div className="max-w-5xl mx-auto px-2 py-6 md:p-10 space-y-6">
         <div>
           <div className="h-3 w-16 bg-white/[0.06] rounded animate-pulse mb-3" />
           <div className="h-9 w-64 bg-white/[0.06] rounded-lg animate-pulse" />
         </div>
         {Array.from({ length: 3 }).map((_, i) => (
-          <GlassPanel key={i} elevation="subtle" radius="lg" className="p-7 animate-pulse">
+          <GlassPanel key={i} elevation="subtle" radius="lg" className="p-6 md:p-7 animate-pulse">
             <div className="flex items-center gap-3.5 mb-5">
               <div className="w-10 h-10 rounded-2xl bg-white/[0.06]" />
               <div className="flex-1 space-y-2">
@@ -97,7 +97,7 @@ export default function BusinessDashboardPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-6">
+    <div className="max-w-5xl mx-auto px-2 py-6 md:p-10 space-y-6">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Overview</p>
         <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">
@@ -114,7 +114,7 @@ export default function BusinessDashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05, duration: 0.5 }}
           >
-            <GlassPanel elevation="raised" radius="lg" className="p-7">
+            <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7">
               <div className="flex items-start justify-between mb-5">
                 <div className="flex items-center gap-4">
                   <div className="relative">
@@ -157,7 +157,7 @@ export default function BusinessDashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
             >
-              <GlassPanel elevation="raised" radius="lg" className="p-7">
+              <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3.5">
                     <div className="w-10 h-10 rounded-2xl bg-violet-500/10 border border-violet-300/20 flex items-center justify-center">
@@ -209,7 +209,7 @@ export default function BusinessDashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.5 }}
             >
-              <GlassPanel elevation="raised" radius="lg" className="p-7">
+              <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3.5">
                     <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-300/20 flex items-center justify-center">

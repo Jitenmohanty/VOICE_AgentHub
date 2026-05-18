@@ -46,7 +46,7 @@ export function EmbedInstallCard({ slug }: Props) {
   };
 
   return (
-    <GlassPanel elevation="raised" radius="lg" className="p-7 space-y-4">
+    <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-4">
       <div className="flex items-center gap-2.5">
         <div className="w-9 h-9 rounded-xl ah-gradient-bg flex items-center justify-center shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
           <Code2 className="w-4 h-4 text-white" strokeWidth={2} />

@@ -36,7 +36,7 @@ export default async function BillingPage() {
   const fmtInr = (paise: number) => `₹${(paise / 100).toLocaleString("en-IN")}`;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-10 space-y-6">
+    <div className="max-w-4xl mx-auto px-2 py-6 md:p-10 space-y-6">
       <div>
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Billing</p>
         <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Plans &amp; usage</h1>
@@ -44,7 +44,7 @@ export default async function BillingPage() {
       </div>
 
       {/* Current usage */}
-      <section className="glass-raised rounded-3xl p-7 space-y-5">
+      <section className="glass-raised rounded-3xl p-6 md:p-7 space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/40">Current plan</p>

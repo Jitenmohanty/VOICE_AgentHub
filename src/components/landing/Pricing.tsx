@@ -71,7 +71,7 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="relative py-32 px-6">
+    <section id="pricing" className="relative py-20 px-2 md:py-32 md:px-6">
       {/* Subtle aurora wash for this section */}
       <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.08),transparent_60%)] pointer-events-none" />
 

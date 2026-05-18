@@ -17,7 +17,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 export function AgentShowcase() {
   return (
-    <section id="agents" className="relative py-32 px-6">
+    <section id="agents" className="relative py-20 px-2 md:py-32 md:px-6">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
