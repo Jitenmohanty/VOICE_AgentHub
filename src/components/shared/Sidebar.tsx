@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 const navItems = [
   { href: "/business/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -107,6 +108,11 @@ export function Sidebar() {
 
         <NavLinks />
 
+        <div className="flex items-center justify-between gap-2 px-2 mt-2">
+          <span className="text-[11px] uppercase tracking-[0.18em] text-white/35">Appearance</span>
+          <ThemeToggle />
+        </div>
+
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/55 hover:text-rose-300 hover:bg-rose-500/5 transition-all"
@@ -161,6 +167,11 @@ export function Sidebar() {
               </div>
 
               <NavLinks onNavClick={() => setMobileOpen(false)} />
+
+              <div className="flex items-center justify-between gap-2 px-2 mt-2">
+                <span className="text-[11px] uppercase tracking-[0.18em] text-white/35">Appearance</span>
+                <ThemeToggle />
+              </div>
 
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}

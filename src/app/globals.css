@@ -95,7 +95,8 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* Voxie design tokens — referenced from styles + components */
+  /* Voxie design tokens — referenced from styles + components.
+     These ALSO act as the dark-mode default (no :root.light class present). */
   --ah-bg-deep: #050816;
   --ah-bg-raised: #0B1020;
   --ah-surface: rgba(255, 255, 255, 0.05);
@@ -112,6 +113,155 @@
   --ah-grad-cyan: #06B6D4;
   --ah-gradient: linear-gradient(135deg, #7C3AED 0%, #3B82F6 50%, #06B6D4 100%);
   --ah-gradient-soft: linear-gradient(135deg, rgba(124, 58, 237, 0.18), rgba(59, 130, 246, 0.18), rgba(6, 182, 212, 0.18));
+
+  /* Body aurora — three radial washes mixed with the canvas color. Defined
+     as variables so the .light selector can swap to a softer cream wash
+     without re-declaring the body rule. */
+  --ah-aurora-1: rgba(124, 58, 237, 0.18);
+  --ah-aurora-2: rgba(59, 130, 246, 0.12);
+  --ah-aurora-3: rgba(6, 182, 212, 0.10);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Light theme — slate-based palette (Linear / Stripe / Vercel territory).
+   Activated when `next-themes` adds the `.light` class to <html>.
+
+   Palette rationale:
+     • Canvas        #F8FAFC — slate-50, slight cool tint to harmonize with
+                                the violet→blue→cyan brand gradient
+     • Panel         #FFFFFF — pure white for raised glass surfaces
+     • Foreground    #0F172A — slate-900, premium near-black with depth
+     • Mid-fg        #475569 — slate-600 for secondary copy
+     • Borders / surfaces use SLATE-900 at low opacity (mirror of white-on-dark)
+     • Aurora drops to ~40% so it reads as a subtle wash, not a stain
+   ────────────────────────────────────────────────────────────────────────── */
+:root.light {
+  --ah-bg-deep: #F8FAFC;
+  --ah-bg-raised: #FFFFFF;
+  --ah-surface: rgba(15, 23, 42, 0.04);
+  --ah-surface-strong: rgba(15, 23, 42, 0.06);
+  --ah-border: rgba(15, 23, 42, 0.08);
+  --ah-border-strong: rgba(15, 23, 42, 0.14);
+  --ah-text-primary: #0F172A;
+  --ah-text-secondary: rgba(15, 23, 42, 0.7);
+  --ah-text-muted: rgba(15, 23, 42, 0.5);
+
+  --ah-aurora-1: rgba(124, 58, 237, 0.07);
+  --ah-aurora-2: rgba(59, 130, 246, 0.05);
+  --ah-aurora-3: rgba(6, 182, 212, 0.06);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Theme-aware opacity overrides.
+
+   The codebase leans heavily on Tailwind's `text-white/X`, `bg-white/X` and
+   `border-white/X` opacity utilities — perfect on dark surfaces, invisible
+   on light ones. Rather than rewrite every consumer, we override those
+   utilities inside `.light` to use slate-900 at the same opacity. Visual
+   hierarchy is preserved; only the base color flips.
+
+   Same idea for `text-{brand}-300` icon tints, which read as nearly-invisible
+   pastels on white — bumped to the 600/700 stops in light mode.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* — Text — */
+.light .text-white,
+.light .text-white\/95          { color: rgba(15, 23, 42, 1); }
+.light .text-white\/90          { color: rgba(15, 23, 42, 0.92); }
+.light .text-white\/85          { color: rgba(15, 23, 42, 0.88); }
+.light .text-white\/80          { color: rgba(15, 23, 42, 0.82); }
+.light .text-white\/75          { color: rgba(15, 23, 42, 0.78); }
+.light .text-white\/70          { color: rgba(15, 23, 42, 0.74); }
+.light .text-white\/65          { color: rgba(15, 23, 42, 0.7); }
+.light .text-white\/60          { color: rgba(15, 23, 42, 0.66); }
+.light .text-white\/55          { color: rgba(15, 23, 42, 0.62); }
+.light .text-white\/50          { color: rgba(15, 23, 42, 0.56); }
+.light .text-white\/45          { color: rgba(15, 23, 42, 0.52); }
+.light .text-white\/40          { color: rgba(15, 23, 42, 0.46); }
+.light .text-white\/35          { color: rgba(15, 23, 42, 0.42); }
+.light .text-white\/30          { color: rgba(15, 23, 42, 0.38); }
+.light .text-white\/25          { color: rgba(15, 23, 42, 0.32); }
+.light .text-white\/20          { color: rgba(15, 23, 42, 0.28); }
+.light .text-white\/15          { color: rgba(15, 23, 42, 0.22); }
+.light .text-white\/10          { color: rgba(15, 23, 42, 0.16); }
+
+/* Placeholder text — flip the white-tinted placeholders to slate. */
+.light .placeholder\:text-white\/30::placeholder { color: rgba(15, 23, 42, 0.38); }
+.light .placeholder\:text-white\/40::placeholder { color: rgba(15, 23, 42, 0.46); }
+.light .placeholder\:text-white\/50::placeholder { color: rgba(15, 23, 42, 0.56); }
+
+/* — Backgrounds — */
+.light .bg-white\/5             { background-color: rgba(15, 23, 42, 0.05); }
+.light .bg-white\/\[0\.02\]     { background-color: rgba(15, 23, 42, 0.02); }
+.light .bg-white\/\[0\.03\]     { background-color: rgba(15, 23, 42, 0.03); }
+.light .bg-white\/\[0\.04\]     { background-color: rgba(15, 23, 42, 0.04); }
+.light .bg-white\/\[0\.05\]     { background-color: rgba(15, 23, 42, 0.05); }
+.light .bg-white\/\[0\.06\]     { background-color: rgba(15, 23, 42, 0.06); }
+.light .bg-white\/\[0\.07\]     { background-color: rgba(15, 23, 42, 0.07); }
+.light .bg-white\/\[0\.08\]     { background-color: rgba(15, 23, 42, 0.08); }
+.light .bg-white\/\[0\.09\]     { background-color: rgba(15, 23, 42, 0.09); }
+.light .bg-white\/10            { background-color: rgba(15, 23, 42, 0.1); }
+.light .bg-white\/15            { background-color: rgba(15, 23, 42, 0.15); }
+
+/* `hover:bg-white/X` */
+.light .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(15, 23, 42, 0.07); }
+.light .hover\:bg-white\/\[0\.07\]:hover { background-color: rgba(15, 23, 42, 0.08); }
+.light .hover\:bg-white\/\[0\.08\]:hover { background-color: rgba(15, 23, 42, 0.09); }
+.light .hover\:bg-white\/\[0\.09\]:hover { background-color: rgba(15, 23, 42, 0.1); }
+
+/* — Borders — */
+.light .border-white\/8         { border-color: rgba(15, 23, 42, 0.1); }
+.light .border-white\/10        { border-color: rgba(15, 23, 42, 0.12); }
+.light .border-white\/14        { border-color: rgba(15, 23, 42, 0.16); }
+.light .border-white\/15        { border-color: rgba(15, 23, 42, 0.16); }
+.light .border-white\/20        { border-color: rgba(15, 23, 42, 0.2); }
+.light .border-white\/25        { border-color: rgba(15, 23, 42, 0.25); }
+.light .border-white\/30        { border-color: rgba(15, 23, 42, 0.3); }
+.light .border-white\/\[0\.06\] { border-color: rgba(15, 23, 42, 0.08); }
+.light .border-white\/\[0\.08\] { border-color: rgba(15, 23, 42, 0.1); }
+.light .border-white\/\[0\.12\] { border-color: rgba(15, 23, 42, 0.14); }
+.light .hover\:border-white\/15:hover  { border-color: rgba(15, 23, 42, 0.18); }
+.light .hover\:border-white\/20:hover  { border-color: rgba(15, 23, 42, 0.22); }
+.light .hover\:border-white\/14:hover  { border-color: rgba(15, 23, 42, 0.18); }
+
+/* — Brand-color icon tints — the 300-stops are pastel and disappear on white.
+   Bump to 600 in light mode so icons stay readable, keep 300 in dark. — */
+.light .text-violet-300         { color: #7C3AED; }
+.light .text-blue-300           { color: #2563EB; }
+.light .text-cyan-300           { color: #0891B2; }
+.light .text-emerald-300        { color: #059669; }
+.light .text-rose-300           { color: #E11D48; }
+.light .text-amber-300          { color: #D97706; }
+
+/* — Inline-style hex literals already use brand or token colors and don't
+   need overrides. The places that hard-code `#FFFFFF` on backgrounds are
+   intentional (e.g. inside `ah-gradient-bg` pills) and stay white. — */
+
+/* Anything painted on the brand gradient (CTAs, badges, status pills) needs
+   to keep white text regardless of theme. Two opt-ins:
+     • `.ah-gradient-bg`     — the solid gradient surface utility itself
+     • `.ah-on-gradient`     — explicit marker for elements that wrap gradient
+                                children (e.g. <GradientButton variant="primary">) */
+.light .ah-gradient-bg,
+.light .ah-gradient-bg [class*="text-white"],
+.light .ah-on-gradient,
+.light .ah-on-gradient [class*="text-white"] {
+  color: #FFFFFF;
+}
+
+/* Same protection for the Hero's mock product pill — both backgrounds use
+   inline arbitrary linear-gradient utilities that match the brand. */
+.light .bg-\[linear-gradient\(110deg\,\#7C3AED\,\#3B82F6\,\#06B6D4\,\#3B82F6\,\#7C3AED\)\] {
+  color: #FFFFFF;
+}
+
+/* The brand-tinted backdrop wash used by Hero/Pricing glow underlays uses
+   black at high alpha as a shadow — flip to lighter shadows in light mode. */
+.light .shadow-\[0_24px_64px_-24px_rgba\(2\,6\,23\,0\.8\)\],
+.light .shadow-\[0_24px_64px_-24px_rgba\(2\,6\,23\,0\.6\)\],
+.light .shadow-\[0_32px_80px_-32px_rgba\(2\,6\,23\,0\.8\)\],
+.light .shadow-\[0_12px_32px_-12px_rgba\(2\,6\,23\,0\.6\)\] {
+  box-shadow: 0 18px 40px -18px rgba(15, 23, 42, 0.16);
 }
 
 .dark {
@@ -153,24 +303,29 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
     /* Subtle aurora wash — sits below every page so even legacy screens
-       inherit the new feel without per-page work. */
+       inherit the new feel without per-page work. Aurora colors are driven
+       by tokens so light mode picks up a softer cream wash automatically. */
     background-color: var(--ah-bg-deep);
     background-image:
-      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124, 58, 237, 0.18), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 90% 20%, rgba(59, 130, 246, 0.12), transparent 60%),
-      radial-gradient(ellipse 60% 60% at 10% 110%, rgba(6, 182, 212, 0.10), transparent 60%);
+      radial-gradient(ellipse 80% 60% at 50% -10%, var(--ah-aurora-1), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 20%, var(--ah-aurora-2), transparent 60%),
+      radial-gradient(ellipse 60% 60% at 10% 110%, var(--ah-aurora-3), transparent 60%);
     background-attachment: fixed;
+    color: var(--ah-text-primary);
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.01em;
   }
   html {
     @apply font-sans;
+    color-scheme: dark;
+  }
+  html.light {
+    color-scheme: light;
   }
   ::selection {
     background: rgba(124, 58, 237, 0.35);
-    color: #fff;
+    color: var(--ah-text-primary);
   }
 }
 
@@ -209,6 +364,34 @@
     0 1px 0 0 rgba(255, 255, 255, 0.08) inset,
     0 32px 80px -32px rgba(2, 6, 23, 0.8),
     0 0 80px -20px rgba(124, 58, 237, 0.15);
+}
+
+/* Light-mode glass overrides. In dark mode a white-tinted overlay over a
+   near-black background reads as "frosted." Flipping that to a black-tinted
+   overlay over a cream background would just look dirty, so we use white
+   panels with a soft inner highlight and a navy-toned shadow instead. */
+.light .glass {
+  background: var(--ah-bg-raised);
+  border-color: var(--ah-border);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+}
+.light .glass-raised {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.95)),
+    var(--ah-bg-raised);
+  border: 1px solid var(--ah-border-strong);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.8) inset,
+    0 18px 38px -18px rgba(15, 23, 42, 0.18);
+}
+.light .glass-floating {
+  background: var(--ah-bg-raised);
+  border: 1px solid var(--ah-border-strong);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.9) inset,
+    0 28px 64px -24px rgba(15, 23, 42, 0.22),
+    0 0 80px -32px rgba(124, 58, 237, 0.18);
 }
 
 /* Animated gradient border — wrap any element in `.gradient-border` to give
@@ -360,6 +543,48 @@ select:-webkit-autofill:focus {
   caret-color: #ffffff;
   transition: background-color 9999s ease-out 0s;
 }
+.light input:-webkit-autofill,
+.light input:-webkit-autofill:hover,
+.light input:-webkit-autofill:focus,
+.light textarea:-webkit-autofill,
+.light textarea:-webkit-autofill:hover,
+.light textarea:-webkit-autofill:focus,
+.light select:-webkit-autofill,
+.light select:-webkit-autofill:hover,
+.light select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ah-text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--ah-bg-raised) inset;
+  caret-color: var(--ah-text-primary);
+}
+
+/* Light-mode form-control surfaces. The dark-mode primitives bake in
+   `bg-white/[0.04]` and `text-white` directly on `[data-slot="input"]` /
+   `[data-slot="textarea"]` — that white-on-cream is unreadable. Use a slim
+   set of overrides instead of editing every consumer. */
+.light [data-slot="input"],
+.light [data-slot="textarea"] {
+  background-color: var(--ah-bg-raised);
+  border-color: var(--ah-border);
+  color: var(--ah-text-primary);
+}
+.light [data-slot="input"]::placeholder,
+.light [data-slot="textarea"]::placeholder {
+  color: var(--ah-text-muted);
+}
+.light [data-slot="input"]:hover,
+.light [data-slot="textarea"]:hover {
+  background-color: var(--ah-bg-raised);
+  border-color: var(--ah-border-strong);
+}
+.light [data-slot="input"]:focus-visible,
+.light [data-slot="textarea"]:focus-visible {
+  background-color: var(--ah-bg-raised);
+  border-color: rgba(124, 58, 237, 0.55);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+.light [data-slot="label"] {
+  color: var(--ah-text-secondary);
+}
 
 /* ──────────────────────────────────────────────────────────────────────────
    Section aurora — a softer, scoped version of the body's radial wash, for
@@ -429,6 +654,27 @@ select:-webkit-autofill:focus {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(124, 58, 237, 0.5), rgba(6, 182, 212, 0.5));
   background-clip: content-box;
+}
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.18);
+  background-clip: content-box;
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.55), rgba(6, 182, 212, 0.55));
+  background-clip: content-box;
+}
+
+/* Shimmer keyframe (used in loading skeletons + the Hero's "Capturing lead…"
+   pill) sweeps a white highlight across the surface — invisible on light. */
+.light .shimmer {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(15, 23, 42, 0.08) 50%,
+      transparent 70%
+    );
+  background-size: 200% 100%;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Outfit, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
-import { Toaster } from "sonner";
 import { SessionProvider } from "next-auth/react";
 import { CookieConsent } from "@/components/shared/CookieConsent";
+import { ThemeProvider } from "@/components/shared/ThemeProvider";
+import { ThemedToaster } from "@/components/shared/ThemedToaster";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -43,14 +44,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${ibmPlexSans.variable} ${jetbrainsMono.variable} dark h-full antialiased`}
+      suppressHydrationWarning
+      className={`${outfit.variable} ${ibmPlexSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[var(--ah-bg-deep)] text-white">
-        <SessionProvider>
-          {children}
-          <Toaster theme="dark" position="top-right" richColors />
-          <CookieConsent />
-        </SessionProvider>
+      <body className="min-h-full flex flex-col bg-[var(--ah-bg-deep)]" style={{ color: "var(--ah-text-primary)" }}>
+        <ThemeProvider>
+          <SessionProvider>
+            {children}
+            <ThemedToaster />
+            <CookieConsent />
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

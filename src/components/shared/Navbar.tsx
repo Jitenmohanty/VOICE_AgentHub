@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -37,27 +38,29 @@ export function Navbar() {
             </div>
             <div className="absolute inset-0 rounded-2xl ah-gradient-bg blur-md opacity-40 group-hover:opacity-70 transition-opacity -z-10" />
           </div>
-          <span className="font-semibold text-[17px] tracking-tight text-white">
+          <span className="font-semibold text-[17px] tracking-tight" style={{ color: "var(--ah-text-primary)" }}>
             Voxie
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8 text-sm text-white/65">
-          <a href="#features" className="hover:text-white transition-colors">
+        <div className="hidden md:flex items-center gap-8 text-sm" style={{ color: "var(--ah-text-secondary)" }}>
+          <a href="#features" className="hover:opacity-100 transition-opacity opacity-80 hover:[color:var(--ah-text-primary)]">
             Features
           </a>
-          <a href="#pricing" className="hover:text-white transition-colors">
+          <a href="#pricing" className="hover:opacity-100 transition-opacity opacity-80 hover:[color:var(--ah-text-primary)]">
             Pricing
           </a>
-          <Link href="/contact" className="hover:text-white transition-colors">
+          <Link href="/contact" className="hover:opacity-100 transition-opacity opacity-80 hover:[color:var(--ah-text-primary)]">
             Contact
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Link
             href="/login"
-            className="text-sm text-white/65 hover:text-white transition-colors px-3 py-2"
+            className="text-sm transition-colors px-3 py-2 opacity-70 hover:opacity-100"
+            style={{ color: "var(--ah-text-primary)" }}
           >
             Sign in
           </Link>

@@ -51,7 +51,9 @@ export function GradientButton(props: GradientButtonProps) {
 
   const variantClass = {
     primary: cn(
-      "text-white shadow-[0_8px_24px_-8px_rgba(124,58,237,0.6)]",
+      // ah-on-gradient marks "this element's text must stay white in both themes"
+      // because the violet→cyan fill is dark in either mode.
+      "ah-on-gradient text-white shadow-[0_8px_24px_-8px_rgba(124,58,237,0.6)]",
       "bg-[length:200%_100%] bg-[linear-gradient(110deg,#7C3AED,#3B82F6,#06B6D4,#3B82F6,#7C3AED)]",
       "hover:bg-[position:100%_0] hover:shadow-[0_12px_40px_-8px_rgba(59,130,246,0.7)]",
     ),
