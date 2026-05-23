@@ -65,10 +65,10 @@ export function RatingModal({ agentName, sessionId, apiUrl, updateToken, onClose
               <X className="w-4 h-4" />
             </button>
 
-            <h2 className="text-xl font-semibold tracking-tight text-white mb-2">
+            <h2 className="font-serif text-2xl tracking-tight text-white mb-2">
               Rate your experience
             </h2>
-            <p className="text-sm text-white/55 mb-7">
+            <p className="text-base text-white/55 mb-7">
               How was your conversation with {agentName}?
             </p>
 

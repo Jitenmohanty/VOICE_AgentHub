@@ -346,24 +346,24 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
 
       {/* ── Header (standalone only) ── */}
       {!isEmbed && (
-        <header className="relative shrink-0 flex items-center justify-center px-4 py-4 border-b border-white/[0.06]">
-          <div className="flex items-center gap-2.5">
+        <header className="relative shrink-0 flex items-center justify-center px-4 py-5 border-b border-white/[0.06]">
+          <div className="flex items-center gap-3">
             <div className="relative">
               <div
-                className="w-8 h-8 rounded-2xl flex items-center justify-center"
+                className="w-10 h-10 rounded-2xl flex items-center justify-center"
                 style={{
                   background: `linear-gradient(135deg, ${accentColor}40, ${accentColor}10)`,
                   border: `1px solid ${accentColor}30`,
                 }}
               >
-                <Sparkles className="w-3.5 h-3.5" style={{ color: accentColor }} strokeWidth={2.5} />
+                <Sparkles className="w-4 h-4" style={{ color: accentColor }} strokeWidth={2.5} />
               </div>
             </div>
             <div className="text-center">
-              <p className="font-semibold tracking-tight text-white text-sm leading-tight">
+              <p className="font-serif text-xl tracking-tight text-white leading-tight">
                 {businessInfo.name}
               </p>
-              <p className="text-[10px] text-white/45 leading-tight">{agentInfo.name}</p>
+              <p className="text-sm text-white/55 leading-tight mt-0.5">{agentInfo.name}</p>
             </div>
           </div>
         </header>
@@ -491,7 +491,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
                     <GradientButton onClick={() => connect()} size="lg">
                       <Phone className="w-4 h-4" /> Start call
                     </GradientButton>
-                    <span className="text-[11px] text-white/40">Free · 9 min per call</span>
+                    <span className="text-xs text-white/40">Free · 9 min per call</span>
                   </div>
                 </>
               )}
@@ -645,7 +645,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
       </main>
 
       {/* ── Footer ── */}
-      <footer className={`relative shrink-0 flex items-center justify-center text-[10px] text-white/35 ${isEmbed ? "py-1.5" : "py-2.5"}`}>
+      <footer className={`relative shrink-0 flex items-center justify-center text-xs text-white/35 ${isEmbed ? "py-1.5" : "py-2.5"}`}>
         Powered by <span className="ah-gradient-text font-medium ml-1">Voxie</span>
       </footer>
 

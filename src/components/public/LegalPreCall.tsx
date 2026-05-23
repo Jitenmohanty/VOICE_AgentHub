@@ -40,7 +40,7 @@ export function LegalPreCall({
       </div>
 
       <div className="space-y-2">
-        <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/40 px-1">
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/40 px-1">
           What can we help you with?
         </p>
         <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -82,7 +82,7 @@ export function LegalPreCall({
         }}
       >
         <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#B07A2E" }} />
-        <p className="text-[11px] leading-relaxed" style={{ color: "#7A5520" }}>
+        <p className="text-xs leading-relaxed" style={{ color: "#7A5520" }}>
           This assistant provides general legal information only, not legal advice.
           For advice specific to your situation, consult a licensed attorney.
         </p>

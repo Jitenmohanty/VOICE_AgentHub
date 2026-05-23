@@ -183,8 +183,8 @@ export default function AgentConfigPage() {
             <Bot className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-white">{agent.name}</h1>
-            <p className="text-xs text-white/55 capitalize mt-0.5">{agent.templateType} template</p>
+            <h1 className="font-serif text-3xl md:text-4xl tracking-[-0.02em] text-white">{agent.name}</h1>
+            <p className="text-sm text-white/55 capitalize mt-1">{agent.templateType} template</p>
           </div>
         </div>
       </motion.div>
@@ -197,7 +197,7 @@ export default function AgentConfigPage() {
         >
           <BookOpen className="w-4 h-4 mx-auto mb-1.5 text-violet-300" />
           <p className="text-lg font-semibold tracking-tight text-white tabular-nums">{agent._count.knowledgeItems}</p>
-          <p className="text-[10px] text-white/45 uppercase tracking-wider mt-0.5">Knowledge</p>
+          <p className="text-xs text-white/45 uppercase tracking-wider mt-0.5">Knowledge</p>
         </Link>
         <Link
           href={`/business/agents/${agentId}/data?bid=${businessId}`}
@@ -205,7 +205,7 @@ export default function AgentConfigPage() {
         >
           <Database className="w-4 h-4 mx-auto mb-1.5 text-cyan-300" />
           <p className="text-lg font-semibold tracking-tight text-white tabular-nums">{agent._count.businessData}</p>
-          <p className="text-[10px] text-white/45 uppercase tracking-wider mt-0.5">Data sets</p>
+          <p className="text-xs text-white/45 uppercase tracking-wider mt-0.5">Data sets</p>
         </Link>
         <Link
           href={`/business/agents/${agentId}/sessions?bid=${businessId}`}
@@ -213,7 +213,7 @@ export default function AgentConfigPage() {
         >
           <MessageSquare className="w-4 h-4 mx-auto mb-1.5 text-blue-300" />
           <p className="text-lg font-semibold tracking-tight text-white tabular-nums">{agent._count.agentSessions}</p>
-          <p className="text-[10px] text-white/45 uppercase tracking-wider mt-0.5">Sessions</p>
+          <p className="text-xs text-white/45 uppercase tracking-wider mt-0.5">Sessions</p>
         </Link>
       </div>
 

@@ -51,9 +51,9 @@ export default function BusinessSessionsPage() {
   return (
     <div className="max-w-4xl mx-auto px-2 py-6 md:p-10">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">All conversations</p>
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Sessions</h1>
-        <p className="text-sm text-white/55 mt-1.5">
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">All conversations</p>
+        <h1 className="font-serif text-4xl md:text-5xl tracking-[-0.02em] text-white">Sessions</h1>
+        <p className="text-base text-white/55 mt-2">
           All customer conversations across your agents
           {total > 0 && <span className="ml-2 text-white/40">· {total} total</span>}
         </p>
@@ -104,7 +104,7 @@ export default function BusinessSessionsPage() {
                         <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
                           <h3 className="font-semibold text-white tracking-tight">{displayName}</h3>
                           <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full font-medium border capitalize ${
+                            className={`text-xs px-2 py-0.5 rounded-full font-medium border capitalize ${
                               session.status === "completed"
                                 ? "bg-emerald-500/15 text-emerald-300 border-emerald-300/20"
                                 : "bg-violet-500/15 text-violet-300 border-violet-300/20"

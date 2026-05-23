@@ -47,7 +47,7 @@ export function RestaurantPreCall({
 
       {menuItems.length > 0 && (
         <GlassPanel elevation="raised" radius="lg" className="p-4 space-y-3 max-h-64 overflow-y-auto">
-          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/40">Our Menu</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/40">Our Menu</p>
           {CATEGORIES.map((cat) => {
             const items = menuItems.filter((i) => i.category === cat);
             if (items.length === 0) return null;
@@ -63,7 +63,7 @@ export function RestaurantPreCall({
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-white/90">{item.name}</span>
                         {item.isSpecial && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium ah-gradient-bg text-white">
+                          <span className="text-xs px-1.5 py-0.5 rounded-full font-medium ah-gradient-bg text-white">
                             Special
                           </span>
                         )}
@@ -72,7 +72,7 @@ export function RestaurantPreCall({
                         <p className="text-xs text-white/45 line-clamp-1">{item.description}</p>
                       )}
                       {item.allergens.length > 0 && (
-                        <p className="text-[10px] text-white/35 mt-0.5">{item.allergens.join(" · ")}</p>
+                        <p className="text-xs text-white/35 mt-0.5">{item.allergens.join(" · ")}</p>
                       )}
                     </div>
                     <span className="text-sm font-medium text-white shrink-0 ml-3">
@@ -104,7 +104,7 @@ export function RestaurantPreCall({
         </GradientButton>
       </div>
 
-      <p className="text-center text-[11px] text-white/40">No sign-up needed · Voice call</p>
+      <p className="text-center text-xs text-white/40">No sign-up needed · Voice call</p>
     </motion.div>
   );
 }

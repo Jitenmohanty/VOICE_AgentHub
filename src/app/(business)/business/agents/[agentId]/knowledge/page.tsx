@@ -105,9 +105,9 @@ export default function KnowledgePage() {
         </Link>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Agent Memory</p>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-white">Knowledge base</h1>
-            <p className="text-sm text-white/55 mt-1">Add FAQs, policies, and info your agent should know.</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Agent Memory</p>
+            <h1 className="font-serif text-3xl md:text-4xl tracking-[-0.02em] text-white">Knowledge base</h1>
+            <p className="text-base text-white/55 mt-2">Add FAQs, policies, and info your agent should know.</p>
           </div>
           <GradientButton onClick={() => setShowAdd(!showAdd)} size="default">
             <Plus className="w-4 h-4" /> Add item
@@ -241,7 +241,7 @@ function KnowledgeItemCard({
             ) : (
               <h4 className="font-medium text-white tracking-tight truncate">{item.title}</h4>
             )}
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-white/55 shrink-0">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-white/55 shrink-0">
               {item.category}
             </span>
           </div>

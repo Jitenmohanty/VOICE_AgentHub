@@ -38,20 +38,20 @@ export default async function BillingPage() {
   return (
     <div className="max-w-4xl mx-auto px-2 py-6 md:p-10 space-y-6">
       <div>
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Billing</p>
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Plans &amp; usage</h1>
-        <p className="text-sm text-white/55 mt-1.5">{business.name}</p>
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Billing</p>
+        <h1 className="font-serif text-4xl md:text-5xl tracking-[-0.02em] text-white">Plans &amp; usage</h1>
+        <p className="text-base text-white/55 mt-2">{business.name}</p>
       </div>
 
       {/* Current usage */}
       <section className="glass-raised rounded-3xl p-6 md:p-7 space-y-5">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/40">Current plan</p>
-            <p className="text-2xl font-semibold tracking-tight text-white capitalize mt-1.5 inline-flex items-center gap-2">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/40">Current plan</p>
+            <p className="font-serif text-3xl tracking-tight text-white capitalize mt-1.5 inline-flex items-center gap-2">
               {snapshot.planId}
               {sub?.status && sub.status !== "active" && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-300/20 capitalize align-middle font-medium">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-300/20 capitalize align-middle font-medium">
                   {sub.status}
                 </span>
               )}
@@ -82,7 +82,7 @@ export default async function BillingPage() {
               }}
             />
           </div>
-          <p className="text-[11px] text-white/40 mt-2.5 leading-relaxed">
+          <p className="text-xs text-white/40 mt-2.5 leading-relaxed">
             Period: {snapshot.periodStart.toUTCString().split(",")[1]?.trim()} → today (UTC).
             Counts every completed call against the cap; overflow is rejected with a 429.
           </p>
@@ -106,7 +106,7 @@ export default async function BillingPage() {
                 <div className="flex items-center justify-between mb-2">
                   <p className="font-semibold text-white tracking-tight">{plan.name}</p>
                   {isCurrent && (
-                    <span className="text-[10px] uppercase tracking-[0.18em] ah-gradient-text font-semibold">
+                    <span className="text-xs uppercase tracking-[0.18em] ah-gradient-text font-semibold">
                       Current
                     </span>
                   )}
@@ -159,7 +159,7 @@ export default async function BillingPage() {
       </section>
 
       {!stripeReady && !razorpayReady && (
-        <p className="text-[11px] text-white/40 text-center leading-relaxed">
+        <p className="text-xs text-white/40 text-center leading-relaxed">
           No payment provider is configured on this server — paid plans are visible but cannot be purchased.
           Set <code className="ah-gradient-text font-mono">STRIPE_SECRET_KEY</code> (or <code className="ah-gradient-text font-mono">RAZORPAY_KEY_ID</code> + secret) plus per-plan IDs to enable checkout.
         </p>

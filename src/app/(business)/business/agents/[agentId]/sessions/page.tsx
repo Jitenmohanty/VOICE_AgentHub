@@ -50,9 +50,9 @@ export default function AgentSessionsPage() {
         </Link>
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">History</p>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-white">Session history</h1>
-            <p className="text-sm text-white/55 mt-1">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">History</p>
+            <h1 className="font-serif text-3xl md:text-4xl tracking-[-0.02em] text-white">Session history</h1>
+            <p className="text-base text-white/55 mt-2">
               {total > 0 ? `${total} total conversations` : "No conversations yet"}
             </p>
           </div>

@@ -67,9 +67,9 @@ export default function AgentsPage() {
   return (
     <div className="max-w-4xl mx-auto px-2 py-6 md:p-10">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Agents</p>
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Your agents</h1>
-        <p className="text-sm text-white/55 mt-1.5">Configure, deploy, and manage your AI voice agents.</p>
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Agents</p>
+        <h1 className="font-serif text-4xl md:text-5xl tracking-[-0.02em] text-white">Your agents</h1>
+        <p className="text-base text-white/55 mt-2">Configure, deploy, and manage your AI voice agents.</p>
       </motion.div>
 
       <div className="space-y-4">

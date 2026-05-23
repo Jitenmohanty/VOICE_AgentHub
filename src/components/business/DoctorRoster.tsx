@@ -129,7 +129,7 @@ export function DoctorRoster({ businessId, agentId }: DoctorRosterProps) {
                 <p className="text-xs text-white/40 mt-0.5">
                   {doc.availableDays.map((d) => d.slice(0, 3)).join(" · ")} · {doc.fromTime} – {doc.toTime}
                 </p>
-                <span className={`text-[11px] ${doc.acceptingNew ? "text-emerald-300/80" : "text-white/40"}`}>
+                <span className={`text-xs ${doc.acceptingNew ? "text-emerald-300/80" : "text-white/40"}`}>
                   {doc.acceptingNew ? "Accepting new patients" : "Not accepting new patients"}
                 </span>
               </div>

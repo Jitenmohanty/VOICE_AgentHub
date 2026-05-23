@@ -116,7 +116,7 @@ export function Pricing() {
               {plan.highlight && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
                   <div
-                    className="text-[11px] font-semibold tracking-[0.12em] uppercase px-3 py-1.5 rounded-full flex items-center gap-1.5"
+                    className="text-xs font-semibold tracking-[0.12em] uppercase px-3 py-1.5 rounded-full flex items-center gap-1.5"
                     style={{
                       background: "var(--ah-lavender-deep)",
                       color: "#FFFCF6",

@@ -124,7 +124,7 @@ export function MenuBuilder({ businessId, agentId }: MenuBuilderProps) {
             if (catItems.length === 0) return null;
             return (
               <div key={cat}>
-                <p className="text-[10px] font-medium text-white/40 uppercase tracking-[0.18em] mb-1.5">{cat}</p>
+                <p className="text-xs font-medium text-white/40 uppercase tracking-[0.18em] mb-1.5">{cat}</p>
                 {catItems.map((item) => (
                   <div
                     key={item.id}
@@ -134,12 +134,12 @@ export function MenuBuilder({ businessId, agentId }: MenuBuilderProps) {
                       <span className="text-sm text-white">{item.name}</span>
                       <span className="text-xs text-white/55 ml-2">{item.price}</span>
                       {item.isSpecial && (
-                        <span className="text-[10px] ml-2 px-1.5 py-0.5 rounded-full ah-gradient-bg text-white font-medium">
+                        <span className="text-xs ml-2 px-1.5 py-0.5 rounded-full ah-gradient-bg text-white font-medium">
                           Special
                         </span>
                       )}
                       {item.allergens.length > 0 && (
-                        <span className="text-[11px] text-white/40 ml-2">· {item.allergens.join(", ")}</span>
+                        <span className="text-xs text-white/40 ml-2">· {item.allergens.join(", ")}</span>
                       )}
                     </div>
                     <button

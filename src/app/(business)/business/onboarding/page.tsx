@@ -246,8 +246,8 @@ export default function OnboardingPage() {
           </div>
           <div className="absolute inset-0 ah-gradient-bg rounded-2xl blur-xl opacity-40 -z-10" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-white">Set up your AI agent</h1>
-        <p className="text-sm text-white/55 mt-1.5">Complete these steps to get your agent live.</p>
+        <h1 className="font-serif text-3xl md:text-4xl tracking-[-0.02em] text-white">Set up your AI agent</h1>
+        <p className="text-base text-white/55 mt-2">Complete these steps to get your agent live.</p>
 
         <div className="flex items-center justify-center gap-1.5 mt-6">
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
@@ -295,7 +295,7 @@ export default function OnboardingPage() {
                         >
                           <Icon className={`w-4 h-4 mb-1.5 ${sel ? "text-violet-300" : "text-white/55"}`} strokeWidth={2} />
                           <p className={`text-xs font-medium ${sel ? "text-white" : "text-white/75"}`}>{opt.name}</p>
-                          <p className="text-[10px] text-white/40 mt-0.5">{opt.desc}</p>
+                          <p className="text-xs text-white/40 mt-0.5">{opt.desc}</p>
                         </SelectableCard>
                       );
                     })}
@@ -369,11 +369,11 @@ export default function OnboardingPage() {
                 }
                 return sections.map((section) => (
                   <div key={section.name} className="space-y-4">
-                    <p className="text-[10px] font-medium text-white/40 uppercase tracking-[0.18em] pt-2 border-t border-white/[0.06]">{section.name}</p>
+                    <p className="text-xs font-medium text-white/40 uppercase tracking-[0.18em] pt-2 border-t border-white/[0.06]">{section.name}</p>
                     {section.fields.map((field) => (
                       <div key={field.id}>
                         <Label>{field.label}</Label>
-                        {field.description && <p className="text-[11px] text-white/40 mt-0.5">{field.description}</p>}
+                        {field.description && <p className="text-xs text-white/40 mt-0.5">{field.description}</p>}
 
                         {field.type === "text" && (
                           <Input value={(config[field.id] as string) || ""} onChange={(e) => updateConfig(field.id, e.target.value)} placeholder={field.placeholder || (typeof field.defaultValue === "string" ? field.defaultValue : "")} className="mt-1.5" />
@@ -430,7 +430,7 @@ export default function OnboardingPage() {
 
               {template.id === "restaurant" && business?.agents[0] && (
                 <div className="space-y-3 border-t border-white/[0.06] pt-5">
-                  <p className="text-[10px] font-medium text-white/40 uppercase tracking-[0.18em]">Menu items</p>
+                  <p className="text-xs font-medium text-white/40 uppercase tracking-[0.18em]">Menu items</p>
                   <p className="text-xs text-white/55 -mt-1">Add menu items so the agent can read them and take orders.</p>
                   <MenuBuilder businessId={business.id} agentId={business.agents[0].id} />
                 </div>
@@ -438,7 +438,7 @@ export default function OnboardingPage() {
 
               {template.id === "medical" && business?.agents[0] && (
                 <div className="space-y-3 border-t border-white/[0.06] pt-5">
-                  <p className="text-[10px] font-medium text-white/40 uppercase tracking-[0.18em]">Doctor roster</p>
+                  <p className="text-xs font-medium text-white/40 uppercase tracking-[0.18em]">Doctor roster</p>
                   <p className="text-xs text-white/55 -mt-1">Add doctors so the agent can answer availability questions.</p>
                   <DoctorRoster businessId={business.id} agentId={business.agents[0].id} />
                 </div>
@@ -461,7 +461,7 @@ export default function OnboardingPage() {
 
               {template && (
                 <div>
-                  <p className="text-[11px] text-white/45 mb-2">Suggested for {template.name}:</p>
+                  <p className="text-xs text-white/45 mb-2">Suggested for {template.name}:</p>
                   <div className="flex flex-wrap gap-2">
                     {getSuggestedFaqs(template).map((s, i) => (
                       <button
@@ -487,7 +487,7 @@ export default function OnboardingPage() {
 
               {faqs.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[11px] text-white/45">{faqs.length} FAQ{faqs.length !== 1 ? "s" : ""} ready to save</p>
+                  <p className="text-xs text-white/45">{faqs.length} FAQ{faqs.length !== 1 ? "s" : ""} ready to save</p>
                   {faqs.map((faq, i) => (
                     <div key={i} className="flex items-start justify-between bg-white/[0.03] rounded-2xl p-3.5 border border-white/[0.06]">
                       <div className="min-w-0">
@@ -552,7 +552,7 @@ export default function OnboardingPage() {
                 </GradientButton>
               </div>
 
-              <p className="text-[11px] text-white/40">You can always customize your agent further from the dashboard.</p>
+              <p className="text-xs text-white/40">You can always customize your agent further from the dashboard.</p>
             </GlassPanel>
           </motion.div>
         )}

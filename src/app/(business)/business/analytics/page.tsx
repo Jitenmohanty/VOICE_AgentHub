@@ -121,9 +121,9 @@ export default function AnalyticsPage() {
         className="flex items-start justify-between gap-4 flex-wrap"
       >
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Insights</p>
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Analytics</h1>
-          <p className="text-sm text-white/55 mt-1.5">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Insights</p>
+          <h1 className="font-serif text-4xl md:text-5xl tracking-[-0.02em] text-white">Analytics</h1>
+          <p className="text-base text-white/55 mt-2">
             Calls, captured leads, and conversion across the last {days} days.
           </p>
         </div>
@@ -200,7 +200,7 @@ export default function AnalyticsPage() {
         <GlassPanel elevation="raised" radius="lg" className="p-6 lg:col-span-2">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-semibold text-white tracking-tight">Calls per day</h2>
-            <div className="flex items-center gap-3 text-[11px] text-white/55">
+            <div className="flex items-center gap-3 text-xs text-white/55">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-sm bg-violet-400/80" /> Calls
               </span>
@@ -312,7 +312,7 @@ export default function AnalyticsPage() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs text-white/75"
                 >
                   {t.topic}
-                  <span className="text-[10px] text-white/40 tabular-nums">{t.count}</span>
+                  <span className="text-xs text-white/40 tabular-nums">{t.count}</span>
                 </span>
               ))}
             </div>
@@ -362,7 +362,7 @@ function KpiCard({ loading, icon: Icon, tint, label, value, sub }: KpiProps) {
         <>
           <p className="text-2xl font-semibold tracking-tight text-white tabular-nums">{value}</p>
           <p className="text-xs text-white/55 mt-0.5">{label}</p>
-          {sub && <p className="text-[11px] text-white/40 mt-1">{sub}</p>}
+          {sub && <p className="text-xs text-white/40 mt-1">{sub}</p>}
         </>
       )}
     </GlassPanel>
@@ -396,7 +396,7 @@ function SmallStat({
         ) : (
           <>
             <p className="text-lg font-semibold tracking-tight text-white tabular-nums">{value}</p>
-            <p className="text-[11px] text-white/55">{label}</p>
+            <p className="text-xs text-white/55">{label}</p>
           </>
         )}
       </div>
@@ -478,7 +478,7 @@ function DailyChart({ daily, maxValue }: DailyProps) {
                 )}
               </div>
               {/* Tooltip on hover */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block pointer-events-none z-10 whitespace-nowrap text-[10px] bg-[var(--ah-bg-raised)] border border-white/10 rounded-lg px-2 py-1 text-white/85 shadow-lg">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block pointer-events-none z-10 whitespace-nowrap text-xs bg-[var(--ah-bg-raised)] border border-white/10 rounded-lg px-2 py-1 text-white/85 shadow-lg">
                 <p className="font-mono tabular-nums">{d.date}</p>
                 <p>
                   <span className="text-violet-300">{d.calls}</span> calls
@@ -490,7 +490,7 @@ function DailyChart({ daily, maxValue }: DailyProps) {
                 </p>
               </div>
               {i % stride === 0 && (
-                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] text-white/35 font-mono tabular-nums">
+                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs text-white/35 font-mono tabular-nums">
                   {d.date.slice(5)}
                 </span>
               )}

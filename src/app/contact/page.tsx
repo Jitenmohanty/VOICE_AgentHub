@@ -96,7 +96,7 @@ export default function ContactPage() {
         <div className="grid lg:grid-cols-5 gap-8">
           {/* Quick links */}
           <div className="lg:col-span-2 space-y-3">
-            <h2 className="text-[10px] font-medium text-white/40 uppercase tracking-[0.2em] mb-3">Quick links</h2>
+            <h2 className="text-xs font-medium text-white/40 uppercase tracking-[0.2em] mb-3">Quick links</h2>
 
             <a href={`mailto:${SUPPORT_EMAIL}`}>
               <GlassPanel elevation="subtle" interactive radius="md" className="p-4 flex items-center gap-3">
@@ -136,7 +136,7 @@ export default function ContactPage() {
             </a>
 
             <div className="pt-4 mt-2 border-t border-white/[0.06]">
-              <h3 className="text-[10px] font-medium text-white/40 uppercase tracking-[0.2em] mb-3">Policies</h3>
+              <h3 className="text-xs font-medium text-white/40 uppercase tracking-[0.2em] mb-3">Policies</h3>
               <div className="space-y-2 text-sm">
                 {[
                   { href: "/legal/privacy", label: "Privacy Policy" },

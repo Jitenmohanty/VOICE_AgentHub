@@ -48,7 +48,7 @@ export function MedicalPreCall({
 
       {doctors.length > 0 && (
         <GlassPanel elevation="raised" radius="lg" className="p-4 space-y-2.5 max-h-60 overflow-y-auto">
-          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/40">Our Doctors</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/40">Our Doctors</p>
           {doctors.map((doc, idx) => (
             <div
               key={idx}
@@ -65,7 +65,7 @@ export function MedicalPreCall({
                   <p className="text-sm font-medium truncate" style={{ color: "var(--ah-ink)" }}>{doc.name}</p>
                   {doc.acceptingNewPatients && (
                     <span
-                      className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                      className="text-xs font-medium px-2 py-0.5 rounded-full"
                       style={{
                         background: "var(--ah-sage-soft)",
                         color: "var(--ah-sage-deep)",
@@ -78,10 +78,10 @@ export function MedicalPreCall({
                 </div>
                 <p className="text-xs text-white/55">{doc.specialization}</p>
                 <div className="flex items-center gap-3 mt-1 flex-wrap">
-                  <span className="flex items-center gap-1 text-[11px] text-white/40">
+                  <span className="flex items-center gap-1 text-xs text-white/40">
                     <Clock className="w-3 h-3" /> {doc.hours}
                   </span>
-                  <span className="text-[11px] text-white/40">
+                  <span className="text-xs text-white/40">
                     {doc.availableDays.map((d) => DAYS_SHORT[d] ?? d).join(" · ")}
                   </span>
                 </div>
@@ -91,7 +91,7 @@ export function MedicalPreCall({
         </GlassPanel>
       )}
 
-      <p className="text-[11px] text-white/40 text-center px-2 leading-relaxed">
+      <p className="text-xs text-white/40 text-center px-2 leading-relaxed">
         This assistant provides general information only and is not a substitute for professional medical advice.
       </p>
 

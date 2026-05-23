@@ -46,7 +46,7 @@ export function InterviewSpotlight() {
             <div className="ah-pill mb-7">
               <Code className="w-3.5 h-3.5" style={{ color: "var(--ah-lavender-deep)" }} />
               <span
-                className="font-medium tracking-wider uppercase text-[11px]"
+                className="font-medium tracking-wider uppercase text-xs"
                 style={{ color: "var(--ah-ink-soft)" }}
               >
                 Killer Feature
@@ -173,7 +173,7 @@ export function InterviewSpotlight() {
                       78
                     </p>
                     <p
-                      className="text-[10px] uppercase tracking-wider"
+                      className="text-xs uppercase tracking-wider"
                       style={{ color: "var(--ah-ink-muted)" }}
                     >
                       Score /100
@@ -198,7 +198,7 @@ function ScoreBar({ label, pct }: { label: string; pct: number }) {
   return (
     <div className="flex items-center gap-2.5">
       <span
-        className="text-[10px] w-24 shrink-0 text-right uppercase tracking-wider"
+        className="text-xs w-24 shrink-0 text-right uppercase tracking-wider"
         style={{ color: "var(--ah-ink-muted)" }}
       >
         {label}
@@ -217,7 +217,7 @@ function ScoreBar({ label, pct }: { label: string; pct: number }) {
         />
       </div>
       <span
-        className="text-[10px] font-mono w-8"
+        className="text-xs font-mono w-8"
         style={{ color: "var(--ah-ink-soft)" }}
       >
         {pct}%

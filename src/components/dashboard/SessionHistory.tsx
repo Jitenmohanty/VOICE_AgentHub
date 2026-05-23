@@ -87,7 +87,7 @@ export function SessionHistory() {
                     {displayName}
                   </h4>
                   <span
-                    className="text-[10px] px-1.5 py-0.5 rounded-full"
+                    className="text-xs px-1.5 py-0.5 rounded-full"
                     style={{
                       backgroundColor:
                         session.status === "completed"

@@ -120,9 +120,9 @@ export default function BusinessSettingsPage() {
   return (
     <div className="max-w-2xl mx-auto px-2 py-6 md:p-10 space-y-6">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Settings</p>
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Business settings</h1>
-        <p className="text-sm text-white/55 mt-1.5">Update your business profile and lead-delivery destinations.</p>
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Settings</p>
+        <h1 className="font-serif text-4xl md:text-5xl tracking-[-0.02em] text-white">Business settings</h1>
+        <p className="text-base text-white/55 mt-2">Update your business profile and lead-delivery destinations.</p>
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.05 }}>
@@ -131,7 +131,7 @@ export default function BusinessSettingsPage() {
             <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-300/20 flex items-center justify-center">
               <Building2 className="w-4 h-4 text-violet-300" strokeWidth={2} />
             </div>
-            <h2 className="font-semibold text-white text-lg tracking-tight">Business profile</h2>
+            <h2 className="font-serif text-white text-2xl tracking-tight">Business profile</h2>
           </div>
 
           <div>
@@ -173,7 +173,7 @@ export default function BusinessSettingsPage() {
           </div>
 
           <div className="pt-1">
-            <p className="text-[11px] text-white/40">
+            <p className="text-xs text-white/40">
               Public URL: <span className="ah-gradient-text font-mono">/a/{business.slug}</span>
             </p>
           </div>
@@ -186,7 +186,7 @@ export default function BusinessSettingsPage() {
             <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-300/20 flex items-center justify-center">
               <Mail className="w-4 h-4 text-cyan-300" strokeWidth={2} />
             </div>
-            <h2 className="font-semibold text-white text-lg tracking-tight">Lead delivery</h2>
+            <h2 className="font-serif text-white text-2xl tracking-tight">Lead delivery</h2>
           </div>
           <p className="text-xs text-white/45 -mt-2">
             Where lead-capture summaries get sent after every analyzed call.
@@ -196,7 +196,7 @@ export default function BusinessSettingsPage() {
             <Label >
               <Mail className="w-3 h-3" /> Notification email
             </Label>
-            <p className="text-[11px] text-white/40 mb-1.5 mt-0.5">Defaults to your account email if blank.</p>
+            <p className="text-xs text-white/40 mb-1.5 mt-0.5">Defaults to your account email if blank.</p>
             <Input
               type="email"
               value={notificationEmail}
@@ -210,7 +210,7 @@ export default function BusinessSettingsPage() {
             <Label >
               <Webhook className="w-3 h-3" /> Webhook URL (optional)
             </Label>
-            <p className="text-[11px] text-white/40 mb-1.5 mt-0.5 leading-relaxed">
+            <p className="text-xs text-white/40 mb-1.5 mt-0.5 leading-relaxed">
               POST receives a signed JSON payload for every captured lead. Slack incoming webhooks, Zapier catches, HubSpot — anything that takes a JSON POST.
             </p>
             <Input
@@ -223,7 +223,7 @@ export default function BusinessSettingsPage() {
             {business.webhookSecret && (
               <div className="mt-3 p-4 rounded-2xl bg-[var(--ah-bg-deep)]/60 border border-white/10">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-medium text-white/45 uppercase tracking-[0.18em]">Signing secret</span>
+                  <span className="text-xs font-medium text-white/45 uppercase tracking-[0.18em]">Signing secret</span>
                   <div className="flex gap-1">
                     <button
                       type="button"
@@ -243,10 +243,10 @@ export default function BusinessSettingsPage() {
                     </button>
                   </div>
                 </div>
-                <p className="text-[11px] font-mono text-white/85 break-all">
+                <p className="text-xs font-mono text-white/85 break-all">
                   {showSecret ? business.webhookSecret : "•".repeat(48)}
                 </p>
-                <p className="text-[10px] text-white/40 mt-2 leading-relaxed">
+                <p className="text-xs text-white/40 mt-2 leading-relaxed">
                   Each request is signed with HMAC-SHA256 in the{" "}
                   <code className="ah-gradient-text font-mono">X-Voxie-Signature</code> header as{" "}
                   <code className="ah-gradient-text font-mono">sha256=&lt;hex&gt;</code>. Verify on your endpoint before trusting the body.
@@ -254,7 +254,7 @@ export default function BusinessSettingsPage() {
               </div>
             )}
             {!business.webhookSecret && webhookUrl && (
-              <p className="text-[11px] text-white/40 mt-2">
+              <p className="text-xs text-white/40 mt-2">
                 A signing secret will be generated automatically the first time a lead fires.
               </p>
             )}

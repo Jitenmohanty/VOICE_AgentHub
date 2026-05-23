@@ -71,7 +71,7 @@ export function PersonalPreCall({
           {techStack.slice(0, 8).map((t) => (
             <span
               key={t}
-              className="text-[11px] px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-white/65"
+              className="text-xs px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-white/65"
             >
               {t}
             </span>

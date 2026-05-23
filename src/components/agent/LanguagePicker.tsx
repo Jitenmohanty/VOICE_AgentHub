@@ -23,9 +23,9 @@ export function LanguagePicker({ value, onChange, disabled, compact }: Props) {
     <div className={`flex items-center gap-2 ${compact ? "" : "justify-center"}`}>
       <label
         htmlFor="caller-language"
-        className="flex items-center gap-1.5 text-xs text-white/55 tracking-wide"
+        className="flex items-center gap-2 text-sm text-white/65 tracking-wide"
       >
-        <Globe className="w-3.5 h-3.5" style={{ color: "var(--ah-sage-deep)" }} strokeWidth={2} />
+        <Globe className="w-4 h-4" style={{ color: "var(--ah-sage-deep)" }} strokeWidth={2} />
         Language
       </label>
       <select
@@ -33,7 +33,7 @@ export function LanguagePicker({ value, onChange, disabled, compact }: Props) {
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="bg-white/[0.04] border border-white/10 rounded-xl px-3 py-1.5 text-xs focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ color: "var(--ah-ink)" }}
         aria-label="Select language for this call"
       >

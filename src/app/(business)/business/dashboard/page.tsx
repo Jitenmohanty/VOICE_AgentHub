@@ -194,7 +194,7 @@ export default function BusinessDashboardPage() {
                     }}
                   />
                 </div>
-                <div className="flex items-center justify-between mt-2 text-[11px] text-white/40 tabular-nums">
+                <div className="flex items-center justify-between mt-2 text-xs text-white/40 tabular-nums">
                   <span>{Math.round(usage.percentUsed)}% used</span>
                   <span>{usage.remainingMinutes} min remaining</span>
                 </div>
@@ -221,7 +221,7 @@ export default function BusinessDashboardPage() {
                     </div>
                   </div>
                   <span
-                    className={`text-[11px] px-2.5 py-1 rounded-full font-medium border ${
+                    className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
                       agent.isActive
                         ? "bg-emerald-500/15 text-emerald-300 border-emerald-300/20"
                         : "bg-rose-500/15 text-rose-300 border-rose-300/20"
@@ -237,7 +237,7 @@ export default function BusinessDashboardPage() {
                     <p className="text-2xl font-semibold tracking-tight text-white">
                       {agent._count.agentSessions}
                     </p>
-                    <p className="text-[10px] text-white/45 mt-0.5 uppercase tracking-wider">Total sessions</p>
+                    <p className="text-xs text-white/45 mt-0.5 uppercase tracking-wider">Total sessions</p>
                   </div>
                   <Link
                     href="/business/sessions"
@@ -245,7 +245,7 @@ export default function BusinessDashboardPage() {
                   >
                     <ArrowRight className="w-4 h-4 mx-auto mb-2 text-cyan-300" />
                     <p className="text-sm font-medium text-white">View sessions</p>
-                    <p className="text-[10px] text-white/45 mt-0.5">History & analytics</p>
+                    <p className="text-xs text-white/45 mt-0.5">History & analytics</p>
                   </Link>
                   <Link
                     href={`/a/${business.slug}`}
@@ -255,7 +255,7 @@ export default function BusinessDashboardPage() {
                   >
                     <PlayCircle className="w-4 h-4 mx-auto mb-2 text-blue-300" />
                     <p className="text-sm font-medium text-white">Test agent</p>
-                    <p className="text-[10px] text-white/45 mt-0.5">Try as a caller</p>
+                    <p className="text-xs text-white/45 mt-0.5">Try as a caller</p>
                   </Link>
                 </div>
               </GlassPanel>

@@ -87,7 +87,7 @@ export function AgentShowcase() {
                     {agent.capabilities.slice(0, 2).map((cap) => (
                       <span
                         key={cap}
-                        className="text-[10px] tracking-wide px-2 py-0.5 rounded-full"
+                        className="text-xs tracking-wide px-2 py-0.5 rounded-full"
                         style={{
                           background: "var(--ah-bg-inset)",
                           border: "1px solid var(--ah-border)",

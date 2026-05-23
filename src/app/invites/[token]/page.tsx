@@ -202,7 +202,7 @@ export default function AcceptInvitePage() {
             >
               <LogIn className="w-4 h-4" /> Sign in to accept
             </GradientButton>
-            <p className="text-[11px] text-white/45">
+            <p className="text-xs text-white/45">
               Don&apos;t have an account?{" "}
               <Link
                 href={`/register?callbackUrl=${encodeURIComponent(`/invites/${token}`)}`}

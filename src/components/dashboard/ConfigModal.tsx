@@ -65,10 +65,10 @@ export function ConfigModal({ agent, onSubmit, onClose }: ConfigModalProps) {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-(family-name:--font-heading) font-bold text-xl text-white">
+              <h2 className="font-serif text-2xl text-white">
                 Configure {agent.name}
               </h2>
-              <p className="text-sm text-white/55 mt-1">
+              <p className="text-base text-white/55 mt-2">
                 Set up your agent before starting the conversation
               </p>
             </div>
@@ -121,7 +121,7 @@ export function ConfigModal({ agent, onSubmit, onClose }: ConfigModalProps) {
                           key={opt}
                           type="button"
                           onClick={() => toggleMultiSelect(field.id, opt)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+                          className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all ${
                             selected
                               ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40 text-white"
                               : "bg-white/[0.03] border-white/10 text-white/55 hover:bg-white/[0.06] hover:text-white/85"

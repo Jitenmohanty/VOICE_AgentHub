@@ -69,7 +69,7 @@ function EmbedVisual() {
           <span className="w-2 h-2 rounded-full" style={{ background: "rgba(184, 92, 92, 0.7)" }} />
           <span className="w-2 h-2 rounded-full" style={{ background: "rgba(176, 122, 46, 0.7)" }} />
           <span className="w-2 h-2 rounded-full" style={{ background: "var(--ah-sage-deep)" }} />
-          <div className="ml-2 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/4 text-[9px] text-white/55 flex-1 font-mono">
+          <div className="ml-2 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/4 text-xs text-white/55 flex-1 font-mono">
             <Globe className="w-2.5 h-2.5" style={{ color: "var(--ah-sage-deep)" }} strokeWidth={2.5} />
             yourbusiness.com
           </div>
@@ -93,7 +93,7 @@ function EmbedVisual() {
           <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "rgba(255, 252, 246, 0.20)" }}>
             <Phone className="w-3 h-3" style={{ color: "#FFFCF6" }} strokeWidth={2.5} />
           </div>
-          <div className="text-[10px] font-medium tracking-tight" style={{ color: "#FFFCF6" }}>Talk to AI</div>
+          <div className="text-xs font-medium tracking-tight" style={{ color: "#FFFCF6" }}>Talk to AI</div>
           <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#FFFCF6" }} />
         </div>
       </div>
@@ -126,23 +126,23 @@ function InboxVisual() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-semibold truncate" style={{ color: "var(--ah-ink)" }}>
+              <span className="text-xs font-semibold truncate" style={{ color: "var(--ah-ink)" }}>
                 New lead · Bella Vista
               </span>
-              <span className="text-[9px] shrink-0" style={{ color: "var(--ah-ink-muted)" }}>now</span>
+              <span className="text-xs shrink-0" style={{ color: "var(--ah-ink-muted)" }}>now</span>
             </div>
-            <p className="text-[10px] leading-relaxed mt-0.5 line-clamp-2" style={{ color: "var(--ah-ink-soft)" }}>
+            <p className="text-xs leading-relaxed mt-0.5 line-clamp-2" style={{ color: "var(--ah-ink-soft)" }}>
               Sarah Chen · +1 555-014-2293 · table for 4 tonight at 8pm
             </p>
             <div className="flex items-center gap-1 mt-1.5">
               <span
-                className="text-[8px] px-1.5 py-0.5 rounded-full font-medium"
+                className="text-xs px-1.5 py-0.5 rounded-full font-medium"
                 style={{ background: "var(--ah-sage-soft)", color: "var(--ah-sage-deep)", border: "1px solid var(--ah-sage)" }}
               >
                 Captured
               </span>
               <span
-                className="text-[8px] px-1.5 py-0.5 rounded-full font-medium"
+                className="text-xs px-1.5 py-0.5 rounded-full font-medium"
                 style={{ background: "var(--ah-lavender-soft)", color: "var(--ah-lavender-deep)", border: "1px solid var(--ah-lavender)" }}
               >
                 High intent
@@ -192,18 +192,18 @@ function WebhookVisual() {
 
       {/* Center: JSON node */}
       <div className="absolute left-4 top-1/2 -translate-y-1/2 rounded-xl bg-(--ah-bg-raised)/85 border border-white/10 px-2.5 py-2 backdrop-blur-md shadow-[0_8px_24px_-8px_rgba(2,6,23,0.6)]">
-        <div className="text-[9px] font-mono text-white/85">{`{ lead }`}</div>
-        <div className="text-[8px] text-white/40 font-mono mt-0.5">HMAC-SHA256</div>
+        <div className="text-xs font-mono text-white/85">{`{ lead }`}</div>
+        <div className="text-xs text-white/40 font-mono mt-0.5">HMAC-SHA256</div>
       </div>
 
       {/* Right: destination pills */}
-      <div className="absolute right-2 top-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[9px] text-white/75 font-medium backdrop-blur-md">
+      <div className="absolute right-2 top-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white/75 font-medium backdrop-blur-md">
         Slack
       </div>
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[9px] text-white/75 font-medium backdrop-blur-md">
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white/75 font-medium backdrop-blur-md">
         HubSpot
       </div>
-      <div className="absolute right-2 bottom-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[9px] text-white/75 font-medium backdrop-blur-md">
+      <div className="absolute right-2 bottom-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white/75 font-medium backdrop-blur-md">
         Zapier
       </div>
     </div>
@@ -272,7 +272,7 @@ function VoiceVisual() {
             className="rounded-2xl rounded-tr-md px-3 py-1.5 max-w-[80%]"
             style={{ background: "var(--ah-bg-inset)", border: "1px solid var(--ah-border)" }}
           >
-            <p className="text-[10px]" style={{ color: "var(--ah-ink-soft)" }}>Can I book for 8 tonight?</p>
+            <p className="text-xs" style={{ color: "var(--ah-ink-soft)" }}>Can I book for 8 tonight?</p>
           </div>
         </div>
         <div className="flex justify-start">
@@ -280,7 +280,7 @@ function VoiceVisual() {
             className="rounded-2xl rounded-tl-md px-3 py-1.5 max-w-[80%]"
             style={{ background: "var(--ah-cta)" }}
           >
-            <p className="text-[10px]" style={{ color: "#FFFCF6" }}>Of course — table for two? Window-side is open.</p>
+            <p className="text-xs" style={{ color: "#FFFCF6" }}>Of course — table for two? Window-side is open.</p>
           </div>
         </div>
       </div>
@@ -299,7 +299,7 @@ function HonestVisual() {
           style={{ background: "var(--ah-sage-soft)", border: "1px solid var(--ah-sage)" }}
         >
           <ShieldCheck className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--ah-sage-deep)" }} strokeWidth={2.5} />
-          <p className="text-[10px]" style={{ color: "var(--ah-ink-soft)" }}>
+          <p className="text-xs" style={{ color: "var(--ah-ink-soft)" }}>
             <span className="font-semibold" style={{ color: "var(--ah-sage-deep)" }}>Intent captured</span> · party of 6, 8pm
           </p>
         </div>
@@ -314,11 +314,11 @@ function HonestVisual() {
           >
             <span className="block w-1.5 h-0.5" style={{ background: "#E8C7C7" }} />
           </span>
-          <p className="text-[10px] line-through" style={{ color: "var(--ah-ink-muted)", textDecorationColor: "rgba(184, 92, 92, 0.60)" }}>
+          <p className="text-xs line-through" style={{ color: "var(--ah-ink-muted)", textDecorationColor: "rgba(184, 92, 92, 0.60)" }}>
             Reservation booked at 8pm
           </p>
         </div>
-        <p className="text-[9px] px-1 pt-0.5" style={{ color: "var(--ah-ink-muted)" }}>
+        <p className="text-xs px-1 pt-0.5" style={{ color: "var(--ah-ink-muted)" }}>
           Agents capture intent, not promises.
         </p>
       </div>
@@ -342,28 +342,28 @@ function SummariesVisual() {
         {/* Top: sentiment + topics row */}
         <div className="flex items-center gap-1.5 flex-wrap mb-2.5">
           <span
-            className="text-[9px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
+            className="text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
             style={{ background: "var(--ah-sage-soft)", color: "var(--ah-sage-deep)", border: "1px solid var(--ah-sage)" }}
           >
             <Sparkles className="w-2.5 h-2.5" strokeWidth={2.5} />
             Positive
           </span>
           <span
-            className="text-[9px] px-2 py-0.5 rounded-full font-medium"
+            className="text-xs px-2 py-0.5 rounded-full font-medium"
             style={{ background: "var(--ah-lavender-soft)", color: "var(--ah-lavender-deep)", border: "1px solid var(--ah-lavender)" }}
           >
             booking
           </span>
           <span
-            className="text-[9px] px-2 py-0.5 rounded-full font-medium"
+            className="text-xs px-2 py-0.5 rounded-full font-medium"
             style={{ background: "var(--ah-cream-warm)", color: "#B07A2E", border: "1px solid rgba(176, 122, 46, 0.30)" }}
           >
             urgent
           </span>
-          <span className="text-[9px] ml-auto font-mono" style={{ color: "var(--ah-ink-muted)" }}>02:14</span>
+          <span className="text-xs ml-auto font-mono" style={{ color: "var(--ah-ink-muted)" }}>02:14</span>
         </div>
         {/* Summary line */}
-        <p className="text-[11px] leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
+        <p className="text-xs leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
           Caller wants a window-side table for{" "}
           <span
             className="px-1 rounded"
@@ -377,11 +377,11 @@ function SummariesVisual() {
         <div className="mt-2.5 pt-2.5 space-y-1" style={{ borderTop: "1px solid var(--ah-border)" }}>
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 rounded-full" style={{ background: "var(--ah-lavender-deep)" }} />
-            <p className="text-[10px]" style={{ color: "var(--ah-ink-soft)" }}>Confirm reservation by 6pm</p>
+            <p className="text-xs" style={{ color: "var(--ah-ink-soft)" }}>Confirm reservation by 6pm</p>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 rounded-full" style={{ background: "var(--ah-sage-deep)" }} />
-            <p className="text-[10px]" style={{ color: "var(--ah-ink-soft)" }}>Note dietary: 1 vegetarian, 1 gluten-free</p>
+            <p className="text-xs" style={{ color: "var(--ah-ink-soft)" }}>Note dietary: 1 vegetarian, 1 gluten-free</p>
           </div>
         </div>
       </div>
@@ -405,8 +405,8 @@ function WorkflowVisual() {
             style={{ background: c.bg, border: `1px solid ${c.border}` }}
           >
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[9px] font-medium" style={{ color: c.text }}>{c.label}</span>
-              <span className="text-[9px] tabular-nums" style={{ color: c.text, opacity: 0.65 }}>{c.count}</span>
+              <span className="text-xs font-medium" style={{ color: c.text }}>{c.label}</span>
+              <span className="text-xs tabular-nums" style={{ color: c.text, opacity: 0.65 }}>{c.count}</span>
             </div>
             <div className="space-y-1">
               <div className="h-3 rounded-md" style={{ background: idx === 2 ? "rgba(255, 252, 246, 0.30)" : "rgba(26, 26, 26, 0.08)" }} />
@@ -421,7 +421,7 @@ function WorkflowVisual() {
         style={{ background: "var(--ah-cta)", boxShadow: "0 6px 14px -6px rgba(47, 74, 42, 0.50)" }}
       >
         <FileSpreadsheet className="w-3 h-3" style={{ color: "#FFFCF6" }} strokeWidth={2.5} />
-        <span className="text-[9px] font-medium" style={{ color: "#FFFCF6" }}>CSV</span>
+        <span className="text-xs font-medium" style={{ color: "#FFFCF6" }}>CSV</span>
       </div>
     </div>
   );

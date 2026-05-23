@@ -210,9 +210,9 @@ export default function LeadsPage() {
         className="flex items-start justify-between gap-4 flex-wrap"
       >
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Pipeline</p>
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Leads</h1>
-          <p className="text-sm text-white/55 mt-1.5">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Pipeline</p>
+          <h1 className="font-serif text-4xl md:text-5xl tracking-[-0.02em] text-white">Leads</h1>
+          <p className="text-base text-white/55 mt-2">
             Every caller who left a lead, ready to action.
             {totalAll > 0 && <span className="ml-2 text-white/40">· {totalAll} total</span>}
           </p>
@@ -379,7 +379,7 @@ export default function LeadsPage() {
                               {displayName}
                             </h3>
                             <span
-                              className={`text-[10px] px-2 py-0.5 rounded-full font-medium border capitalize ${
+                              className={`text-xs px-2 py-0.5 rounded-full font-medium border capitalize ${
                                 STATUS_PILL[lead.leadStatus]
                               }`}
                             >
@@ -387,7 +387,7 @@ export default function LeadsPage() {
                             </span>
                             {captured?.urgency && (
                               <span
-                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium border capitalize inline-flex items-center gap-1 ${
+                                className={`text-xs px-2 py-0.5 rounded-full font-medium border capitalize inline-flex items-center gap-1 ${
                                   URGENCY_PILL[captured.urgency]
                                 }`}
                               >
@@ -425,7 +425,7 @@ export default function LeadsPage() {
                           )}
 
                           {/* Footer meta */}
-                          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-3 text-[11px] text-white/40">
+                          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-3 text-xs text-white/40">
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {formatIST(lead.createdAt)}

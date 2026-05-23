@@ -124,12 +124,12 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                 </div>
               )}
               <div>
-                <h2 className="font-semibold text-lg tracking-tight text-white">
+                <h2 className="font-serif text-2xl tracking-tight text-white">
                   {session?.title || agentName}
                 </h2>
                 {session && (
                   <span
-                    className={`text-[10px] mt-0.5 inline-block px-2 py-0.5 rounded-full font-medium border capitalize ${
+                    className={`text-xs mt-1 inline-block px-2 py-0.5 rounded-full font-medium border capitalize ${
                       session.status === "completed"
                         ? "bg-emerald-500/15 text-emerald-300 border-emerald-300/20"
                         : session.status === "active"
@@ -217,7 +217,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
               {(session.capturedLead || session.callerName || session.callerPhone || session.callerEmail) && (
                 <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06] space-y-3">
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-white flex items-center gap-2">
                       <UserCheck className="w-4 h-4 text-[#10B981]" />
                       Captured lead
                     </h3>
@@ -240,11 +240,11 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 
                   {session.capturedLead?.intent && (
                     <div>
-                      <p className="text-[11px] text-white/55 uppercase tracking-wider">Intent</p>
-                      <p className="text-sm text-white mt-0.5">{session.capturedLead.intent}</p>
+                      <p className="text-xs text-white/55 uppercase tracking-wider">Intent</p>
+                      <p className="text-base text-white mt-1">{session.capturedLead.intent}</p>
                       {session.capturedLead.urgency && (
                         <span
-                          className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider"
+                          className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full uppercase tracking-wider"
                           style={{
                             backgroundColor:
                               session.capturedLead.urgency === "high" ? "rgba(239,68,68,0.15)" :
@@ -262,16 +262,16 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                     {session.callerName && (
                       <div>
-                        <p className="text-[10px] text-white/40 uppercase tracking-wider">Name</p>
+                        <p className="text-xs text-white/40 uppercase tracking-wider">Name</p>
                         <p className="text-white mt-0.5">{session.callerName}</p>
                       </div>
                     )}
                     {session.callerPhone && (
                       <div>
-                        <p className="text-[10px] text-white/40 uppercase tracking-wider">Phone</p>
+                        <p className="text-xs text-white/40 uppercase tracking-wider">Phone</p>
                         <a href={`tel:${session.callerPhone}`} className="ah-gradient-text font-medium hover:opacity-80 mt-0.5 block">
                           {session.callerPhone}
                         </a>
@@ -279,7 +279,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                     )}
                     {session.callerEmail && (
                       <div>
-                        <p className="text-[10px] text-white/40 uppercase tracking-wider">Email</p>
+                        <p className="text-xs text-white/40 uppercase tracking-wider">Email</p>
                         <a href={`mailto:${session.callerEmail}`} className="ah-gradient-text font-medium hover:opacity-80 mt-0.5 block">
                           {session.callerEmail}
                         </a>
@@ -289,8 +289,8 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 
                   {session.capturedLead?.notes && (
                     <div>
-                      <p className="text-[11px] text-white/55 uppercase tracking-wider">Notes</p>
-                      <p className="text-xs text-white/75 mt-0.5 leading-relaxed">{session.capturedLead.notes}</p>
+                      <p className="text-xs text-white/55 uppercase tracking-wider">Notes</p>
+                      <p className="text-sm text-white/75 mt-1 leading-relaxed">{session.capturedLead.notes}</p>
                     </div>
                   )}
                 </div>
@@ -299,8 +299,8 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
               {/* Summary */}
               {summary && (
                 <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06]">
-                  <h3 className="text-sm font-semibold text-white mb-2">Summary</h3>
-                  <p className="text-sm text-white/55 leading-relaxed">{summary}</p>
+                  <h3 className="text-base font-semibold text-white mb-2">Summary</h3>
+                  <p className="text-base text-white/65 leading-relaxed">{summary}</p>
                 </div>
               )}
 
@@ -312,14 +312,14 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
               {/* AI Analysis (from Claude) */}
               {Boolean(session.sentiment || (session.topics && session.topics.length > 0) || (session.actionItems && !isInterviewData(session.actionItems))) && (
                 <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06] space-y-3">
-                  <h3 className="text-sm font-semibold text-white">AI Analysis</h3>
+                  <h3 className="text-base font-semibold text-white">AI Analysis</h3>
 
                   {/* Sentiment */}
                   {session.sentiment && (
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-white/55">Sentiment:</span>
+                      <span className="text-sm text-white/55">Sentiment:</span>
                       <span
-                        className={`text-xs font-medium px-2.5 py-0.5 rounded-full capitalize border ${
+                        className={`text-sm font-medium px-2.5 py-0.5 rounded-full capitalize border ${
                           session.sentiment === "positive"
                             ? "bg-emerald-500/15 text-emerald-300 border-emerald-300/20"
                             : session.sentiment === "negative"
@@ -333,7 +333,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                         {session.sentimentScore != null && ` (${(Number(session.sentimentScore) * 100).toFixed(0)}%)`}
                       </span>
                       {session.escalated && (
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-300/20">
+                        <span className="text-sm px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-300/20">
                           Escalation needed
                         </span>
                       )}
@@ -343,11 +343,11 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                   {/* Topics */}
                   {session.topics && session.topics.length > 0 && (
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-white/55">Topics:</span>
+                      <span className="text-sm text-white/55">Topics:</span>
                       {session.topics.map((topic: string, i: number) => (
                         <span
                           key={i}
-                          className="text-xs px-2.5 py-0.5 rounded-full bg-violet-500/10 text-violet-200 border border-violet-300/20"
+                          className="text-sm px-2.5 py-0.5 rounded-full bg-violet-500/10 text-violet-200 border border-violet-300/20"
                         >
                           {String(topic)}
                         </span>
@@ -358,10 +358,10 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                   {/* Action Items */}
                   {Array.isArray(session.actionItems) && (session.actionItems as { action: string; priority: string }[]).length > 0 && (
                     <div>
-                      <span className="text-xs text-white/55 block mb-1">Action Items:</span>
+                      <span className="text-sm text-white/55 block mb-1">Action Items:</span>
                       <ul className="space-y-1">
                         {(session.actionItems as { action: string; priority: string }[]).map((item, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs">
+                          <li key={i} className="flex items-start gap-2 text-sm">
                             <span
                               className="mt-0.5 w-1.5 h-1.5 rounded-full shrink-0"
                               style={{
@@ -383,7 +383,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
               {/* Transcript */}
               {transcript.length > 0 ? (
                 <div>
-                  <h3 className="text-sm font-semibold text-white mb-3">
+                  <h3 className="text-base font-semibold text-white mb-3">
                     Conversation Transcript
                   </h3>
                   <div className="space-y-3">
@@ -419,7 +419,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                           )}
                         </div>
                         <div
-                          className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+                          className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-base ${
                             msg.speaker === "user"
                               ? "bg-violet-500/12 border border-violet-300/20 text-white"
                               : "bg-white/[0.04] border border-white/10 text-white/85"
@@ -427,7 +427,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                         >
                           <p className="leading-relaxed">{msg.text}</p>
                           {msg.timestamp && (
-                            <p className="text-[10px] text-white/40 mt-1">
+                            <p className="text-xs text-white/40 mt-1">
                               {formatISTTime(msg.timestamp)}
                             </p>
                           )}
@@ -439,7 +439,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
               ) : (
                 <div className="text-center py-8 text-white/55">
                   <MessageSquare className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">No transcript recorded for this session.</p>
+                  <p className="text-base">No transcript recorded for this session.</p>
                 </div>
               )}
             </div>
@@ -466,8 +466,8 @@ function StatCard({
   return (
     <div className="bg-white/[0.03] rounded-2xl p-3.5 border border-white/[0.06] text-center">
       <Icon className="w-4 h-4 mx-auto mb-1.5" style={{ color }} />
-      <p className="text-white text-sm font-semibold tracking-tight">{value}</p>
-      <p className="text-[10px] text-white/45 uppercase tracking-wider mt-0.5">{label}</p>
+      <p className="text-white text-base font-semibold tracking-tight">{value}</p>
+      <p className="text-xs text-white/45 uppercase tracking-wider mt-0.5">{label}</p>
     </div>
   );
 }
@@ -559,14 +559,14 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
   return (
     <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06] space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+        <h3 className="text-base font-semibold text-white flex items-center gap-2">
           <Target className="w-4 h-4 text-[#6366F1]" />
           Interview Scores
         </h3>
         {scores.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-white/55">Average:</span>
-            <span className="text-sm font-bold text-white">{avgScore}/10</span>
+            <span className="text-sm text-white/55">Average:</span>
+            <span className="text-base font-bold text-white">{avgScore}/10</span>
           </div>
         )}
       </div>
@@ -577,13 +577,13 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
           <Award className="w-5 h-5 shrink-0" style={{ color: impressionColor }} />
           <div>
             <span
-              className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize"
+              className="text-sm font-semibold px-2.5 py-0.5 rounded-full capitalize"
               style={{ backgroundColor: `${impressionColor}15`, color: impressionColor }}
             >
               {result.overallImpression.replace("_", " ")}
             </span>
             {result.overallFeedback && (
-              <p className="text-xs text-white/55 mt-1 leading-relaxed">{result.overallFeedback}</p>
+              <p className="text-sm text-white/65 mt-1.5 leading-relaxed">{result.overallFeedback}</p>
             )}
           </div>
         </div>
@@ -597,10 +597,10 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
           return (
             <div key={round} className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-white">
+                <span className="text-sm font-medium text-white">
                   Round {round}: {ROUND_NAMES[round] || `Round ${round}`}
                 </span>
-                <span className="text-xs font-semibold" style={{ color: roundAvg >= 7 ? "#10B981" : roundAvg >= 5 ? "#FFB800" : "#EF4444" }}>
+                <span className="text-sm font-semibold" style={{ color: roundAvg >= 7 ? "#10B981" : roundAvg >= 5 ? "#FFB800" : "#EF4444" }}>
                   {roundAvg}/10
                 </span>
               </div>
@@ -618,7 +618,7 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
               {roundScores.map((q, i) => (
                 <div key={i} className="flex items-start gap-2 pl-2">
                   <span
-                    className="text-[10px] font-mono shrink-0 w-6 text-center py-0.5 rounded"
+                    className="text-xs font-mono shrink-0 w-6 text-center py-0.5 rounded"
                     style={{
                       backgroundColor: q.score >= 7 ? "rgba(16,185,129,0.1)" : q.score >= 5 ? "rgba(255,184,0,0.1)" : "rgba(239,68,68,0.1)",
                       color: q.score >= 7 ? "#10B981" : q.score >= 5 ? "#FFB800" : "#EF4444",
@@ -627,8 +627,8 @@ function InterviewScorePanel({ data }: { data: InterviewData }) {
                     {q.score}
                   </span>
                   <div className="flex-1 min-w-0">
-                    {q.question && <p className="text-[11px] text-white/85 truncate">{q.question}</p>}
-                    {q.feedback && <p className="text-[10px] text-white/40 truncate">{q.feedback}</p>}
+                    {q.question && <p className="text-xs text-white/85 truncate">{q.question}</p>}
+                    {q.feedback && <p className="text-xs text-white/40 truncate">{q.feedback}</p>}
                   </div>
                 </div>
               ))}

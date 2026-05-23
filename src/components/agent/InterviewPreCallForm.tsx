@@ -115,11 +115,14 @@ export function InterviewPreCallForm({
       className="w-full max-w-md mx-auto space-y-5"
     >
       <div className="text-center">
-        <div className="w-12 h-12 rounded-2xl ah-gradient-bg flex items-center justify-center mx-auto mb-3 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
-          <Code className="w-5 h-5 text-white" strokeWidth={2} />
+        <div
+          className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+          style={{ background: "var(--ah-cta)" }}
+        >
+          <Code className="w-6 h-6" style={{ color: "#FFFCF6" }} strokeWidth={2} />
         </div>
-        <h2 className="text-lg font-semibold tracking-tight text-white">{agentName}</h2>
-        <p className="text-xs text-white/55 mt-0.5">Tell us about yourself before we start</p>
+        <h2 className="font-serif text-3xl md:text-4xl tracking-[-0.02em] text-white">{agentName}</h2>
+        <p className="text-base text-white/65 mt-2">Tell us about yourself before we start</p>
       </div>
 
       <GlassPanel elevation="raised" radius="lg" className="p-5 space-y-5">
@@ -196,7 +199,7 @@ export function InterviewPreCallForm({
               )}
               {resumeSkills && (
                 <span
-                  className="text-[10px] px-2 py-0.5 rounded-full shrink-0"
+                  className="text-xs px-2 py-0.5 rounded-full shrink-0"
                   style={{
                     background: "var(--ah-sage-soft)",
                     color: "var(--ah-sage-deep)",
@@ -245,7 +248,7 @@ export function InterviewPreCallForm({
         )}
       </GradientButton>
 
-      <p className="text-center text-[11px] text-white/40">
+      <p className="text-center text-xs text-white/40">
         No sign-up needed · Voice interview · Usually 15–30 minutes
       </p>
     </motion.div>

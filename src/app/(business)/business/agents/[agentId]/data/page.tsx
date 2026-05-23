@@ -96,9 +96,9 @@ export default function BusinessDataPage() {
         </Link>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Live data</p>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-white">Business data</h1>
-            <p className="text-sm text-white/55 mt-1">Structured data your agent uses (rooms, menu, services, etc.)</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Live data</p>
+            <h1 className="font-serif text-3xl md:text-4xl tracking-[-0.02em] text-white">Business data</h1>
+            <p className="text-base text-white/55 mt-2">Structured data your agent uses (rooms, menu, services, etc.)</p>
           </div>
           <GradientButton onClick={() => setShowAdd(!showAdd)} size="default">
             <Plus className="w-4 h-4" /> Add data type
@@ -167,7 +167,7 @@ export default function BusinessDataPage() {
                       <Database className="w-3.5 h-3.5 text-cyan-300" strokeWidth={2} />
                     </div>
                     <h4 className="font-medium text-white tracking-tight capitalize">{item.dataType.replace(/_/g, " ")}</h4>
-                    <span className="text-[10px] text-white/40">
+                    <span className="text-xs text-white/40">
                       {Array.isArray(item.data) ? `${item.data.length} entries` : "object"}
                     </span>
                   </div>

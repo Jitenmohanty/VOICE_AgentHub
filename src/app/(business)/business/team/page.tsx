@@ -214,9 +214,9 @@ export default function TeamPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Collaborators</p>
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">Team</h1>
-        <p className="text-sm text-white/55 mt-1.5">
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Collaborators</p>
+        <h1 className="font-serif text-4xl md:text-5xl tracking-[-0.02em] text-white">Team</h1>
+        <p className="text-base text-white/55 mt-2">
           Invite teammates to view and manage <span className="text-white/85">{business.name}</span>.
         </p>
       </motion.div>
@@ -269,7 +269,7 @@ export default function TeamPage() {
                   exit={{ opacity: 0 }}
                   className="p-3.5 rounded-2xl bg-violet-500/[0.06] border border-violet-300/20"
                 >
-                  <p className="text-[11px] font-medium text-violet-200 uppercase tracking-[0.18em] mb-1.5">
+                  <p className="text-xs font-medium text-violet-200 uppercase tracking-[0.18em] mb-1.5">
                     Backup invite link
                   </p>
                   <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export default function TeamPage() {
                       )}
                     </button>
                   </div>
-                  <p className="text-[11px] text-white/45 mt-2">
+                  <p className="text-xs text-white/45 mt-2">
                     Copy this in case the email doesn&apos;t arrive — same effect either way.
                   </p>
                 </motion.div>
@@ -377,7 +377,7 @@ export default function TeamPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm text-white truncate">{invite.email}</p>
-                      <p className="text-[11px] text-white/45 mt-0.5">
+                      <p className="text-xs text-white/45 mt-0.5">
                         Invited {formatIST(invite.createdAt)} · {timeUntil(invite.expiresAt)}
                       </p>
                     </div>
@@ -436,7 +436,7 @@ function MemberRow({
 
       <div className="flex items-center gap-2 shrink-0">
         <span
-          className={`text-[10px] px-2 py-0.5 rounded-full font-medium border capitalize inline-flex items-center gap-1 ${
+          className={`text-xs px-2 py-0.5 rounded-full font-medium border capitalize inline-flex items-center gap-1 ${
             isOwner
               ? "bg-violet-500/15 text-violet-300 border-violet-300/25"
               : "bg-white/[0.04] text-white/65 border-white/10"
@@ -446,7 +446,7 @@ function MemberRow({
           {role}
         </span>
         {joinedAt && (
-          <span className="hidden md:inline text-[11px] text-white/40">{formatIST(joinedAt)}</span>
+          <span className="hidden md:inline text-xs text-white/40">{formatIST(joinedAt)}</span>
         )}
         {onRemove && (
           <button

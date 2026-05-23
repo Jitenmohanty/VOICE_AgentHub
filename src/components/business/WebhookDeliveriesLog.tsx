@@ -130,7 +130,7 @@ export function WebhookDeliveriesLog({ businessId }: Props) {
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-medium border inline-flex items-center gap-1 shrink-0 ${info.bg} ${info.tone}`}
+                      className={`text-xs px-2 py-0.5 rounded-full font-medium border inline-flex items-center gap-1 shrink-0 ${info.bg} ${info.tone}`}
                     >
                       <info.Icon className="w-3 h-3" strokeWidth={2} />
                       {info.label}
@@ -139,11 +139,11 @@ export function WebhookDeliveriesLog({ businessId }: Props) {
                       {formatIST(d.createdAt)}
                     </span>
                     {d.errorMessage && (
-                      <span className="text-[11px] text-white/40 truncate">· {d.errorMessage}</span>
+                      <span className="text-xs text-white/40 truncate">· {d.errorMessage}</span>
                     )}
                   </div>
                   {d.latencyMs !== null && (
-                    <span className="text-[11px] text-white/45 font-mono tabular-nums shrink-0">
+                    <span className="text-xs text-white/45 font-mono tabular-nums shrink-0">
                       {d.latencyMs}ms
                     </span>
                   )}

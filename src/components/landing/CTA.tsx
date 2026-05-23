@@ -105,7 +105,7 @@ export function CTA() {
                 </div>
 
                 <p
-                  className="text-[11px] font-medium uppercase tracking-[0.18em] mb-2"
+                  className="text-xs font-medium uppercase tracking-[0.18em] mb-2"
                   style={{ color: "var(--ah-sage-deep)" }}
                 >
                   Step {String(index + 1).padStart(2, "0")}

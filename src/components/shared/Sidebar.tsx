@@ -119,7 +119,7 @@ export function Sidebar() {
 
         <div className="flex items-center justify-between gap-2 px-2 mt-2">
           <span
-            className="text-[11px] uppercase tracking-[0.18em]"
+            className="text-xs uppercase tracking-[0.18em]"
             style={{ color: "var(--ah-ink-muted)" }}
           >
             Appearance
@@ -199,7 +199,7 @@ export function Sidebar() {
 
               <div className="flex items-center justify-between gap-2 px-2 mt-2">
                 <span
-                  className="text-[11px] uppercase tracking-[0.18em]"
+                  className="text-xs uppercase tracking-[0.18em]"
                   style={{ color: "var(--ah-ink-muted)" }}
                 >
                   Appearance
