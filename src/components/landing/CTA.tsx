@@ -53,15 +53,15 @@ export function CTA() {
             How it works
           </p>
           <h2
-            className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            className="font-serif text-5xl md:text-7xl tracking-[-0.02em] mb-5 leading-[1.08]"
             style={{ color: "var(--ah-ink)" }}
           >
             Live in{" "}
-            <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+            <span style={{ color: "var(--ah-sage-deep)" }}>
               four steps
             </span>
           </h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
+          <p className="text-xl max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
             From zero to a working AI voice agent in under five minutes.
           </p>
         </motion.div>
@@ -111,12 +111,12 @@ export function CTA() {
                   Step {String(index + 1).padStart(2, "0")}
                 </p>
                 <h3
-                  className="font-serif text-lg tracking-tight mb-2"
+                  className="font-serif text-xl tracking-tight mb-2"
                   style={{ color: "var(--ah-ink)" }}
                 >
                   {step.title}
                 </h3>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
+                <p className="text-base leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
                   {step.description}
                 </p>
               </GlassPanel>
@@ -145,7 +145,7 @@ export function CTA() {
 
             <div className="relative">
               <h2
-                className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-6 leading-[1.08]"
+                className="font-serif text-5xl md:text-7xl tracking-[-0.02em] mb-6 leading-[1.08]"
                 style={{ color: "var(--ah-ink)" }}
               >
                 Stop missing{" "}
@@ -154,7 +154,7 @@ export function CTA() {
                 </span>
               </h2>
               <p
-                className="text-lg mb-10 max-w-xl mx-auto leading-relaxed"
+                className="text-xl mb-10 max-w-xl mx-auto leading-relaxed"
                 style={{ color: "var(--ah-ink-soft)" }}
               >
                 Free for 30 minutes a month — no credit card. Embed it on your site this afternoon,

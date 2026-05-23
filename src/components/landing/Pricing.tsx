@@ -89,16 +89,16 @@ export function Pricing() {
             Simple, capped pricing
           </p>
           <h2
-            className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            className="font-serif text-5xl md:text-7xl tracking-[-0.02em] mb-5 leading-[1.08]"
             style={{ color: "var(--ah-ink)" }}
           >
             Pay per{" "}
-            <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+            <span style={{ color: "var(--ah-sage-deep)" }}>
               minute
             </span>
             , not per lead
           </h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
+          <p className="text-xl max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
             Hard-capped monthly minutes — no surprise bills. Pay in INR with Razorpay or USD with Stripe.
           </p>
         </motion.div>
@@ -118,9 +118,9 @@ export function Pricing() {
                   <div
                     className="text-[11px] font-semibold tracking-[0.12em] uppercase px-3 py-1.5 rounded-full flex items-center gap-1.5"
                     style={{
-                      background: "var(--ah-cta)",
+                      background: "var(--ah-lavender-deep)",
                       color: "#FFFCF6",
-                      boxShadow: "0 8px 22px -10px rgba(47, 74, 42, 0.55)",
+                      boxShadow: "0 8px 22px -10px rgba(107, 95, 176, 0.45)",
                     }}
                   >
                     <Sparkles className="w-3 h-3" />
@@ -137,25 +137,25 @@ export function Pricing() {
               >
                 <div className="mb-7">
                   <h3
-                    className="font-serif text-2xl tracking-tight mb-1"
+                    className="font-serif text-3xl tracking-tight mb-1"
                     style={{ color: "var(--ah-ink)" }}
                   >
                     {plan.name}
                   </h3>
-                  <p className="text-sm" style={{ color: "var(--ah-ink-soft)" }}>{plan.tagline}</p>
+                  <p className="text-base" style={{ color: "var(--ah-ink-soft)" }}>{plan.tagline}</p>
                 </div>
 
                 <div className="mb-7">
                   <div className="flex items-baseline gap-2">
                     <span
-                      className="font-serif text-5xl tracking-[-0.03em]"
+                      className="font-serif text-6xl tracking-[-0.03em]"
                       style={{ color: "var(--ah-ink)" }}
                     >
                       {plan.inr}
                     </span>
-                    <span className="text-sm" style={{ color: "var(--ah-ink-muted)" }}>/ {plan.usd}</span>
+                    <span className="text-base" style={{ color: "var(--ah-ink-muted)" }}>/ {plan.usd}</span>
                   </div>
-                  <p className="text-xs mt-1.5" style={{ color: "var(--ah-ink-muted)" }}>{plan.period}</p>
+                  <p className="text-sm mt-1.5" style={{ color: "var(--ah-ink-muted)" }}>{plan.period}</p>
                 </div>
 
                 <div className="mb-7 grid grid-cols-2 gap-3">
@@ -164,13 +164,13 @@ export function Pricing() {
                     style={{ background: "var(--ah-bg-inset)", border: "1px solid var(--ah-border)" }}
                   >
                     <p
-                      className="text-[11px] uppercase tracking-wider"
+                      className="text-xs uppercase tracking-wider"
                       style={{ color: "var(--ah-ink-muted)" }}
                     >
                       Minutes
                     </p>
                     <p
-                      className="font-serif text-2xl tracking-tight mt-1"
+                      className="font-serif text-3xl tracking-tight mt-1"
                       style={{ color: "var(--ah-ink)" }}
                     >
                       {plan.minutes}
@@ -181,13 +181,13 @@ export function Pricing() {
                     style={{ background: "var(--ah-bg-inset)", border: "1px solid var(--ah-border)" }}
                   >
                     <p
-                      className="text-[11px] uppercase tracking-wider"
+                      className="text-xs uppercase tracking-wider"
                       style={{ color: "var(--ah-ink-muted)" }}
                     >
                       Agents
                     </p>
                     <p
-                      className="font-serif text-2xl tracking-tight mt-1"
+                      className="font-serif text-3xl tracking-tight mt-1"
                       style={{ color: "var(--ah-ink)" }}
                     >
                       {plan.agents}
@@ -197,7 +197,7 @@ export function Pricing() {
 
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-3 text-sm">
+                    <li key={feat} className="flex items-start gap-3 text-base">
                       <span
                         className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                         style={{ background: "var(--ah-sage-soft)" }}
@@ -226,7 +226,7 @@ export function Pricing() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-center text-xs mt-12 max-w-2xl mx-auto leading-relaxed"
+          className="text-center text-sm mt-12 max-w-2xl mx-auto leading-relaxed"
           style={{ color: "var(--ah-ink-muted)" }}
         >
           Over your monthly minutes? Calls pause until upgrade — no overage charges, no surprise invoices.

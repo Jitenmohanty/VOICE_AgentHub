@@ -16,7 +16,9 @@
       "Bash(echo \"tsc exit=$?\")",
       "WebFetch(domain:wisprflow.ai)",
       "WebSearch",
-      "Bash(echo \"exitcode=$?\")"
+      "Bash(echo \"exitcode=$?\")",
+      "Bash(taskkill /PID 24256 /F)",
+      "PowerShell(Stop-Process *)"
     ]
   }
 }

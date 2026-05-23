@@ -40,7 +40,7 @@ export function Navbar() {
             <Sparkles className="w-4 h-4" style={{ color: "#FFFCF6" }} strokeWidth={2.5} />
           </div>
           <span
-            className="font-serif text-[22px] tracking-tight"
+            className="font-serif text-2xl tracking-tight"
             style={{ color: "var(--ah-ink)" }}
           >
             Voxie
@@ -48,7 +48,7 @@ export function Navbar() {
         </Link>
 
         <div
-          className="hidden md:flex items-center gap-8 text-sm"
+          className="hidden md:flex items-center gap-8 text-base"
           style={{ color: "var(--ah-ink-soft)" }}
         >
           <a href="#features" className="hover:[color:var(--ah-ink)] transition-colors">
@@ -66,7 +66,7 @@ export function Navbar() {
           <ThemeToggle />
           <Link
             href="/login"
-            className="text-sm transition-colors px-3 py-2"
+            className="text-base transition-colors px-3 py-2"
             style={{ color: "var(--ah-ink-soft)" }}
           >
             Sign in

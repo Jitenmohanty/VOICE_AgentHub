@@ -517,15 +517,15 @@ export function Features() {
             Built for SMBs
           </p>
           <h2
-            className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            className="font-serif text-5xl md:text-7xl tracking-[-0.02em] mb-5 leading-[1.08]"
             style={{ color: "var(--ah-ink)" }}
           >
             Everything you need to{" "}
-            <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+            <span style={{ color: "var(--ah-sage-deep)" }}>
               turn calls into customers
             </span>
           </h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
+          <p className="text-xl max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
             From the iframe install to the structured lead in your inbox — all the pieces, none of the busywork.
           </p>
         </motion.div>
@@ -566,12 +566,12 @@ export function Features() {
                   {/* Title + description */}
                   <div>
                     <h3
-                      className="font-serif text-lg md:text-xl tracking-tight mb-1.5"
+                      className="font-serif text-xl md:text-2xl tracking-tight mb-1.5"
                       style={{ color: "var(--ah-ink)" }}
                     >
                       {feature.title}
                     </h3>
-                    <p className="text-sm leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
+                    <p className="text-base leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
                       {feature.description}
                     </p>
                   </div>

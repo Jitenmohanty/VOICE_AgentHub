@@ -88,11 +88,20 @@ export function InterviewPreCallForm({
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-xl text-xs transition-all border ${
+      className="px-3 py-1.5 rounded-xl text-xs transition-all"
+      style={
         active
-          ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40 text-white"
-          : "bg-white/[0.03] border-white/10 text-white/60 hover:bg-white/[0.06] hover:border-white/14 hover:text-white/85"
-      }`}
+          ? {
+              background: "var(--ah-sage-soft)",
+              border: "1px solid var(--ah-sage)",
+              color: "var(--ah-ink)",
+            }
+          : {
+              background: "var(--ah-bg-inset)",
+              border: "1px solid var(--ah-border)",
+              color: "var(--ah-ink-soft)",
+            }
+      }
     >
       {children}
     </button>
@@ -180,13 +189,20 @@ export function InterviewPreCallForm({
           />
           {resumeFile ? (
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/10">
-              <FileText className="w-4 h-4 shrink-0 text-violet-300" />
-              <span className="text-sm text-white truncate flex-1">{resumeFile.name}</span>
+              <FileText className="w-4 h-4 shrink-0" style={{ color: "var(--ah-lavender-deep)" }} />
+              <span className="text-sm truncate flex-1" style={{ color: "var(--ah-ink)" }}>{resumeFile.name}</span>
               {uploadingResume && (
                 <span className="ah-spinner shrink-0" />
               )}
               {resumeSkills && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-300/20 shrink-0">
+                <span
+                  className="text-[10px] px-2 py-0.5 rounded-full shrink-0"
+                  style={{
+                    background: "var(--ah-sage-soft)",
+                    color: "var(--ah-sage-deep)",
+                    border: "1px solid var(--ah-sage)",
+                  }}
+                >
                   Parsed
                 </span>
               )}

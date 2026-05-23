@@ -48,7 +48,7 @@ function Brand({ size = "md", onClick }: { size?: "sm" | "md"; onClick?: () => v
         <Sparkles style={{ width: iconDim, height: iconDim, color: "#FFFCF6" }} strokeWidth={2.5} />
       </div>
       <span
-        className={`font-serif tracking-tight ${size === "sm" ? "text-lg" : "text-xl"}`}
+        className={`font-serif tracking-tight ${size === "sm" ? "text-xl" : "text-2xl"}`}
         style={{ color: "var(--ah-ink)" }}
       >
         Voxie
@@ -70,7 +70,7 @@ function NavLinks({ onNavClick }: { onNavClick?: () => void }) {
             key={item.href}
             href={item.href}
             onClick={onNavClick}
-            className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all"
+            className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-base transition-all"
             style={{
               background: isActive ? "var(--ah-bg-inset)" : "transparent",
               color: isActive ? "var(--ah-ink)" : "var(--ah-ink-soft)",
@@ -129,7 +129,7 @@ export function Sidebar() {
 
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-base transition-all"
           style={{ color: "var(--ah-ink-soft)" }}
         >
           <LogOut className="w-[18px] h-[18px]" strokeWidth={1.75} />
@@ -209,7 +209,7 @@ export function Sidebar() {
 
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-base transition-all"
                 style={{ color: "var(--ah-ink-soft)" }}
               >
                 <LogOut className="w-[18px] h-[18px]" strokeWidth={1.75} />

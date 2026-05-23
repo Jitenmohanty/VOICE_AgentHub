@@ -26,7 +26,7 @@ export function Hero() {
 
           {/* Headline — EB Garamond, ink-black, italic accent */}
           <h1
-            className="font-serif text-5xl md:text-7xl lg:text-[88px] leading-[1.05] tracking-[-0.025em] mb-7"
+            className="font-serif text-6xl md:text-8xl lg:text-[104px] leading-[1.05] tracking-[-0.025em] mb-7"
             style={{ color: "var(--ah-ink)" }}
           >
             Never miss
@@ -39,7 +39,7 @@ export function Hero() {
 
           {/* Subhead */}
           <p
-            className="text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
+            className="text-xl md:text-2xl max-w-2xl mx-auto mb-12 leading-relaxed"
             style={{ color: "var(--ah-ink-soft)" }}
           >
             Drop a single iframe into your existing site. Visitors talk to an AI that knows your menu,
@@ -62,7 +62,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm"
+            className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-base"
             style={{ color: "var(--ah-ink-muted)" }}
           >
             <span className="flex items-center gap-2">

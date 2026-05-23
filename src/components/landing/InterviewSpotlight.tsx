@@ -54,17 +54,17 @@ export function InterviewSpotlight() {
             </div>
 
             <h2
-              className="font-serif text-4xl md:text-5xl lg:text-6xl tracking-[-0.02em] mb-6 leading-[1.08]"
+              className="font-serif text-5xl md:text-6xl lg:text-7xl tracking-[-0.02em] mb-6 leading-[1.08]"
               style={{ color: "var(--ah-ink)" }}
             >
               AI mock interviews
               <br />
-              <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+              <span style={{ color: "var(--ah-sage-deep)" }}>
                 that actually score you
               </span>
             </h2>
 
-            <p className="text-lg mb-10 leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
+            <p className="text-xl mb-10 leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
               Candidates fill a pre-call form, upload a resume, and jump into a structured 5-round
               voice interview. Every answer is scored in real time. After the call, Claude generates
               a comprehensive report with actionable feedback.
@@ -79,7 +79,7 @@ export function InterviewSpotlight() {
                   >
                     <h.icon className="w-4 h-4" style={{ color: "var(--ah-lavender-deep)" }} strokeWidth={2} />
                   </div>
-                  <span className="text-[15px]" style={{ color: "var(--ah-ink-soft)" }}>{h.text}</span>
+                  <span className="text-base" style={{ color: "var(--ah-ink-soft)" }}>{h.text}</span>
                 </div>
               ))}
             </div>

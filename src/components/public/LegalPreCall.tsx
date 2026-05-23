@@ -50,15 +50,23 @@ export function LegalPreCall({
               <button
                 key={area}
                 onClick={() => setSelected(area === selected ? null : area)}
-                className={`w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left ${
+                className="w-full flex items-center justify-between p-3.5 rounded-2xl transition-all text-left"
+                style={
                   active
-                    ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40"
-                    : "bg-white/[0.03] border-white/8 hover:bg-white/[0.06] hover:border-white/14"
-                }`}
+                    ? {
+                        background: "var(--ah-sage-soft)",
+                        border: "1px solid var(--ah-sage)",
+                      }
+                    : {
+                        background: "var(--ah-bg-inset)",
+                        border: "1px solid var(--ah-border)",
+                      }
+                }
               >
-                <span className="text-sm text-white/90">{area}</span>
+                <span className="text-sm" style={{ color: "var(--ah-ink)" }}>{area}</span>
                 <ChevronRight
-                  className={`w-4 h-4 shrink-0 transition-all ${active ? "text-violet-300 rotate-90" : "text-white/40"}`}
+                  className={`w-4 h-4 shrink-0 transition-all ${active ? "rotate-90" : ""}`}
+                  style={{ color: active ? "var(--ah-sage-deep)" : "var(--ah-ink-muted)" }}
                 />
               </button>
             );
@@ -66,9 +74,15 @@ export function LegalPreCall({
         </div>
       </div>
 
-      <div className="flex gap-2.5 p-3.5 rounded-2xl bg-amber-500/[0.06] border border-amber-300/15">
-        <AlertTriangle className="w-4 h-4 text-amber-300/80 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-amber-200/80 leading-relaxed">
+      <div
+        className="flex gap-2.5 p-3.5 rounded-2xl"
+        style={{
+          background: "var(--ah-cream-warm)",
+          border: "1px solid rgba(176, 122, 46, 0.25)",
+        }}
+      >
+        <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#B07A2E" }} />
+        <p className="text-[11px] leading-relaxed" style={{ color: "#7A5520" }}>
           This assistant provides general legal information only, not legal advice.
           For advice specific to your situation, consult a licensed attorney.
         </p>

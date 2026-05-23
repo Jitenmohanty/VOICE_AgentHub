@@ -99,11 +99,11 @@ export default function BusinessDashboardPage() {
   return (
     <div className="max-w-5xl mx-auto px-2 py-6 md:p-10 space-y-6">
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Overview</p>
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.02em] text-white">
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Overview</p>
+        <h1 className="font-serif text-4xl md:text-5xl tracking-[-0.02em] text-white">
           Welcome back{session?.user?.name ? <>, <GradientText>{session.user.name.split(" ")[0]}</GradientText></> : ""}
         </h1>
-        <p className="text-white/55 mt-1.5 text-sm">Manage your AI agent and track lead capture in real time.</p>
+        <p className="text-white/55 mt-2 text-base">Manage your AI agent and track lead capture in real time.</p>
       </motion.div>
 
       {business && (

@@ -32,15 +32,15 @@ export function AgentShowcase() {
             Templates
           </p>
           <h2
-            className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            className="font-serif text-5xl md:text-7xl tracking-[-0.02em] mb-5 leading-[1.08]"
             style={{ color: "var(--ah-ink)" }}
           >
             Meet your{" "}
-            <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+            <span style={{ color: "var(--ah-sage-deep)" }}>
               AI agents
             </span>
           </h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
+          <p className="text-xl max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
             Specialized voice agents for every business domain. Each one is an expert in its field.
           </p>
         </motion.div>
@@ -71,13 +71,13 @@ export function AgentShowcase() {
                   </div>
 
                   <h3
-                    className="font-serif text-base tracking-tight mb-1"
+                    className="font-serif text-lg tracking-tight mb-1"
                     style={{ color: "var(--ah-ink)" }}
                   >
                     {agent.name}
                   </h3>
                   <p
-                    className="text-xs mb-4 leading-relaxed"
+                    className="text-sm mb-4 leading-relaxed"
                     style={{ color: "var(--ah-ink-soft)" }}
                   >
                     {agent.tagline}

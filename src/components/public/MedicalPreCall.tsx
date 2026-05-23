@@ -54,14 +54,24 @@ export function MedicalPreCall({
               key={idx}
               className="flex items-start gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
             >
-              <div className="w-9 h-9 rounded-2xl bg-violet-500/10 border border-violet-300/20 flex items-center justify-center shrink-0 mt-0.5">
-                <User className="w-4 h-4 text-violet-300" strokeWidth={2} />
+              <div
+                className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
+                style={{ background: "var(--ah-lavender-soft)", border: "1px solid var(--ah-lavender)" }}
+              >
+                <User className="w-4 h-4" style={{ color: "var(--ah-lavender-deep)" }} strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm font-medium text-white truncate">{doc.name}</p>
+                  <p className="text-sm font-medium truncate" style={{ color: "var(--ah-ink)" }}>{doc.name}</p>
                   {doc.acceptingNewPatients && (
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-300/20">
+                    <span
+                      className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                      style={{
+                        background: "var(--ah-sage-soft)",
+                        color: "var(--ah-sage-deep)",
+                        border: "1px solid var(--ah-sage)",
+                      }}
+                    >
                       Accepting
                     </span>
                   )}

@@ -295,18 +295,181 @@
 .hover\:border-white\/14:hover  { border-color: rgba(26, 26, 26, 0.16); }
 
 /* Brand-color icon tints — flip pastels to deeper editorial sages/lavenders */
+.text-violet-200,
 .text-violet-300,
-.text-violet-400         { color: var(--ah-lavender-deep); }
+.text-violet-400,
+.text-violet-500,
+.text-fuchsia-300,
+.text-fuchsia-400        { color: var(--ah-lavender-deep); }
+.text-blue-200,
 .text-blue-300,
-.text-blue-400           { color: var(--ah-sage-deep); }
+.text-blue-400,
+.text-blue-500,
+.text-cyan-200,
 .text-cyan-300,
-.text-cyan-400           { color: var(--ah-sage-deep); }
+.text-cyan-400,
+.text-cyan-500,
+.text-sky-300,
+.text-sky-400,
+.text-teal-300,
+.text-teal-400           { color: var(--ah-sage-deep); }
+.text-emerald-200,
 .text-emerald-300,
-.text-emerald-400        { color: var(--ah-cta); }
+.text-emerald-400,
+.text-emerald-500,
+.text-green-300,
+.text-green-400          { color: var(--ah-cta); }
+.text-rose-200,
 .text-rose-300,
-.text-rose-400           { color: #B85C5C; }
+.text-rose-400,
+.text-rose-500,
+.text-red-300,
+.text-red-400,
+.text-pink-300,
+.text-pink-400           { color: #B85C5C; }
+.text-amber-200,
 .text-amber-300,
-.text-amber-400          { color: #B07A2E; }
+.text-amber-400,
+.text-amber-500,
+.text-yellow-300,
+.text-yellow-400,
+.text-orange-300,
+.text-orange-400         { color: #B07A2E; }
+
+/* Brand-color BACKGROUND tints — flip the X/500/10..25 utilities to soft
+   editorial pastels on cream. Covers the dashboard's stat-cards and chip
+   variants without per-page edits. */
+.bg-violet-500\/5,
+.bg-violet-500\/10,
+.bg-violet-500\/15,
+.bg-violet-500\/20,
+.bg-violet-500\/25,
+.bg-violet-500\/\[0\.06\],
+.bg-violet-500\/\[0\.08\],
+.bg-fuchsia-500\/10,
+.bg-fuchsia-500\/15      { background-color: var(--ah-lavender-soft); }
+
+.bg-blue-500\/5,
+.bg-blue-500\/10,
+.bg-blue-500\/15,
+.bg-blue-500\/20,
+.bg-blue-500\/25,
+.bg-cyan-500\/5,
+.bg-cyan-500\/10,
+.bg-cyan-500\/15,
+.bg-cyan-500\/20,
+.bg-cyan-500\/25,
+.bg-cyan-500\/\[0\.06\],
+.bg-cyan-500\/\[0\.08\],
+.bg-sky-500\/10,
+.bg-sky-500\/15,
+.bg-teal-500\/10,
+.bg-teal-500\/15         { background-color: var(--ah-sage-soft); }
+
+.bg-emerald-500\/5,
+.bg-emerald-500\/10,
+.bg-emerald-500\/15,
+.bg-emerald-500\/20,
+.bg-emerald-500\/25,
+.bg-emerald-500\/\[0\.08\],
+.bg-green-500\/10,
+.bg-green-500\/15        { background-color: var(--ah-sage-soft); }
+
+.bg-rose-500\/5,
+.bg-rose-500\/10,
+.bg-rose-500\/15,
+.bg-rose-500\/20,
+.bg-rose-500\/25,
+.bg-red-500\/10,
+.bg-red-500\/15,
+.bg-pink-500\/10,
+.bg-pink-500\/15         { background-color: rgba(232, 199, 199, 0.40); }
+
+.bg-amber-500\/5,
+.bg-amber-500\/10,
+.bg-amber-500\/15,
+.bg-amber-500\/20,
+.bg-amber-500\/\[0\.06\],
+.bg-amber-500\/\[0\.08\],
+.bg-yellow-500\/10,
+.bg-yellow-500\/15,
+.bg-orange-500\/10,
+.bg-orange-500\/15       { background-color: var(--ah-cream-warm); }
+
+/* Brand-color BORDER tints */
+.border-violet-300\/15,
+.border-violet-300\/20,
+.border-violet-300\/25,
+.border-violet-300\/40,
+.border-violet-300\/50,
+.border-fuchsia-300\/25  { border-color: var(--ah-lavender); }
+
+.border-blue-300\/15,
+.border-blue-300\/20,
+.border-blue-300\/25,
+.border-blue-300\/40,
+.border-cyan-300\/15,
+.border-cyan-300\/20,
+.border-cyan-300\/25,
+.border-cyan-300\/40,
+.border-sky-300\/25,
+.border-teal-300\/25     { border-color: var(--ah-sage); }
+
+.border-emerald-300\/15,
+.border-emerald-300\/20,
+.border-emerald-300\/25,
+.border-emerald-300\/40,
+.border-green-300\/25    { border-color: var(--ah-sage); }
+
+.border-rose-300\/15,
+.border-rose-300\/20,
+.border-rose-300\/25,
+.border-rose-300\/40,
+.border-red-300\/25,
+.border-pink-300\/25     { border-color: rgba(184, 92, 92, 0.30); }
+
+.border-amber-300\/15,
+.border-amber-300\/20,
+.border-amber-300\/25,
+.border-amber-300\/40,
+.border-yellow-300\/25,
+.border-orange-300\/25   { border-color: rgba(176, 122, 46, 0.30); }
+
+/* Dark-mode overrides — keep the brighter pastel variants on dark canvas */
+.dark .bg-violet-500\/5,
+.dark .bg-violet-500\/10,
+.dark .bg-violet-500\/15,
+.dark .bg-violet-500\/20,
+.dark .bg-violet-500\/25 { background-color: rgba(214, 207, 236, 0.12); }
+.dark .bg-blue-500\/10,
+.dark .bg-blue-500\/15,
+.dark .bg-cyan-500\/10,
+.dark .bg-cyan-500\/15   { background-color: rgba(184, 200, 171, 0.12); }
+.dark .bg-emerald-500\/10,
+.dark .bg-emerald-500\/15 { background-color: rgba(184, 200, 171, 0.14); }
+.dark .bg-rose-500\/10,
+.dark .bg-rose-500\/15   { background-color: rgba(201, 155, 155, 0.16); }
+.dark .bg-amber-500\/10,
+.dark .bg-amber-500\/15  { background-color: rgba(214, 175, 120, 0.14); }
+.dark .border-violet-300\/25,
+.dark .border-violet-300\/40 { border-color: rgba(214, 207, 236, 0.28); }
+.dark .border-blue-300\/25,
+.dark .border-cyan-300\/25   { border-color: rgba(184, 200, 171, 0.28); }
+.dark .border-emerald-300\/25 { border-color: rgba(184, 200, 171, 0.30); }
+.dark .border-rose-300\/25   { border-color: rgba(201, 155, 155, 0.30); }
+.dark .border-amber-300\/25  { border-color: rgba(214, 175, 120, 0.28); }
+.dark .text-violet-300,
+.dark .text-violet-400   { color: var(--ah-lavender); }
+.dark .text-blue-300,
+.dark .text-blue-400,
+.dark .text-cyan-300,
+.dark .text-cyan-400     { color: var(--ah-sage); }
+.dark .text-emerald-300,
+.dark .text-emerald-400  { color: var(--ah-sage); }
+.dark .text-rose-300,
+.dark .text-rose-400     { color: #C99B9B; }
+.dark .text-amber-300,
+.dark .text-amber-400    { color: #D6AF78; }
 
 /* Dark mode flips these back to brighter pastels for legibility on dark */
 .dark .text-white,
@@ -346,10 +509,6 @@
 .dark .border-white\/20        { border-color: rgba(245, 241, 230, 0.20); }
 .dark .border-white\/25        { border-color: rgba(245, 241, 230, 0.25); }
 .dark .border-white\/30        { border-color: rgba(245, 241, 230, 0.30); }
-.dark .text-violet-300         { color: var(--ah-lavender); }
-.dark .text-blue-300           { color: var(--ah-sage); }
-.dark .text-cyan-300           { color: var(--ah-sage-soft); }
-.dark .text-emerald-300        { color: var(--ah-sage); }
 
 /* Anything painted on the forest-green CTA needs to keep cream text */
 .ah-gradient-bg,
@@ -368,17 +527,23 @@
   }
   body {
     background-color: var(--ah-bg-deep);
-    background-image:
-      radial-gradient(ellipse 80% 60% at 50% -10%, var(--ah-aurora-1), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 90% 20%, var(--ah-aurora-2), transparent 60%);
-    background-attachment: fixed;
     color: var(--ah-text-primary);
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     letter-spacing: 0;
   }
+  /* Dark mode keeps a subtle ambient wash; light/editorial stays flat. */
+  .dark body {
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -10%, var(--ah-aurora-1), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 20%, var(--ah-aurora-2), transparent 60%);
+    background-attachment: fixed;
+  }
   html {
     @apply font-sans;
+    /* Bump the base 1rem from 16 → 17px (+6.25%) so EB Garamond reads at
+       sans-serif optical size. Every Tailwind text-* utility scales with it. */
+    font-size: 17px;
     color-scheme: light;
   }
   html.dark {
@@ -460,9 +625,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.25rem 0.75rem;
+  padding: 0.375rem 0.875rem;
   border-radius: 9999px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   background: var(--ah-bg-inset);
   border: 1px solid var(--ah-border);

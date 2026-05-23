@@ -106,15 +106,15 @@ export function UseCases() {
             Industry-tuned
           </p>
           <h2
-            className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            className="font-serif text-5xl md:text-7xl tracking-[-0.02em] mb-5 leading-[1.08]"
             style={{ color: "var(--ah-ink)" }}
           >
             Built for{" "}
-            <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+            <span style={{ color: "var(--ah-sage-deep)" }}>
               your industry
             </span>
           </h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
+          <p className="text-xl max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
             Not a generic chatbot. Each agent has its own onboarding, data model, and caller experience.
           </p>
         </motion.div>
@@ -141,7 +141,7 @@ export function UseCases() {
                     <c.icon className={`w-5 h-5 ${TINT_TEXT[c.tint]}`} strokeWidth={2} />
                   </div>
                   <h3
-                    className="font-serif text-lg tracking-tight"
+                    className="font-serif text-xl tracking-tight"
                     style={{ color: "var(--ah-ink)" }}
                   >
                     {c.title}
@@ -152,7 +152,7 @@ export function UseCases() {
                   {c.features.map((f) => (
                     <li
                       key={f}
-                      className="flex items-start gap-3 text-sm leading-relaxed"
+                      className="flex items-start gap-3 text-base leading-relaxed"
                       style={{ color: "var(--ah-ink-soft)" }}
                     >
                       <span className={`w-1 h-1 rounded-full mt-2 shrink-0 ${TINT_DOT[c.tint]}`} />

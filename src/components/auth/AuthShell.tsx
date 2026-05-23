@@ -45,7 +45,7 @@ export function AuthShell({ title, subtitle, meta, footer, children }: AuthShell
               <Sparkles className="w-4 h-4" style={{ color: "#FFFCF6" }} strokeWidth={2.5} />
             </div>
             <span
-              className="font-serif text-2xl tracking-tight"
+              className="font-serif text-3xl tracking-tight"
               style={{ color: "var(--ah-ink)" }}
             >
               Voxie
@@ -53,14 +53,14 @@ export function AuthShell({ title, subtitle, meta, footer, children }: AuthShell
           </Link>
 
           <h1
-            className="font-serif text-3xl md:text-[38px] tracking-[-0.02em] mb-2 leading-[1.1]"
+            className="font-serif text-4xl md:text-5xl tracking-[-0.02em] mb-2 leading-[1.1]"
             style={{ color: "var(--ah-ink)" }}
           >
             {title}
           </h1>
           {subtitle && (
             <p
-              className="text-sm max-w-sm mx-auto leading-relaxed"
+              className="text-base max-w-sm mx-auto leading-relaxed"
               style={{ color: "var(--ah-ink-soft)" }}
             >
               {subtitle}
@@ -73,7 +73,7 @@ export function AuthShell({ title, subtitle, meta, footer, children }: AuthShell
 
         {footer && (
           <div
-            className="text-center mt-7 text-sm"
+            className="text-center mt-7 text-base"
             style={{ color: "var(--ah-ink-soft)" }}
           >
             {footer}
