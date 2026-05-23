@@ -1,27 +1,31 @@
 import type { Metadata } from "next";
-import { Outfit, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { EB_Garamond, Figtree, JetBrains_Mono } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { CookieConsent } from "@/components/shared/CookieConsent";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { ThemedToaster } from "@/components/shared/ThemedToaster";
 import "./globals.css";
 
-const outfit = Outfit({
+const ebGaramond = EB_Garamond({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
-const ibmPlexSans = IBM_Plex_Sans({
+const figtree = Figtree({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -45,9 +49,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${outfit.variable} ${ibmPlexSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${ebGaramond.variable} ${figtree.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[var(--ah-bg-deep)]" style={{ color: "var(--ah-text-primary)" }}>
+      <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <SessionProvider>
             {children}

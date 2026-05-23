@@ -38,27 +38,47 @@ export function AuthShell({ title, subtitle, meta, footer, children }: AuthShell
       >
         <div className="text-center mb-9">
           <Link href="/" className="inline-flex items-center gap-2.5 mb-7 group">
-            <div className="relative">
-              <div className="w-10 h-10 rounded-2xl ah-gradient-bg flex items-center justify-center shadow-[0_8px_24px_-8px_rgba(124,58,237,0.6)]">
-                <Sparkles className="w-4 h-4 text-white" strokeWidth={2.5} />
-              </div>
-              <div className="absolute inset-0 rounded-2xl ah-gradient-bg blur-md opacity-40 group-hover:opacity-70 transition-opacity -z-10" />
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
+              style={{ background: "var(--ah-cta)" }}
+            >
+              <Sparkles className="w-4 h-4" style={{ color: "#FFFCF6" }} strokeWidth={2.5} />
             </div>
-            <span className="font-semibold text-xl tracking-tight text-white">Voxie</span>
+            <span
+              className="font-serif text-2xl tracking-tight"
+              style={{ color: "var(--ah-ink)" }}
+            >
+              Voxie
+            </span>
           </Link>
 
-          <h1 className="text-3xl md:text-[34px] font-semibold tracking-[-0.025em] text-white mb-2">
+          <h1
+            className="font-serif text-3xl md:text-[38px] tracking-[-0.02em] mb-2 leading-[1.1]"
+            style={{ color: "var(--ah-ink)" }}
+          >
             {title}
           </h1>
           {subtitle && (
-            <p className="text-sm text-white/55 max-w-sm mx-auto leading-relaxed">{subtitle}</p>
+            <p
+              className="text-sm max-w-sm mx-auto leading-relaxed"
+              style={{ color: "var(--ah-ink-soft)" }}
+            >
+              {subtitle}
+            </p>
           )}
           {meta && <div className="mt-5">{meta}</div>}
         </div>
 
         {children}
 
-        {footer && <div className="text-center mt-7 text-sm text-white/55">{footer}</div>}
+        {footer && (
+          <div
+            className="text-center mt-7 text-sm"
+            style={{ color: "var(--ah-ink-soft)" }}
+          >
+            {footer}
+          </div>
+        )}
       </motion.div>
     </div>
   );
@@ -73,9 +93,11 @@ export function AuthStepDots({ current, total }: { current: number; total: numbe
       {Array.from({ length: total }).map((_, i) => (
         <span
           key={i}
-          className={`h-1 rounded-full transition-all duration-500 ${
-            i < current ? "w-8 ah-gradient-bg" : "w-5 bg-white/10"
-          }`}
+          className="h-1 rounded-full transition-all duration-500"
+          style={{
+            width: i < current ? "2rem" : "1.25rem",
+            background: i < current ? "var(--ah-cta)" : "var(--ah-border-strong)",
+          }}
         />
       ))}
     </div>

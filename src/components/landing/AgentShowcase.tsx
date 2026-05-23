@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Hotel, Stethoscope, Code, UtensilsCrossed, Scale, User } from "lucide-react";
 import { AGENTS } from "@/lib/agents";
 import { GlassPanel } from "@/components/ui/glass-panel";
-import { GradientText } from "@/components/ui/gradient-text";
 
 const iconMap: Record<string, React.ElementType> = {
   Hotel,
@@ -26,13 +25,22 @@ export function AgentShowcase() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-4">
+          <p
+            className="text-sm font-medium uppercase tracking-[0.2em] mb-4"
+            style={{ color: "var(--ah-ink-muted)" }}
+          >
             Templates
           </p>
-          <h2 className="font-(family-name:--font-heading) text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
-            Meet your <GradientText>AI agents</GradientText>
+          <h2
+            className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            style={{ color: "var(--ah-ink)" }}
+          >
+            Meet your{" "}
+            <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+              AI agents
+            </span>
           </h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto">
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
             Specialized voice agents for every business domain. Each one is an expert in its field.
           </p>
         </motion.div>
@@ -55,14 +63,23 @@ export function AgentShowcase() {
                   radius="lg"
                   className="h-full p-6 cursor-pointer group"
                 >
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 ah-gradient-bg opacity-90 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.4)] group-hover:opacity-100 group-hover:shadow-[0_8px_24px_-4px_rgba(59,130,246,0.55)] transition-all">
-                    <Icon className="w-5 h-5 text-white" strokeWidth={2} />
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 transition-all"
+                    style={{ background: "var(--ah-sage-soft)" }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color: "var(--ah-sage-deep)" }} strokeWidth={2} />
                   </div>
 
-                  <h3 className="font-semibold text-white text-base tracking-tight mb-1">
+                  <h3
+                    className="font-serif text-base tracking-tight mb-1"
+                    style={{ color: "var(--ah-ink)" }}
+                  >
                     {agent.name}
                   </h3>
-                  <p className="text-xs text-white/55 mb-4 leading-relaxed">
+                  <p
+                    className="text-xs mb-4 leading-relaxed"
+                    style={{ color: "var(--ah-ink-soft)" }}
+                  >
                     {agent.tagline}
                   </p>
 
@@ -70,7 +87,12 @@ export function AgentShowcase() {
                     {agent.capabilities.slice(0, 2).map((cap) => (
                       <span
                         key={cap}
-                        className="text-[10px] tracking-wide px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/8 text-white/60"
+                        className="text-[10px] tracking-wide px-2 py-0.5 rounded-full"
+                        style={{
+                          background: "var(--ah-bg-inset)",
+                          border: "1px solid var(--ah-border)",
+                          color: "var(--ah-ink-soft)",
+                        }}
                       >
                         {cap}
                       </span>

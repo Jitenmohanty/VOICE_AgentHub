@@ -56,8 +56,8 @@ export function GlassPanel({
         gradientBorder && "gradient-border",
         interactive && [
           "transition-[transform,box-shadow,border-color] duration-500 ease-out",
-          "hover:scale-[1.015] hover:border-white/20",
-          "hover:shadow-[0_24px_64px_-24px_rgba(124,58,237,0.4),0_0_48px_-12px_rgba(6,182,212,0.2)]",
+          "hover:-translate-y-0.5 hover:border-[color:var(--ah-border-strong)]",
+          "hover:shadow-[0_20px_44px_-22px_rgba(26,26,26,0.18)]",
         ],
         className,
       )}

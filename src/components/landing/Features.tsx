@@ -39,14 +39,14 @@ interface Feature {
 }
 
 const TINT_BG: Record<Feature["tint"], string> = {
-  violet: "bg-violet-500/10",
-  blue: "bg-blue-500/10",
-  cyan: "bg-cyan-500/10",
+  violet: "bg-[var(--ah-lavender-soft)]",
+  blue: "bg-[var(--ah-sage-soft)]",
+  cyan: "bg-[var(--ah-cream-warm)]",
 };
 const TINT_TEXT: Record<Feature["tint"], string> = {
-  violet: "text-violet-300",
-  blue: "text-blue-300",
-  cyan: "text-cyan-300",
+  violet: "text-[var(--ah-lavender-deep)]",
+  blue: "text-[var(--ah-sage-deep)]",
+  cyan: "text-[var(--ah-sage-deep)]",
 };
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -59,18 +59,18 @@ const TINT_TEXT: Record<Feature["tint"], string> = {
 function EmbedVisual() {
   return (
     <div className="relative w-full h-full min-h-30 flex items-end justify-center pt-2">
-      {/* Soft halo behind the browser */}
-      <div className="absolute inset-x-6 top-2 bottom-6 rounded-3xl bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.25),transparent_70%)] blur-2xl pointer-events-none" />
+      {/* Soft sage halo behind the browser */}
+      <div className="absolute inset-x-6 top-2 bottom-6 rounded-3xl bg-[radial-gradient(ellipse_at_center,rgba(168,184,155,0.30),transparent_70%)] blur-2xl pointer-events-none" />
 
       {/* Browser window */}
       <div className="relative w-full max-w-[320px] rounded-2xl border border-white/10 bg-(--ah-bg-raised)/80 backdrop-blur-md overflow-hidden shadow-[0_24px_64px_-24px_rgba(2,6,23,0.8)] transition-transform duration-500 group-hover:-translate-y-1">
         {/* Browser chrome */}
         <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/8 bg-white/2">
-          <span className="w-2 h-2 rounded-full bg-rose-400/70" />
-          <span className="w-2 h-2 rounded-full bg-amber-400/70" />
-          <span className="w-2 h-2 rounded-full bg-emerald-400/70" />
+          <span className="w-2 h-2 rounded-full" style={{ background: "rgba(184, 92, 92, 0.7)" }} />
+          <span className="w-2 h-2 rounded-full" style={{ background: "rgba(176, 122, 46, 0.7)" }} />
+          <span className="w-2 h-2 rounded-full" style={{ background: "var(--ah-sage-deep)" }} />
           <div className="ml-2 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/4 text-[9px] text-white/55 flex-1 font-mono">
-            <Globe className="w-2.5 h-2.5 text-violet-300" strokeWidth={2.5} />
+            <Globe className="w-2.5 h-2.5" style={{ color: "var(--ah-sage-deep)" }} strokeWidth={2.5} />
             yourbusiness.com
           </div>
         </div>
@@ -83,12 +83,18 @@ function EmbedVisual() {
         </div>
 
         {/* Voxie widget — pinned bottom-right inside the browser */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-2 rounded-xl ah-gradient-bg shadow-[0_8px_20px_-8px_rgba(124,58,237,0.7)] transition-transform duration-500 group-hover:scale-105">
-          <div className="w-6 h-6 rounded-lg bg-white/15 flex items-center justify-center">
-            <Phone className="w-3 h-3 text-white" strokeWidth={2.5} />
+        <div
+          className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-2 rounded-full transition-transform duration-500 group-hover:scale-105"
+          style={{
+            background: "var(--ah-cta)",
+            boxShadow: "0 8px 20px -8px rgba(47, 74, 42, 0.55)",
+          }}
+        >
+          <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "rgba(255, 252, 246, 0.20)" }}>
+            <Phone className="w-3 h-3" style={{ color: "#FFFCF6" }} strokeWidth={2.5} />
           </div>
-          <div className="text-[10px] font-medium text-white tracking-tight">Talk to AI</div>
-          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+          <div className="text-[10px] font-medium tracking-tight" style={{ color: "#FFFCF6" }}>Talk to AI</div>
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#FFFCF6" }} />
         </div>
       </div>
     </div>
@@ -102,24 +108,43 @@ function InboxVisual() {
       {/* Background card peeking behind */}
       <div className="absolute left-4 right-4 top-2 h-16 rounded-xl bg-white/3 border border-white/6" />
 
-      <div className="relative w-full max-w-70 rounded-xl bg-(--ah-bg-raised)/85 border border-white/10 p-3.5 backdrop-blur-md shadow-[0_12px_32px_-12px_rgba(2,6,23,0.6)] transition-transform duration-500 group-hover:translate-y-0.5">
+      <div
+        className="relative w-full max-w-70 p-3.5 transition-transform duration-500 group-hover:translate-y-0.5"
+        style={{
+          background: "var(--ah-bg-raised)",
+          border: "1px solid var(--ah-border)",
+          borderRadius: "var(--radius-lg)",
+          boxShadow: "0 12px 28px -16px rgba(26, 26, 26, 0.18)",
+        }}
+      >
         <div className="flex items-start gap-2.5">
-          <div className="w-7 h-7 rounded-lg ah-gradient-bg flex items-center justify-center shrink-0 shadow-[0_4px_12px_-4px_rgba(124,58,237,0.6)]">
-            <Mail className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: "var(--ah-cta)" }}
+          >
+            <Mail className="w-3.5 h-3.5" style={{ color: "#FFFCF6" }} strokeWidth={2.5} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-semibold text-white truncate">New lead · Bella Vista</span>
-              <span className="text-[9px] text-white/40 shrink-0">now</span>
+              <span className="text-[10px] font-semibold truncate" style={{ color: "var(--ah-ink)" }}>
+                New lead · Bella Vista
+              </span>
+              <span className="text-[9px] shrink-0" style={{ color: "var(--ah-ink-muted)" }}>now</span>
             </div>
-            <p className="text-[10px] text-white/60 leading-relaxed mt-0.5 line-clamp-2">
+            <p className="text-[10px] leading-relaxed mt-0.5 line-clamp-2" style={{ color: "var(--ah-ink-soft)" }}>
               Sarah Chen · +1 555-014-2293 · table for 4 tonight at 8pm
             </p>
             <div className="flex items-center gap-1 mt-1.5">
-              <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-300/25 font-medium">
+              <span
+                className="text-[8px] px-1.5 py-0.5 rounded-full font-medium"
+                style={{ background: "var(--ah-sage-soft)", color: "var(--ah-sage-deep)", border: "1px solid var(--ah-sage)" }}
+              >
                 Captured
               </span>
-              <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-300/25 font-medium">
+              <span
+                className="text-[8px] px-1.5 py-0.5 rounded-full font-medium"
+                style={{ background: "var(--ah-lavender-soft)", color: "var(--ah-lavender-deep)", border: "1px solid var(--ah-lavender)" }}
+              >
                 High intent
               </span>
             </div>
@@ -142,9 +167,9 @@ function WebhookVisual() {
       >
         <defs>
           <linearGradient id="wh-line" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#7C3AED" stopOpacity="0" />
-            <stop offset="50%" stopColor="#06B6D4" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#06B6D4" stopOpacity="0" />
+            <stop offset="0%" stopColor="#5E7355" stopOpacity="0" />
+            <stop offset="50%" stopColor="#5E7355" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#5E7355" stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -154,13 +179,13 @@ function WebhookVisual() {
         <path d="M 100 60 Q 140 60 175 92" stroke="url(#wh-line)" strokeWidth="1.2" />
 
         {/* Animated dots along the wires */}
-        <circle r="2" fill="#06B6D4">
+        <circle r="2" fill="#5E7355">
           <animateMotion dur="2.4s" repeatCount="indefinite" path="M 100 60 Q 140 60 175 28" />
         </circle>
-        <circle r="2" fill="#06B6D4">
+        <circle r="2" fill="#5E7355">
           <animateMotion dur="2.4s" begin="0.6s" repeatCount="indefinite" path="M 100 60 L 175 60" />
         </circle>
-        <circle r="2" fill="#06B6D4">
+        <circle r="2" fill="#5E7355">
           <animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M 100 60 Q 140 60 175 92" />
         </circle>
       </svg>
@@ -188,22 +213,26 @@ function WebhookVisual() {
 /** 4. Industry-tuned — row of template chips. */
 function TemplatesVisual() {
   const templates = [
-    { Icon: Hotel, tint: "text-violet-300", bg: "bg-violet-500/10 border-violet-300/25" },
-    { Icon: Stethoscope, tint: "text-blue-300", bg: "bg-blue-500/10 border-blue-300/25" },
-    { Icon: UtensilsCrossed, tint: "text-amber-300", bg: "bg-amber-500/10 border-amber-300/25" },
-    { Icon: Scale, tint: "text-cyan-300", bg: "bg-cyan-500/10 border-cyan-300/25" },
-    { Icon: Code, tint: "text-rose-300", bg: "bg-rose-500/10 border-rose-300/25" },
+    { Icon: Hotel, tint: "var(--ah-lavender-deep)", bg: "var(--ah-lavender-soft)", border: "var(--ah-lavender)" },
+    { Icon: Stethoscope, tint: "var(--ah-sage-deep)", bg: "var(--ah-sage-soft)", border: "var(--ah-sage)" },
+    { Icon: UtensilsCrossed, tint: "#B07A2E", bg: "var(--ah-cream-warm)", border: "rgba(176, 122, 46, 0.30)" },
+    { Icon: Scale, tint: "var(--ah-sage-deep)", bg: "var(--ah-bg-inset)", border: "var(--ah-border-strong)" },
+    { Icon: Code, tint: "#B85C5C", bg: "var(--ah-rose-soft)", border: "rgba(184, 92, 92, 0.30)" },
   ];
   return (
     <div className="relative w-full h-full min-h-30 flex items-center justify-center px-2">
       <div className="flex items-center gap-2 flex-wrap justify-center">
-        {templates.map(({ Icon, tint, bg }, i) => (
+        {templates.map(({ Icon, tint, bg, border }, i) => (
           <div
             key={i}
-            className={`w-11 h-11 rounded-2xl border flex items-center justify-center backdrop-blur-md transition-all duration-500 ${bg} group-hover:-translate-y-0.5`}
-            style={{ transitionDelay: `${i * 60}ms` }}
+            className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:-translate-y-0.5"
+            style={{
+              background: bg,
+              border: `1px solid ${border}`,
+              transitionDelay: `${i * 60}ms`,
+            }}
           >
-            <Icon className={`w-4 h-4 ${tint}`} strokeWidth={2} />
+            <Icon className="w-4 h-4" style={{ color: tint }} strokeWidth={2} />
           </div>
         ))}
       </div>
@@ -217,17 +246,19 @@ function VoiceVisual() {
   const bars = [10, 18, 28, 22, 34, 44, 30, 48, 36, 26, 42, 30, 22, 16, 10];
   return (
     <div className="relative w-full h-full min-h-30 flex flex-col items-center justify-center gap-3">
-      {/* Soft halo */}
-      <div className="absolute inset-x-8 top-4 bottom-4 rounded-3xl bg-[radial-gradient(ellipse_at_center,rgba(6,182,212,0.3),transparent_70%)] blur-2xl pointer-events-none" />
+      {/* Soft sage halo */}
+      <div className="absolute inset-x-8 top-4 bottom-4 rounded-3xl bg-[radial-gradient(ellipse_at_center,rgba(168,184,155,0.30),transparent_70%)] blur-2xl pointer-events-none" />
 
       {/* Waveform */}
       <div className="relative flex items-center justify-center gap-1 h-12">
         {bars.map((h, i) => (
           <span
             key={i}
-            className="w-1 rounded-full bg-linear-to-t from-cyan-400/80 via-blue-400/90 to-violet-400 opacity-90"
+            className="w-1 rounded-full"
             style={{
               height: `${Math.round(h * 0.7)}px`,
+              background: "var(--ah-sage-deep)",
+              opacity: 0.85,
               animation: `wave-bar 1.4s ease-in-out ${i * 0.08}s infinite`,
             }}
           />
@@ -237,13 +268,19 @@ function VoiceVisual() {
       {/* Caller / AI bubbles */}
       <div className="relative w-full max-w-[320px] space-y-2 px-2">
         <div className="flex justify-end">
-          <div className="bg-white/6 border border-white/10 rounded-2xl rounded-tr-md px-3 py-1.5 max-w-[80%] backdrop-blur-md">
-            <p className="text-[10px] text-white/85">Can I book for 8 tonight?</p>
+          <div
+            className="rounded-2xl rounded-tr-md px-3 py-1.5 max-w-[80%]"
+            style={{ background: "var(--ah-bg-inset)", border: "1px solid var(--ah-border)" }}
+          >
+            <p className="text-[10px]" style={{ color: "var(--ah-ink-soft)" }}>Can I book for 8 tonight?</p>
           </div>
         </div>
         <div className="flex justify-start">
-          <div className="ah-gradient-bg rounded-2xl rounded-tl-md px-3 py-1.5 max-w-[80%] shadow-[0_8px_20px_-12px_rgba(124,58,237,0.7)]">
-            <p className="text-[10px] text-white">Of course — table for two? Window-side is open.</p>
+          <div
+            className="rounded-2xl rounded-tl-md px-3 py-1.5 max-w-[80%]"
+            style={{ background: "var(--ah-cta)" }}
+          >
+            <p className="text-[10px]" style={{ color: "#FFFCF6" }}>Of course — table for two? Window-side is open.</p>
           </div>
         </div>
       </div>
@@ -257,22 +294,33 @@ function HonestVisual() {
     <div className="relative w-full h-full min-h-30 flex items-center justify-center px-2">
       <div className="relative w-full max-w-70 space-y-1.5">
         {/* ✓ Captured */}
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/8 border border-emerald-300/25 backdrop-blur-md transition-transform duration-500 group-hover:translate-x-0.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-300 shrink-0" strokeWidth={2.5} />
-          <p className="text-[10px] text-white/85">
-            <span className="font-semibold text-emerald-300">Intent captured</span> · party of 6, 8pm
+        <div
+          className="flex items-center gap-2 px-3 py-2 rounded-xl transition-transform duration-500 group-hover:translate-x-0.5"
+          style={{ background: "var(--ah-sage-soft)", border: "1px solid var(--ah-sage)" }}
+        >
+          <ShieldCheck className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--ah-sage-deep)" }} strokeWidth={2.5} />
+          <p className="text-[10px]" style={{ color: "var(--ah-ink-soft)" }}>
+            <span className="font-semibold" style={{ color: "var(--ah-sage-deep)" }}>Intent captured</span> · party of 6, 8pm
           </p>
         </div>
         {/* ✗ Never claimed */}
-        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-500/6 border border-rose-300/20 backdrop-blur-md opacity-70">
-          <span className="w-3.5 h-3.5 rounded-full bg-rose-500/40 flex items-center justify-center shrink-0">
-            <span className="block w-1.5 h-0.5 bg-rose-200" />
+        <div
+          className="flex items-center gap-2 px-3 py-2 rounded-xl opacity-70"
+          style={{ background: "rgba(232, 199, 199, 0.30)", border: "1px solid rgba(184, 92, 92, 0.30)" }}
+        >
+          <span
+            className="w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "rgba(184, 92, 92, 0.45)" }}
+          >
+            <span className="block w-1.5 h-0.5" style={{ background: "#E8C7C7" }} />
           </span>
-          <p className="text-[10px] text-white/55 line-through decoration-rose-400/60">
+          <p className="text-[10px] line-through" style={{ color: "var(--ah-ink-muted)", textDecorationColor: "rgba(184, 92, 92, 0.60)" }}>
             Reservation booked at 8pm
           </p>
         </div>
-        <p className="text-[9px] text-white/40 px-1 pt-0.5">Agents capture intent, not promises.</p>
+        <p className="text-[9px] px-1 pt-0.5" style={{ color: "var(--ah-ink-muted)" }}>
+          Agents capture intent, not promises.
+        </p>
       </div>
     </div>
   );
@@ -282,38 +330,58 @@ function HonestVisual() {
 function SummariesVisual() {
   return (
     <div className="relative w-full h-full min-h-35 flex items-center justify-center px-2">
-      <div className="relative w-full max-w-110 rounded-2xl bg-(--ah-bg-raised)/85 border border-white/10 p-4 backdrop-blur-md shadow-[0_12px_32px_-12px_rgba(2,6,23,0.6)]">
+      <div
+        className="relative w-full max-w-110 p-4"
+        style={{
+          background: "var(--ah-bg-raised)",
+          border: "1px solid var(--ah-border)",
+          borderRadius: "var(--radius-lg)",
+          boxShadow: "0 12px 28px -16px rgba(26, 26, 26, 0.16)",
+        }}
+      >
         {/* Top: sentiment + topics row */}
         <div className="flex items-center gap-1.5 flex-wrap mb-2.5">
-          <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-300/25 font-medium inline-flex items-center gap-1">
+          <span
+            className="text-[9px] px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
+            style={{ background: "var(--ah-sage-soft)", color: "var(--ah-sage-deep)", border: "1px solid var(--ah-sage)" }}
+          >
             <Sparkles className="w-2.5 h-2.5" strokeWidth={2.5} />
             Positive
           </span>
-          <span className="text-[9px] px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-300/25 font-medium">
+          <span
+            className="text-[9px] px-2 py-0.5 rounded-full font-medium"
+            style={{ background: "var(--ah-lavender-soft)", color: "var(--ah-lavender-deep)", border: "1px solid var(--ah-lavender)" }}
+          >
             booking
           </span>
-          <span className="text-[9px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-300/25 font-medium">
+          <span
+            className="text-[9px] px-2 py-0.5 rounded-full font-medium"
+            style={{ background: "var(--ah-cream-warm)", color: "#B07A2E", border: "1px solid rgba(176, 122, 46, 0.30)" }}
+          >
             urgent
           </span>
-          <span className="text-[9px] text-white/40 ml-auto font-mono">02:14</span>
+          <span className="text-[9px] ml-auto font-mono" style={{ color: "var(--ah-ink-muted)" }}>02:14</span>
         </div>
         {/* Summary line */}
-        <p className="text-[11px] text-white/80 leading-relaxed">
+        <p className="text-[11px] leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
           Caller wants a window-side table for{" "}
-          <span className="bg-linear-to-r from-violet-500/30 to-cyan-500/30 px-1 rounded text-white">
+          <span
+            className="px-1 rounded"
+            style={{ background: "var(--ah-sage-soft)", color: "var(--ah-ink)" }}
+          >
             6 guests tonight at 8pm
           </span>
           . Asked about wheelchair access — confirmed available.
         </p>
         {/* Action items */}
-        <div className="mt-2.5 pt-2.5 border-t border-white/6 space-y-1">
+        <div className="mt-2.5 pt-2.5 space-y-1" style={{ borderTop: "1px solid var(--ah-border)" }}>
           <div className="flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-violet-300" />
-            <p className="text-[10px] text-white/65">Confirm reservation by 6pm</p>
+            <span className="w-1 h-1 rounded-full" style={{ background: "var(--ah-lavender-deep)" }} />
+            <p className="text-[10px]" style={{ color: "var(--ah-ink-soft)" }}>Confirm reservation by 6pm</p>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-cyan-300" />
-            <p className="text-[10px] text-white/65">Note dietary: 1 vegetarian, 1 gluten-free</p>
+            <span className="w-1 h-1 rounded-full" style={{ background: "var(--ah-sage-deep)" }} />
+            <p className="text-[10px]" style={{ color: "var(--ah-ink-soft)" }}>Note dietary: 1 vegetarian, 1 gluten-free</p>
           </div>
         </div>
       </div>
@@ -324,30 +392,36 @@ function SummariesVisual() {
 /** 8. Lead workflow + CSV — three-stage pipeline with export. */
 function WorkflowVisual() {
   const columns = [
-    { label: "New", tint: "from-violet-500/15 to-violet-500/5", border: "border-violet-300/25", text: "text-violet-300", count: 4 },
-    { label: "Contacted", tint: "from-blue-500/15 to-blue-500/5", border: "border-blue-300/25", text: "text-blue-300", count: 2 },
-    { label: "Won", tint: "from-emerald-500/15 to-emerald-500/5", border: "border-emerald-300/25", text: "text-emerald-300", count: 1 },
+    { label: "New", bg: "var(--ah-lavender-soft)", border: "var(--ah-lavender)", text: "var(--ah-lavender-deep)", count: 4 },
+    { label: "Contacted", bg: "var(--ah-sage-soft)", border: "var(--ah-sage)", text: "var(--ah-sage-deep)", count: 2 },
+    { label: "Won", bg: "var(--ah-cta)", border: "var(--ah-cta)", text: "#FFFCF6", count: 1 },
   ];
   return (
     <div className="relative w-full h-full min-h-35 flex items-center justify-center px-2 gap-2">
       {columns.map((c, idx) => (
         <div key={c.label} className="flex-1 max-w-27.5">
-          <div className={`rounded-xl border bg-linear-to-b p-2 backdrop-blur-md ${c.tint} ${c.border}`}>
+          <div
+            className="rounded-xl p-2"
+            style={{ background: c.bg, border: `1px solid ${c.border}` }}
+          >
             <div className="flex items-center justify-between mb-1.5">
-              <span className={`text-[9px] font-medium ${c.text}`}>{c.label}</span>
-              <span className="text-[9px] text-white/40 tabular-nums">{c.count}</span>
+              <span className="text-[9px] font-medium" style={{ color: c.text }}>{c.label}</span>
+              <span className="text-[9px] tabular-nums" style={{ color: c.text, opacity: 0.65 }}>{c.count}</span>
             </div>
             <div className="space-y-1">
-              <div className="h-3 rounded-md bg-white/6" />
-              {idx === 0 && <div className="h-3 rounded-md bg-white/4" style={{ width: "70%" }} />}
+              <div className="h-3 rounded-md" style={{ background: idx === 2 ? "rgba(255, 252, 246, 0.30)" : "rgba(26, 26, 26, 0.08)" }} />
+              {idx === 0 && <div className="h-3 rounded-md" style={{ width: "70%", background: "rgba(26, 26, 26, 0.06)" }} />}
             </div>
           </div>
         </div>
       ))}
       {/* Floating CSV badge */}
-      <div className="absolute right-1 top-1 flex items-center gap-1 px-2 py-1 rounded-lg ah-gradient-bg shadow-[0_6px_16px_-6px_rgba(124,58,237,0.7)]">
-        <FileSpreadsheet className="w-3 h-3 text-white" strokeWidth={2.5} />
-        <span className="text-[9px] font-medium text-white">CSV</span>
+      <div
+        className="absolute right-1 top-1 flex items-center gap-1 px-2 py-1 rounded-lg"
+        style={{ background: "var(--ah-cta)", boxShadow: "0 6px 14px -6px rgba(47, 74, 42, 0.50)" }}
+      >
+        <FileSpreadsheet className="w-3 h-3" style={{ color: "#FFFCF6" }} strokeWidth={2.5} />
+        <span className="text-[9px] font-medium" style={{ color: "#FFFCF6" }}>CSV</span>
       </div>
     </div>
   );
@@ -436,13 +510,22 @@ export function Features() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-4">
+          <p
+            className="text-sm font-medium uppercase tracking-[0.2em] mb-4"
+            style={{ color: "var(--ah-ink-muted)" }}
+          >
             Built for SMBs
           </p>
-          <h2 className="font-heading text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
-            Everything you need to <GradientText>turn calls into customers</GradientText>
+          <h2
+            className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            style={{ color: "var(--ah-ink)" }}
+          >
+            Everything you need to{" "}
+            <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+              turn calls into customers
+            </span>
           </h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto">
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
             From the iframe install to the structured lead in your inbox — all the pieces, none of the busywork.
           </p>
         </motion.div>
@@ -482,10 +565,13 @@ export function Features() {
 
                   {/* Title + description */}
                   <div>
-                    <h3 className="font-semibold text-white text-lg md:text-xl tracking-tight mb-1.5">
+                    <h3
+                      className="font-serif text-lg md:text-xl tracking-tight mb-1.5"
+                      style={{ color: "var(--ah-ink)" }}
+                    >
                       {feature.title}
                     </h3>
-                    <p className="text-sm text-white/55 leading-relaxed">
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
                       {feature.description}
                     </p>
                   </div>

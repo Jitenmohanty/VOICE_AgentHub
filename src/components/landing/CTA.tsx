@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { GlassPanel } from "@/components/ui/glass-panel";
-import { GradientText } from "@/components/ui/gradient-text";
 
 const steps = [
   {
@@ -47,21 +46,35 @@ export function CTA() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-4">
+          <p
+            className="text-sm font-medium uppercase tracking-[0.2em] mb-4"
+            style={{ color: "var(--ah-ink-muted)" }}
+          >
             How it works
           </p>
-          <h2 className="font-(family-name:--font-heading) text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
-            Live in <GradientText>four steps</GradientText>
+          <h2
+            className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            style={{ color: "var(--ah-ink)" }}
+          >
+            Live in{" "}
+            <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+              four steps
+            </span>
           </h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto">
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
             From zero to a working AI voice agent in under five minutes.
           </p>
         </motion.div>
 
-        {/* Steps row — connected by a faint gradient line on desktop */}
+        {/* Steps row — connected by a faint sage line on desktop */}
         <div className="relative grid grid-cols-1 md:grid-cols-4 gap-5 mb-32">
-          {/* Connector line — only desktop */}
-          <div className="hidden md:block absolute top-[68px] left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
+          <div
+            className="hidden md:block absolute top-[68px] left-[12%] right-[12%] h-px pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(to right, transparent, rgba(94, 115, 85, 0.30), transparent)",
+            }}
+          />
 
           {steps.map((step, index) => (
             <motion.div
@@ -79,19 +92,31 @@ export function CTA() {
               >
                 {/* Step number + icon */}
                 <div className="relative mx-auto w-14 h-14 mb-5">
-                  <div className="absolute inset-0 ah-gradient-bg rounded-2xl opacity-90 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]" />
-                  <div className="relative w-full h-full rounded-2xl bg-[var(--ah-bg-raised)] m-px flex items-center justify-center">
-                    <step.icon className="w-6 h-6 text-white" strokeWidth={1.75} />
+                  <div
+                    className="absolute inset-0 rounded-2xl"
+                    style={{ background: "var(--ah-cta)" }}
+                  />
+                  <div
+                    className="relative w-full h-full rounded-2xl m-px flex items-center justify-center"
+                    style={{ background: "var(--ah-bg-raised)" }}
+                  >
+                    <step.icon className="w-6 h-6" style={{ color: "var(--ah-cta)" }} strokeWidth={1.75} />
                   </div>
                 </div>
 
-                <p className="text-[11px] font-medium uppercase tracking-[0.18em] mb-2">
-                  <span className="ah-gradient-text">Step {String(index + 1).padStart(2, "0")}</span>
+                <p
+                  className="text-[11px] font-medium uppercase tracking-[0.18em] mb-2"
+                  style={{ color: "var(--ah-sage-deep)" }}
+                >
+                  Step {String(index + 1).padStart(2, "0")}
                 </p>
-                <h3 className="font-semibold text-white text-lg tracking-tight mb-2">
+                <h3
+                  className="font-serif text-lg tracking-tight mb-2"
+                  style={{ color: "var(--ah-ink)" }}
+                >
                   {step.title}
                 </h3>
-                <p className="text-sm text-white/55 leading-relaxed">
+                <p className="text-sm leading-relaxed" style={{ color: "var(--ah-ink-soft)" }}>
                   {step.description}
                 </p>
               </GlassPanel>
@@ -107,23 +132,31 @@ export function CTA() {
           transition={{ duration: 0.7 }}
           className="relative"
         >
-          {/* Underlay glow */}
-          <div className="absolute inset-x-12 -bottom-12 h-48 bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.4),rgba(6,182,212,0.2),transparent_70%)] blur-3xl pointer-events-none" />
+          {/* Soft sage underlay */}
+          <div className="absolute inset-x-12 -bottom-12 h-48 bg-[radial-gradient(ellipse_at_center,rgba(168,184,155,0.30),rgba(201,194,224,0.16),transparent_70%)] blur-3xl pointer-events-none" />
 
           <GlassPanel
             elevation="floating"
-            gradientBorder
             radius="xl"
             className="relative p-12 md:p-20 text-center overflow-hidden"
           >
-            {/* Inner gradient wash */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(124,58,237,0.22),transparent_60%)] pointer-events-none" />
+            {/* Inner cream wash */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(244,236,219,0.6),transparent_70%)] pointer-events-none" />
 
             <div className="relative">
-              <h2 className="font-(family-name:--font-heading) text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-6 leading-[1.05]">
-                Stop missing <GradientText>customers.</GradientText>
+              <h2
+                className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-6 leading-[1.08]"
+                style={{ color: "var(--ah-ink)" }}
+              >
+                Stop missing{" "}
+                <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+                  customers.
+                </span>
               </h2>
-              <p className="text-lg text-white/65 mb-10 max-w-xl mx-auto leading-relaxed">
+              <p
+                className="text-lg mb-10 max-w-xl mx-auto leading-relaxed"
+                style={{ color: "var(--ah-ink-soft)" }}
+              >
                 Free for 30 minutes a month — no credit card. Embed it on your site this afternoon,
                 capture your first lead before dinner.
               </p>

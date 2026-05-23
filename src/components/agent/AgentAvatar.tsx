@@ -106,15 +106,22 @@ export function AgentAvatar({ icon, accentColor, connectionState, isSpeaking }: 
 
       {/* Status dot */}
       <div
-        className={`absolute bottom-1 right-1 z-20 w-4 h-4 rounded-full border-2 border-[var(--ah-bg-deep)] ${
-          connectionState === "connected"
-            ? "bg-gradient-to-br from-emerald-400 to-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.6)]"
-            : connectionState === "connecting"
-              ? "bg-gradient-to-br from-amber-400 to-amber-300"
-              : connectionState === "error"
-                ? "bg-gradient-to-br from-rose-500 to-rose-400"
-                : "bg-white/25"
-        }`}
+        className="absolute bottom-1 right-1 z-20 w-4 h-4 rounded-full"
+        style={{
+          border: "2px solid var(--ah-bg-deep)",
+          background:
+            connectionState === "connected"
+              ? "var(--ah-cta)"
+              : connectionState === "connecting"
+                ? "#B07A2E"
+                : connectionState === "error"
+                  ? "#B85C5C"
+                  : "var(--ah-border-strong)",
+          boxShadow:
+            connectionState === "connected"
+              ? "0 0 12px rgba(47, 74, 42, 0.45)"
+              : undefined,
+        }}
       />
     </div>
   );

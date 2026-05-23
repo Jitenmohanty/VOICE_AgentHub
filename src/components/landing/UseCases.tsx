@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { GlassPanel } from "@/components/ui/glass-panel";
-import { GradientText } from "@/components/ui/gradient-text";
 
 interface UseCase {
   icon: LucideIcon;
@@ -21,19 +20,19 @@ interface UseCase {
 }
 
 const TINT_BG: Record<UseCase["tint"], string> = {
-  violet: "bg-violet-500/10",
-  blue: "bg-blue-500/10",
-  cyan: "bg-cyan-500/10",
+  violet: "bg-[var(--ah-lavender-soft)]",
+  blue: "bg-[var(--ah-sage-soft)]",
+  cyan: "bg-[var(--ah-cream-warm)]",
 };
 const TINT_TEXT: Record<UseCase["tint"], string> = {
-  violet: "text-violet-300",
-  blue: "text-blue-300",
-  cyan: "text-cyan-300",
+  violet: "text-[var(--ah-lavender-deep)]",
+  blue: "text-[var(--ah-sage-deep)]",
+  cyan: "text-[var(--ah-sage-deep)]",
 };
 const TINT_DOT: Record<UseCase["tint"], string> = {
-  violet: "bg-violet-300",
-  blue: "bg-blue-300",
-  cyan: "bg-cyan-300",
+  violet: "bg-[var(--ah-lavender-deep)]",
+  blue: "bg-[var(--ah-sage-deep)]",
+  cyan: "bg-[var(--ah-sage-deep)]",
 };
 
 const cases: UseCase[] = [
@@ -100,13 +99,22 @@ export function UseCases() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-4">
+          <p
+            className="text-sm font-medium uppercase tracking-[0.2em] mb-4"
+            style={{ color: "var(--ah-ink-muted)" }}
+          >
             Industry-tuned
           </p>
-          <h2 className="font-(family-name:--font-heading) text-4xl md:text-6xl font-semibold tracking-[-0.03em] text-white mb-5 leading-[1.05]">
-            Built for <GradientText>your industry</GradientText>
+          <h2
+            className="font-serif text-4xl md:text-6xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            style={{ color: "var(--ah-ink)" }}
+          >
+            Built for{" "}
+            <span className="italic" style={{ color: "var(--ah-sage-deep)" }}>
+              your industry
+            </span>
           </h2>
-          <p className="text-lg text-white/60 max-w-2xl mx-auto">
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
             Not a generic chatbot. Each agent has its own onboarding, data model, and caller experience.
           </p>
         </motion.div>
@@ -132,14 +140,21 @@ export function UseCases() {
                   >
                     <c.icon className={`w-5 h-5 ${TINT_TEXT[c.tint]}`} strokeWidth={2} />
                   </div>
-                  <h3 className="font-semibold text-white text-lg tracking-tight">
+                  <h3
+                    className="font-serif text-lg tracking-tight"
+                    style={{ color: "var(--ah-ink)" }}
+                  >
                     {c.title}
                   </h3>
                 </div>
 
                 <ul className="space-y-3">
                   {c.features.map((f) => (
-                    <li key={f} className="flex items-start gap-3 text-sm text-white/65 leading-relaxed">
+                    <li
+                      key={f}
+                      className="flex items-start gap-3 text-sm leading-relaxed"
+                      style={{ color: "var(--ah-ink-soft)" }}
+                    >
                       <span className={`w-1 h-1 rounded-full mt-2 shrink-0 ${TINT_DOT[c.tint]}`} />
                       <span>{f}</span>
                     </li>

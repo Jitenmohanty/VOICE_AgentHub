@@ -13,7 +13,10 @@
       "Bash(echo \"EXIT=$?\")",
       "Bash(grep *)",
       "Bash(echo \"exit=$?\")",
-      "Bash(echo \"tsc exit=$?\")"
+      "Bash(echo \"tsc exit=$?\")",
+      "WebFetch(domain:wisprflow.ai)",
+      "WebSearch",
+      "Bash(echo \"exitcode=$?\")"
     ]
   }
 }

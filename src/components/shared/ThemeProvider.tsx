@@ -11,7 +11,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
     <NextThemeProvider
       attribute="class"
-      defaultTheme="dark"
+      defaultTheme="light"
       enableSystem={false}
       // Suppresses the flash of the wrong theme on first paint by disabling
       // the cross-tab event during the hydration tick.

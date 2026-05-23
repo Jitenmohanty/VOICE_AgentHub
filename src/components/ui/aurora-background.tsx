@@ -37,34 +37,27 @@ export function AuroraBackground({ density = "full", className }: AuroraBackgrou
 
   return (
     <div className={wrapperClass} aria-hidden="true">
-      {/* Violet orb — top-left */}
+      {/* Sage wash — top-left */}
       <div
-        className="absolute -top-32 -left-24 rounded-full animate-aurora"
-        style={orbStyle("#7C3AED", density === "full" ? 560 : 360, 120, density === "full" ? 0.35 : 0.2)}
+        className="absolute -top-32 -left-24 rounded-full"
+        style={orbStyle("#A8B89B", density === "full" ? 560 : 360, 160, density === "full" ? 0.18 : 0.10)}
       />
-      {/* Blue orb — top-right */}
+      {/* Lavender wash — top-right */}
       <div
-        className="absolute -top-20 right-[-10%] rounded-full animate-aurora"
-        style={{
-          ...orbStyle("#3B82F6", density === "full" ? 520 : 340, 140, density === "full" ? 0.3 : 0.18),
-          animationDelay: "-7s",
-        }}
+        className="absolute -top-20 right-[-10%] rounded-full"
+        style={orbStyle("#C9C2E0", density === "full" ? 520 : 340, 180, density === "full" ? 0.16 : 0.09)}
       />
-      {/* Cyan orb — bottom-center */}
+      {/* Warm cream wash — bottom */}
       <div
-        className="absolute bottom-[-20%] left-1/4 rounded-full animate-aurora"
-        style={{
-          ...orbStyle("#06B6D4", density === "full" ? 600 : 380, 160, density === "full" ? 0.25 : 0.15),
-          animationDelay: "-14s",
-        }}
+        className="absolute bottom-[-20%] left-1/4 rounded-full"
+        style={orbStyle("#F4ECDB", density === "full" ? 600 : 380, 200, density === "full" ? 0.55 : 0.35)}
       />
-      {/* Subtle grain — keeps the gradient from looking flat. CSS-only,
-          no image asset needed. */}
+      {/* Subtle paper grain — keeps the cream from looking flat. */}
       <div
-        className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+        className="absolute inset-0 opacity-[0.04] mix-blend-multiply"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+            "radial-gradient(circle at 1px 1px, rgba(26,26,26,0.45) 1px, transparent 0)",
           backgroundSize: "3px 3px",
         }}
       />

@@ -45,18 +45,18 @@ export function AudioVisualizer({ analyserNode, isActive, accentColor }: AudioVi
       const barWidth = width / barCount;
       const centerY = height / 2;
 
-      // Vertical brand gradient — recomputed per frame is fine, gradient is cheap
+      // Vertical editorial gradient — sage-deep on cream, lavender highlight at top
       const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, "#7C3AED");
-      gradient.addColorStop(0.5, "#3B82F6");
-      gradient.addColorStop(1, "#06B6D4");
+      gradient.addColorStop(0, "#6B5FB0");
+      gradient.addColorStop(0.5, "#5E7355");
+      gradient.addColorStop(1, "#2F4A2A");
 
       for (let i = 0; i < barCount; i++) {
         const value = dataArray[Math.floor((i / barCount) * dataArray.length)] ?? 0;
         const barHeight = isActive ? Math.max(2, (value / 255) * (height * 0.8)) : 2;
-        const alpha = isActive ? 0.55 + (value / 255) * 0.45 : 0.18;
+        const alpha = isActive ? 0.65 + (value / 255) * 0.35 : 0.20;
 
-        ctx.fillStyle = isActive ? gradient : "rgba(255, 255, 255, 0.4)";
+        ctx.fillStyle = isActive ? gradient : "rgba(26, 26, 26, 0.30)";
         ctx.globalAlpha = alpha;
 
         const x = i * barWidth + barWidth * 0.18;
