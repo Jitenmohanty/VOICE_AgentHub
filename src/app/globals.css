@@ -620,6 +620,34 @@
   color: var(--ah-ink);
 }
 
+/* Top navigation — frosted glass surface that intensifies on scroll.
+   Theme-aware so dark mode shows ink-cream-black tint instead of cream-on-cream.
+   Hero content scrolling underneath softens into the blur for a premium feel. */
+.ah-navbar {
+  background: rgba(247, 243, 236, 0.45);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 500ms ease-out,
+    border-color 500ms ease-out,
+    backdrop-filter 500ms ease-out;
+}
+.ah-navbar[data-scrolled="true"] {
+  background: rgba(247, 243, 236, 0.78);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid var(--ah-border);
+  box-shadow: 0 8px 24px -18px rgba(26, 26, 26, 0.12);
+}
+.dark .ah-navbar {
+  background: rgba(20, 19, 14, 0.45);
+}
+.dark .ah-navbar[data-scrolled="true"] {
+  background: rgba(20, 19, 14, 0.78);
+  box-shadow: 0 8px 24px -18px rgba(0, 0, 0, 0.45);
+}
+
 /* Editorial pill — used for tags, status, eyebrow text */
 .ah-pill {
   display: inline-flex;
