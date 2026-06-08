@@ -70,9 +70,9 @@ const deliverWebhook = traceable(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "AgentHub-Webhook/1.0",
-        "X-AgentHub-Event": payload.event,
-        "X-AgentHub-Signature": `sha256=${signature}`,
+        "User-Agent": "Voxie-Webhook/1.0",
+        "X-Voxie-Event": payload.event,
+        "X-Voxie-Signature": `sha256=${signature}`,
       },
       body,
       // 10s ceiling — receivers should ack fast; long pauses are queueing tools' job.
@@ -125,6 +125,13 @@ export const deliverLead = traceable(
   const transcriptLen = Array.isArray(session.transcript) ? (session.transcript as unknown[]).length : 0;
   const hasSignal = !!lead || transcriptLen >= 4 || !!session.summary;
   if (!hasSignal) return { delivered: false, reason: "low-signal call (no lead, short transcript)" };
+
+  // Honour per-business opt-out for the lead-capture email channel.
+  // Missing key = default ON, matches the PATCH handler's coercion.
+  const prefs = (business.notificationPrefs as { leadCapture?: boolean } | null) ?? null;
+  if (prefs && prefs.leadCapture === false) {
+    return { delivered: false, reason: "leadCapture email disabled in prefs" };
+  }
 
   const recipient = business.notificationEmail || business.owner?.email;
   if (!recipient) {
@@ -183,6 +190,7 @@ export const deliverLead = traceable(
   if (business.webhookUrl) {
     const secret = await ensureWebhookSecret(business.id, business.webhookSecret);
     if (secret) {
+      const startedAt = Date.now();
       webhookResult = await deliverWebhook(business.webhookUrl, secret, {
         event: "lead.captured",
         deliveredAt: new Date().toISOString(),
@@ -204,6 +212,27 @@ export const deliverLead = traceable(
           escalated: session.escalated,
         },
       });
+      const latencyMs = Date.now() - startedAt;
+
+      // Persist the attempt so owners can see it in the Settings page. Best-effort —
+      // a failed log row should never mask the actual delivery outcome.
+      prisma.webhookDelivery
+        .create({
+          data: {
+            businessId: business.id,
+            sessionId: session.id,
+            url: business.webhookUrl,
+            event: "lead.captured",
+            statusCode: webhookResult.status ?? null,
+            latencyMs,
+            errorMessage: webhookResult.error ?? null,
+            ok: !!webhookResult.ok,
+          },
+        })
+        .catch((err) => {
+          console.warn("[LeadDelivery] failed to record webhook delivery row:", err);
+        });
+
       if (!webhookResult.ok) {
         console.warn(
           `[LeadDelivery] webhook ${business.webhookUrl} failed:`,

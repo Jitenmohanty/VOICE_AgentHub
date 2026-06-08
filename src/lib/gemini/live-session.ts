@@ -19,7 +19,6 @@ function tuningForAgent(agentType: string): {
   temperature: number;
   silenceDurationMs: number;
   endSensitivity: EndSensitivity;
-  enableAffectiveDialog: boolean;
 } {
   if (agentType === "interview") {
     return {
@@ -35,7 +34,6 @@ function tuningForAgent(agentType: string): {
       // ends up either talking over them or asking the same question again.
       silenceDurationMs: 2000,
       endSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
-      enableAffectiveDialog: true,
     };
   }
   // Default for SMB agents (hotel/medical/restaurant/legal). Slightly more
@@ -45,7 +43,6 @@ function tuningForAgent(agentType: string): {
     temperature: 0.7,
     silenceDurationMs: 1200,
     endSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
-    enableAffectiveDialog: true,
   };
 }
 
@@ -124,7 +121,7 @@ export class GeminiLiveSession {
     this.prebuiltPrompt = options?.systemPrompt || null;
     this.prebuiltTools = options?.tools || null;
     this.voiceName = options?.voiceName ?? null;
-    this.language = options?.language || "en";
+    this.language = options?.language || "en-US";
     this.sessionId = options?.sessionId ?? null;
     this.updateToken = options?.updateToken ?? null;
   }
@@ -180,7 +177,6 @@ export class GeminiLiveSession {
           outputAudioTranscription: {},
           // Generation tuning per agent type — interviews need patience.
           temperature: tuning.temperature,
-          enableAffectiveDialog: tuning.enableAffectiveDialog,
           // VAD: declare end-of-turn only after the configured silence
           // window. Default ~500ms cuts off candidates who pause to think,
           // causing the agent to talk over them or re-ask the question.
@@ -204,18 +200,20 @@ export class GeminiLiveSession {
           // feature can replay state. We don't actively reconnect yet —
           // see handleMessage() for handle capture.
           sessionResumption: {},
-          // Voice selection — uses business owner's configured voice or Gemini default
-          ...(this.voiceName ? {
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: this.voiceName },
-              },
-            },
-          } : {}),
-          // Language — sets the model's spoken output language
-          ...(this.language && this.language !== "en" ? {
-            systemLanguageCode: this.language,
-          } : {}),
+          // Voice + spoken-output language. Both live under speechConfig.
+          // languageCode is BCP-47 (e.g. "hi-IN"). The previous implementation
+          // passed `systemLanguageCode` at the top level — that field doesn't
+          // exist on LiveConnectConfig, so the SDK silently dropped it. The
+          // system prompt also carries an explicit "Respond in X" directive
+          // (see api/public/agent/[slug]/session/route.ts) so the very first
+          // turn lands in the chosen language even if the speech-config
+          // takes a beat to kick in.
+          speechConfig: {
+            ...(this.voiceName
+              ? { voiceConfig: { prebuiltVoiceConfig: { voiceName: this.voiceName } } }
+              : {}),
+            ...(this.language ? { languageCode: this.language } : {}),
+          },
         },
         callbacks: {
           onopen: () => {

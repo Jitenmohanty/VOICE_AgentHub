@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Zap, ArrowLeft } from "lucide-react";
+import { LegalShell } from "@/components/legal/LegalShell";
 
 export const metadata = {
-  title: "Terms & Conditions – AgentHub",
+  title: "Terms & Conditions – Voxie",
   description:
-    "Read AgentHub's Terms and Conditions before using our voice AI platform.",
+    "Read Voxie's Terms and Conditions before using our voice AI platform.",
 };
 
 const EFFECTIVE_DATE = "April 5, 2025";
@@ -12,39 +12,8 @@ const CONTACT_EMAIL = "legal@agenthub.ai";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-[#F0F0F5]">
-      {/* Header */}
-      <header className="border-b border-[#2A2A3E] bg-[#0E0E16]/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-[#8888AA] hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back to home</span>
-          </Link>
-          <div className="flex-1" />
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-bold text-white text-sm">AgentHub</span>
-          </Link>
-        </div>
-      </header>
-
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-white mb-3">
-            Terms &amp; Conditions
-          </h1>
-          <p className="text-[#8888AA] text-sm">
-            Effective date: {EFFECTIVE_DATE}
-          </p>
-        </div>
-
-        <div className="space-y-10 text-[#C0C0D8] leading-relaxed">
+    <LegalShell title="Terms & Conditions" subtitle={`Effective date: ${EFFECTIVE_DATE}`}>
+      <>
 
           {/* 1 */}
           <section>
@@ -52,7 +21,7 @@ export default function TermsPage() {
               1. Acceptance of Terms
             </h2>
             <p>
-              By accessing or using AgentHub (&quot;Service&quot;, &quot;Platform&quot;,
+              By accessing or using Voxie (&quot;Service&quot;, &quot;Platform&quot;,
               &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), you agree to be bound by these Terms &amp;
               Conditions (&quot;Terms&quot;). If you are using the Service on behalf of a
               business or organisation, you represent that you have authority to
@@ -70,7 +39,7 @@ export default function TermsPage() {
               2. Description of Service
             </h2>
             <p>
-              AgentHub is a multi-tenant voice AI SaaS platform that enables
+              Voxie is a multi-tenant voice AI SaaS platform that enables
               business owners (&quot;Business Users&quot;) to create and deploy
               industry-specific AI voice agents. These agents are accessible to
               end users (&quot;Callers&quot;) via shareable public links — no account or
@@ -123,7 +92,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-white mb-3">
               4. Acceptable Use
             </h2>
-            <p>You agree not to use AgentHub to:</p>
+            <p>You agree not to use Voxie to:</p>
             <ul className="mt-2 ml-5 list-disc space-y-1">
               <li>
                 Provide false, misleading, or fraudulent information to Callers.
@@ -179,7 +148,7 @@ export default function TermsPage() {
             </p>
             <p className="mt-3">
               Business Users are responsible for ensuring that their use of
-              AgentHub and the collection of Caller data complies with applicable
+              Voxie and the collection of Caller data complies with applicable
               privacy laws in their jurisdiction (e.g. GDPR, CCPA, PDPA).
               Business Users must inform Callers if conversations are being
               recorded or analysed, and obtain any necessary consents.
@@ -220,15 +189,15 @@ export default function TermsPage() {
               7. Intellectual Property
             </h2>
             <p>
-              The AgentHub platform, including its source code, design, logos,
+              The Voxie platform, including its source code, design, logos,
               and underlying AI infrastructure, is the intellectual property of
-              AgentHub and its licensors. Nothing in these Terms transfers any
+              Voxie and its licensors. Nothing in these Terms transfers any
               ownership rights to you.
             </p>
             <p className="mt-3">
               You retain ownership of all content you upload to the platform
               (knowledge base items, business data, agent configurations). By
-              uploading content, you grant AgentHub a limited, non-exclusive,
+              uploading content, you grant Voxie a limited, non-exclusive,
               royalty-free licence to use that content solely for the purpose of
               providing the Service.
             </p>
@@ -240,7 +209,7 @@ export default function TermsPage() {
               8. Third-Party Services
             </h2>
             <p>
-              AgentHub integrates with the following third-party services. Your
+              Voxie integrates with the following third-party services. Your
               use of the platform is also subject to their respective terms and
               policies:
             </p>
@@ -276,7 +245,7 @@ export default function TermsPage() {
               9. Rate Limits and Fair Use
             </h2>
             <p>
-              To ensure service quality for all users, AgentHub enforces rate
+              To ensure service quality for all users, Voxie enforces rate
               limits on API calls, session creation, and other platform
               operations. Exceeding these limits may result in temporary
               throttling or suspension of access.
@@ -314,7 +283,7 @@ export default function TermsPage() {
               11. Limitation of Liability
             </h2>
             <p>
-              To the maximum extent permitted by applicable law, AgentHub and its
+              To the maximum extent permitted by applicable law, Voxie and its
               officers, employees, and affiliates shall not be liable for any
               indirect, incidental, special, consequential, or punitive damages
               arising out of or related to your use of the Service, including but
@@ -374,30 +343,20 @@ export default function TermsPage() {
             <p>
               If you have questions about these Terms, please contact us at:
             </p>
-            <div className="mt-3 p-4 rounded-xl border border-[#2A2A3E] bg-[#0E0E16]">
-              <p className="text-white font-medium">AgentHub</p>
+            <div className="mt-3 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.03]">
+              <p className="text-white font-medium">Voxie</p>
               <p className="mt-1">
                 Email:{" "}
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  className="text-[#00D4FF] hover:underline"
+                  className="ah-gradient-text font-medium hover:opacity-80"
                 >
                   {CONTACT_EMAIL}
                 </a>
               </p>
             </div>
           </section>
-        </div>
-
-        {/* Footer nav */}
-        <div className="mt-16 pt-8 border-t border-[#2A2A3E] flex flex-wrap gap-6 text-sm text-[#8888AA]">
-          <Link href="/" className="hover:text-white transition-colors">Home</Link>
-          <Link href="/legal/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-          <Link href="/legal/cookies" className="hover:text-white transition-colors">Cookie Policy</Link>
-          <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
-          <span>© {new Date().getFullYear()} AgentHub</span>
-        </div>
-      </main>
-    </div>
+      </>
+    </LegalShell>
   );
 }

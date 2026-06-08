@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 import { getBusinessUsageSnapshot } from "@/lib/ratelimit";
 
 /**
@@ -20,7 +21,7 @@ export async function GET(
     const { businessId } = await params;
 
     const owns = await prisma.business.findFirst({
-      where: { id: businessId, ownerId: session.user.id },
+      where: { id: businessId, ...businessAccessFilter(session.user.id) },
       select: { id: true },
     });
     if (!owns) return NextResponse.json({ error: "Business not found" }, { status: 404 });

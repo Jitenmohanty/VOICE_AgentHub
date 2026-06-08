@@ -3,12 +3,13 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Zap, MailCheck, Send } from "lucide-react";
+import { MailCheck, Send } from "lucide-react";
 import { toast } from "sonner";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { GlassPanel } from "@/components/ui/glass-panel";
+import { GradientButton } from "@/components/ui/gradient-button";
 
 function VerifySentInner() {
   const searchParams = useSearchParams();
@@ -44,15 +45,13 @@ function VerifySentInner() {
   };
 
   return (
-    <div className="glass rounded-2xl p-8">
+    <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8">
       <div className="text-center mb-6">
-        <div className="w-14 h-14 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mx-auto mb-4">
-          <MailCheck className="w-7 h-7 text-[#00D4FF]" />
+        <div className="w-14 h-14 rounded-2xl ah-gradient-bg flex items-center justify-center mx-auto mb-4 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
+          <MailCheck className="w-7 h-7 text-white" strokeWidth={2} />
         </div>
-        <h2 className="text-lg font-semibold text-white mb-2">
-          Check your inbox
-        </h2>
-        <p className="text-[#8888AA] text-sm">
+        <h2 className="text-lg font-semibold text-white mb-2">Check your inbox</h2>
+        <p className="text-sm text-white/60 leading-relaxed">
           We&apos;ve sent a verification link
           {initialEmail ? (
             <>
@@ -65,7 +64,7 @@ function VerifySentInner() {
 
       <form onSubmit={handleResend} className="space-y-4">
         <div>
-          <Label htmlFor="email" className="text-[#8888AA]">
+          <Label htmlFor="email">
             Didn&apos;t get it? Resend to
           </Label>
           <Input
@@ -75,75 +74,51 @@ function VerifySentInner() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             required
-            className="mt-1 bg-white/5 border-[#2A2A3E] focus:border-[#00D4FF] text-white"
+            className="mt-1.5"
           />
         </div>
-        <Button
-          type="submit"
-          disabled={loading || sent}
-          className="w-full bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 hover:opacity-90"
-        >
+        <GradientButton type="submit" disabled={loading || sent} className="w-full">
           {loading ? (
             <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="ah-spinner" />
               Sending…
             </span>
           ) : sent ? (
             "Sent — check your inbox"
           ) : (
             <>
-              <Send className="w-4 h-4 mr-2" />
+              <Send className="w-4 h-4" />
               Resend verification email
             </>
           )}
-        </Button>
+        </GradientButton>
       </form>
-    </div>
+    </GlassPanel>
   );
 }
 
 export default function VerifyEmailSentPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F] px-6 relative overflow-hidden">
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#00D4FF]/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#6366F1]/5 rounded-full blur-3xl" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md relative z-10"
-      >
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-(family-name:--font-heading) font-bold text-2xl text-white">
-              AgentHub
-            </span>
-          </Link>
-          <h1 className="font-(family-name:--font-heading) text-3xl font-bold text-white mb-2">
-            Verify your email
-          </h1>
-        </div>
-
-        <Suspense
-          fallback={
-            <div className="glass rounded-2xl p-8 text-center text-[#8888AA]">
-              Loading…
-            </div>
-          }
-        >
-          <VerifySentInner />
-        </Suspense>
-
-        <p className="text-center mt-6 text-[#8888AA] text-sm">
+    <AuthShell
+      title="Verify your email"
+      footer={
+        <>
           Already verified?{" "}
-          <Link href="/login" className="text-[#00D4FF] hover:underline">
+          <Link href="/login" className="ah-gradient-text font-medium hover:opacity-80">
             Sign in
           </Link>
-        </p>
-      </motion.div>
-    </div>
+        </>
+      }
+    >
+      <Suspense
+        fallback={
+          <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8 text-center text-sm text-white/55">
+            Loading…
+          </GlassPanel>
+        }
+      >
+        <VerifySentInner />
+      </Suspense>
+    </AuthShell>
   );
 }

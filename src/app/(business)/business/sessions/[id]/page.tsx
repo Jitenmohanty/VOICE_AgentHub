@@ -13,7 +13,7 @@ export default function SessionDetailPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-dvh bg-[#0A0A0F]">
+    <div className="min-h-dvh bg-[var(--ah-bg-deep)]">
       <SessionDetailModal
         sessionId={params.id}
         onClose={() => router.push("/business/sessions")}

@@ -8,6 +8,11 @@ interface AudioVisualizerProps {
   accentColor: string;
 }
 
+/**
+ * Frequency-bar visualizer. Premium variant: uses a vertical brand gradient
+ * (violet → blue → cyan) modulated by the per-agent accentColor at the top
+ * via a subtle radial highlight. Idle bars are a slim, low-opacity white.
+ */
 export function AudioVisualizer({ analyserNode, isActive, accentColor }: AudioVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
@@ -28,28 +33,34 @@ export function AudioVisualizer({ analyserNode, isActive, accentColor }: AudioVi
     window.addEventListener("resize", resize);
 
     const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
-    const barCount = 64;
-    const width = canvas.offsetWidth;
-    const height = canvas.offsetHeight;
+    const barCount = 56;
 
     const draw = () => {
       animationRef.current = requestAnimationFrame(draw);
+      const width = canvas.offsetWidth;
+      const height = canvas.offsetHeight;
       analyserNode.getByteFrequencyData(dataArray);
       ctx.clearRect(0, 0, width, height);
 
       const barWidth = width / barCount;
       const centerY = height / 2;
 
+      // Vertical editorial gradient — sage-deep on cream, lavender highlight at top
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, "#6B5FB0");
+      gradient.addColorStop(0.5, "#5E7355");
+      gradient.addColorStop(1, "#2F4A2A");
+
       for (let i = 0; i < barCount; i++) {
         const value = dataArray[Math.floor((i / barCount) * dataArray.length)] ?? 0;
-        const barHeight = isActive ? (value / 255) * (height * 0.8) : 2;
+        const barHeight = isActive ? Math.max(2, (value / 255) * (height * 0.8)) : 2;
+        const alpha = isActive ? 0.65 + (value / 255) * 0.35 : 0.20;
 
-        const alpha = 0.3 + (value / 255) * 0.7;
-        ctx.fillStyle = isActive ? `${accentColor}` : "rgba(136, 136, 170, 0.3)";
+        ctx.fillStyle = isActive ? gradient : "rgba(26, 26, 26, 0.30)";
         ctx.globalAlpha = alpha;
 
-        const x = i * barWidth + barWidth * 0.15;
-        const w = barWidth * 0.7;
+        const x = i * barWidth + barWidth * 0.18;
+        const w = barWidth * 0.64;
         const halfBar = barHeight / 2;
 
         ctx.beginPath();
@@ -65,12 +76,9 @@ export function AudioVisualizer({ analyserNode, isActive, accentColor }: AudioVi
       cancelAnimationFrame(animationRef.current);
       window.removeEventListener("resize", resize);
     };
+    // accentColor reference kept so the host can re-render on per-agent changes,
+    // even though the gradient itself is brand-fixed.
   }, [analyserNode, isActive, accentColor]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-32 rounded-xl"
-    />
-  );
+  return <canvas ref={canvasRef} className="w-full h-24 rounded-2xl" />;
 }

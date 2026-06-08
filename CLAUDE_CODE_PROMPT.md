@@ -1,8 +1,8 @@
-# 🎯 Project: AgentHub — Multi-Agent Voice AI Platform
+# 🎯 Project: Voxie — Multi-Agent Voice AI Platform
 
 ## OVERVIEW
 
-Build a full-stack multi-agent voice AI platform called **"AgentHub"** where users log in, select a business domain (Hotel, Medical, Developer Interview, Restaurant, etc.), and get a specialized real-time voice AI agent. The platform uses **Google Gemini 3.1 Flash Live API** for real-time voice conversations.
+Build a full-stack multi-agent voice AI platform called **"Voxie"** where users log in, select a business domain (Hotel, Medical, Developer Interview, Restaurant, etc.), and get a specialized real-time voice AI agent. The platform uses **Google Gemini 3.1 Flash Live API** for real-time voice conversations.
 
 ---
 
@@ -634,7 +634,7 @@ Step 10.5: SEO & Meta
 ```typescript
 export function getSystemPrompt(agentId: string, config: Record<string, any>): string {
   const baseInstructions = `
-    You are an AI voice agent on the AgentHub platform.
+    You are an AI voice agent on the Voxie platform.
     Core behaviors:
     - Respond conversationally and naturally
     - Keep responses concise (2-3 sentences for voice)

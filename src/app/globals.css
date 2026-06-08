@@ -4,12 +4,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Voxie design system — Editorial direction inspired by Wispr Flow.
+
+   "Less SaaS dashboard, more editorial Sunday."
+   Soft cream canvas, EB Garamond headlines, Figtree body. Sage + lavender
+   pastel accents, deep forest-green for CTAs. Quiet luxury, gentle curves.
+
+   Light (default):
+     • Canvas:    #F7F3EC cream / #FFFCF6 raised
+     • Ink:       #1A1A1A primary / #3A3A3A body / #6B6B6B muted
+     • Accents:   #A8B89B sage / #C9C2E0 lavender
+     • CTA:       #2F4A2A forest green
+
+   Dark (optional):
+     • Canvas:    #14130E ink-cream-black / #1E1C16 raised
+     • Same sage/lavender/forest-green accents, brightened for legibility
+   ────────────────────────────────────────────────────────────────────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -40,7 +57,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-md: calc(var(--radius) * 0.85);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
@@ -49,72 +66,459 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* shadcn-style core tokens — editorial cream */
+  --background: oklch(0.965 0.012 85);     /* #F7F3EC cream */
+  --foreground: oklch(0.18 0.008 75);      /* #1A1A1A ink */
+  --card: oklch(0.985 0.008 85);           /* #FFFCF6 raised */
+  --card-foreground: oklch(0.18 0.008 75);
+  --popover: oklch(0.985 0.008 85);
+  --popover-foreground: oklch(0.18 0.008 75);
+  --primary: oklch(0.35 0.05 145);         /* #2F4A2A forest green */
+  --primary-foreground: oklch(0.985 0.008 85);
+  --secondary: oklch(0.93 0.015 85);
+  --secondary-foreground: oklch(0.22 0.008 75);
+  --muted: oklch(0.93 0.015 85);
+  --muted-foreground: oklch(0.50 0.008 75);
+  --accent: oklch(0.78 0.03 130);          /* sage */
+  --accent-foreground: oklch(0.22 0.008 75);
+  --destructive: oklch(0.55 0.18 25);
+  --border: oklch(0.18 0.008 75 / 8%);
+  --input: oklch(0.18 0.008 75 / 10%);
+  --ring: oklch(0.35 0.05 145 / 40%);
+  --chart-1: oklch(0.78 0.03 130);
+  --chart-2: oklch(0.80 0.04 290);
+  --chart-3: oklch(0.35 0.05 145);
+  --chart-4: oklch(0.50 0.05 290);
+  --chart-5: oklch(0.40 0.04 75);
+  --radius: 0.875rem;                       /* 14px — softer corners */
+  --sidebar: oklch(0.985 0.008 85);
+  --sidebar-foreground: oklch(0.18 0.008 75);
+  --sidebar-primary: oklch(0.35 0.05 145);
+  --sidebar-primary-foreground: oklch(0.985 0.008 85);
+  --sidebar-accent: oklch(0.93 0.015 85);
+  --sidebar-accent-foreground: oklch(0.22 0.008 75);
+  --sidebar-border: oklch(0.18 0.008 75 / 8%);
+  --sidebar-ring: oklch(0.35 0.05 145 / 40%);
+
+  /* ── Voxie editorial tokens (the source of truth used by all components) ── */
+  --ah-bg-deep: #F7F3EC;              /* cream canvas */
+  --ah-bg-raised: #FFFCF6;            /* warmer off-white — cards */
+  --ah-bg-inset: #EFE9DC;             /* inset blocks, testimonials */
+
+  --ah-surface: rgba(26, 26, 26, 0.03);
+  --ah-surface-strong: rgba(26, 26, 26, 0.05);
+  --ah-border: rgba(26, 26, 26, 0.08);
+  --ah-border-strong: rgba(26, 26, 26, 0.14);
+
+  --ah-text-primary: #1A1A1A;
+  --ah-text-secondary: #3A3A3A;
+  --ah-text-muted: #6B6B6B;
+  --ah-ink: #1A1A1A;
+  --ah-ink-soft: #3A3A3A;
+  --ah-ink-muted: #6B6B6B;
+
+  /* Editorial accent palette */
+  --ah-sage: #A8B89B;
+  --ah-sage-soft: #C5D1BA;
+  --ah-sage-deep: #5E7355;
+  --ah-lavender: #C9C2E0;
+  --ah-lavender-soft: #DCD7EB;
+  --ah-lavender-deep: #6B5FB0;
+  --ah-cta: #2F4A2A;
+  --ah-cta-hover: #243A20;
+  --ah-cream-warm: #F4ECDB;
+  --ah-rose-soft: #E8C7C7;
+
+  /* Legacy gradient tokens — kept as transparent shims for unmigrated code.
+     New code should NOT reference these; Phase 6 removes them entirely. */
+  --ah-grad-violet: #6B5FB0;
+  --ah-grad-blue: #5E7355;
+  --ah-grad-cyan: #A8B89B;
+  --ah-gradient: linear-gradient(135deg, #6B5FB0 0%, #5E7355 50%, #A8B89B 100%);
+  --ah-gradient-soft: linear-gradient(135deg, rgba(107, 95, 176, 0.12), rgba(94, 115, 85, 0.12), rgba(168, 184, 155, 0.12));
+
+  /* Aurora wash — drastically softened to a "warm paper" feel, not a glow */
+  --ah-aurora-1: rgba(168, 184, 155, 0.10);
+  --ah-aurora-2: rgba(201, 194, 224, 0.08);
+  --ah-aurora-3: rgba(244, 236, 219, 0.50);
 }
 
+/* Backwards-compat: existing `.light` selector now maps to the same editorial
+   tokens as `:root` so any consumer that toggles `.light` still works. */
+:root.light {
+  --ah-bg-deep: #F7F3EC;
+  --ah-bg-raised: #FFFCF6;
+  --ah-bg-inset: #EFE9DC;
+  --ah-surface: rgba(26, 26, 26, 0.03);
+  --ah-surface-strong: rgba(26, 26, 26, 0.05);
+  --ah-border: rgba(26, 26, 26, 0.08);
+  --ah-border-strong: rgba(26, 26, 26, 0.14);
+  --ah-text-primary: #1A1A1A;
+  --ah-text-secondary: #3A3A3A;
+  --ah-text-muted: #6B6B6B;
+  --ah-aurora-1: rgba(168, 184, 155, 0.10);
+  --ah-aurora-2: rgba(201, 194, 224, 0.08);
+  --ah-aurora-3: rgba(244, 236, 219, 0.50);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Dark theme — refreshed editorial dark. Ink-cream-black canvas, same
+   sage/lavender/forest-green accents brightened for legibility.
+   ────────────────────────────────────────────────────────────────────────── */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  --background: oklch(0.18 0.012 75);
+  --foreground: oklch(0.95 0.008 85);
+  --card: oklch(0.22 0.012 75);
+  --card-foreground: oklch(0.95 0.008 85);
+  --popover: oklch(0.22 0.012 75);
+  --popover-foreground: oklch(0.95 0.008 85);
+  --primary: oklch(0.80 0.06 130);
+  --primary-foreground: oklch(0.18 0.012 75);
+  --secondary: oklch(0.28 0.012 75);
+  --secondary-foreground: oklch(0.95 0.008 85);
+  --muted: oklch(0.28 0.012 75);
+  --muted-foreground: oklch(0.72 0.008 75);
+  --accent: oklch(0.78 0.04 290);
+  --accent-foreground: oklch(0.18 0.012 75);
+  --destructive: oklch(0.65 0.18 22);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.80 0.06 130 / 50%);
+  --chart-1: oklch(0.80 0.06 130);
+  --chart-2: oklch(0.78 0.04 290);
+  --chart-3: oklch(0.65 0.05 145);
+  --chart-4: oklch(0.62 0.05 290);
+  --chart-5: oklch(0.68 0.04 75);
+  --sidebar: oklch(0.22 0.012 75);
+  --sidebar-foreground: oklch(0.95 0.008 85);
+  --sidebar-primary: oklch(0.80 0.06 130);
+  --sidebar-primary-foreground: oklch(0.18 0.012 75);
+  --sidebar-accent: oklch(0.28 0.012 75);
+  --sidebar-accent-foreground: oklch(0.95 0.008 85);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.80 0.06 130 / 50%);
+
+  /* Dark-mode editorial tokens */
+  --ah-bg-deep: #14130E;
+  --ah-bg-raised: #1E1C16;
+  --ah-bg-inset: #26241E;
+  --ah-surface: rgba(255, 251, 240, 0.04);
+  --ah-surface-strong: rgba(255, 251, 240, 0.07);
+  --ah-border: rgba(255, 251, 240, 0.10);
+  --ah-border-strong: rgba(255, 251, 240, 0.18);
+  --ah-text-primary: #F5F1E6;
+  --ah-text-secondary: rgba(245, 241, 230, 0.72);
+  --ah-text-muted: rgba(245, 241, 230, 0.50);
+  --ah-ink: #F5F1E6;
+  --ah-ink-soft: rgba(245, 241, 230, 0.78);
+  --ah-ink-muted: rgba(245, 241, 230, 0.55);
+
+  --ah-sage: #B8C8AB;
+  --ah-sage-soft: #8A9C7E;
+  --ah-sage-deep: #C5D1BA;
+  --ah-lavender: #D6CFEC;
+  --ah-lavender-soft: #9C92C6;
+  --ah-lavender-deep: #DCD7EB;
+  --ah-cta: #B8C8AB;
+  --ah-cta-hover: #C5D1BA;
+  --ah-cream-warm: #2A2820;
+  --ah-rose-soft: #C99B9B;
+
+  --ah-aurora-1: rgba(184, 200, 171, 0.06);
+  --ah-aurora-2: rgba(214, 207, 236, 0.05);
+  --ah-aurora-3: rgba(42, 40, 32, 0.40);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Legacy white-opacity utility overrides — many components still use
+   `text-white/X`, `bg-white/X`, `border-white/X` from the dark-theme era.
+   In editorial mode (default = light) these need to flip to ink/cream tones
+   so the visual hierarchy survives without rewriting every consumer.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Text white/X → ink at equivalent opacity (LIGHT = default) */
+.text-white,
+.text-white\/95          { color: rgba(26, 26, 26, 1); }
+.text-white\/90          { color: rgba(26, 26, 26, 0.92); }
+.text-white\/85          { color: rgba(26, 26, 26, 0.88); }
+.text-white\/80          { color: rgba(26, 26, 26, 0.82); }
+.text-white\/75          { color: rgba(26, 26, 26, 0.78); }
+.text-white\/70          { color: rgba(26, 26, 26, 0.74); }
+.text-white\/65          { color: rgba(26, 26, 26, 0.70); }
+.text-white\/60          { color: rgba(26, 26, 26, 0.66); }
+.text-white\/55          { color: rgba(26, 26, 26, 0.62); }
+.text-white\/50          { color: rgba(26, 26, 26, 0.56); }
+.text-white\/45          { color: rgba(26, 26, 26, 0.52); }
+.text-white\/40          { color: rgba(26, 26, 26, 0.48); }
+.text-white\/35          { color: rgba(26, 26, 26, 0.44); }
+.text-white\/30          { color: rgba(26, 26, 26, 0.40); }
+.text-white\/25          { color: rgba(26, 26, 26, 0.36); }
+.text-white\/20          { color: rgba(26, 26, 26, 0.32); }
+.text-white\/15          { color: rgba(26, 26, 26, 0.26); }
+.text-white\/10          { color: rgba(26, 26, 26, 0.20); }
+
+.placeholder\:text-white\/30::placeholder { color: rgba(26, 26, 26, 0.40); }
+.placeholder\:text-white\/40::placeholder { color: rgba(26, 26, 26, 0.48); }
+.placeholder\:text-white\/50::placeholder { color: rgba(26, 26, 26, 0.56); }
+
+/* Backgrounds — bg-white/X → ink-tinted at low alpha on cream */
+.bg-white\/5             { background-color: rgba(26, 26, 26, 0.04); }
+.bg-white\/\[0\.02\]     { background-color: rgba(26, 26, 26, 0.02); }
+.bg-white\/\[0\.03\]     { background-color: rgba(26, 26, 26, 0.03); }
+.bg-white\/\[0\.04\]     { background-color: rgba(26, 26, 26, 0.04); }
+.bg-white\/\[0\.05\]     { background-color: rgba(26, 26, 26, 0.05); }
+.bg-white\/\[0\.06\]     { background-color: rgba(26, 26, 26, 0.05); }
+.bg-white\/\[0\.07\]     { background-color: rgba(26, 26, 26, 0.06); }
+.bg-white\/\[0\.08\]     { background-color: rgba(26, 26, 26, 0.07); }
+.bg-white\/\[0\.09\]     { background-color: rgba(26, 26, 26, 0.08); }
+.bg-white\/10            { background-color: rgba(26, 26, 26, 0.09); }
+.bg-white\/15            { background-color: rgba(26, 26, 26, 0.12); }
+
+.hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(26, 26, 26, 0.06); }
+.hover\:bg-white\/\[0\.07\]:hover { background-color: rgba(26, 26, 26, 0.07); }
+.hover\:bg-white\/\[0\.08\]:hover { background-color: rgba(26, 26, 26, 0.08); }
+.hover\:bg-white\/\[0\.09\]:hover { background-color: rgba(26, 26, 26, 0.09); }
+
+/* Borders */
+.border-white\/8         { border-color: rgba(26, 26, 26, 0.10); }
+.border-white\/10        { border-color: rgba(26, 26, 26, 0.10); }
+.border-white\/14        { border-color: rgba(26, 26, 26, 0.14); }
+.border-white\/15        { border-color: rgba(26, 26, 26, 0.14); }
+.border-white\/20        { border-color: rgba(26, 26, 26, 0.18); }
+.border-white\/25        { border-color: rgba(26, 26, 26, 0.22); }
+.border-white\/30        { border-color: rgba(26, 26, 26, 0.26); }
+.border-white\/\[0\.06\] { border-color: rgba(26, 26, 26, 0.08); }
+.border-white\/\[0\.08\] { border-color: rgba(26, 26, 26, 0.10); }
+.border-white\/\[0\.12\] { border-color: rgba(26, 26, 26, 0.13); }
+.hover\:border-white\/15:hover  { border-color: rgba(26, 26, 26, 0.18); }
+.hover\:border-white\/20:hover  { border-color: rgba(26, 26, 26, 0.22); }
+.hover\:border-white\/14:hover  { border-color: rgba(26, 26, 26, 0.16); }
+
+/* Brand-color icon tints — flip pastels to deeper editorial sages/lavenders */
+.text-violet-200,
+.text-violet-300,
+.text-violet-400,
+.text-violet-500,
+.text-fuchsia-300,
+.text-fuchsia-400        { color: var(--ah-lavender-deep); }
+.text-blue-200,
+.text-blue-300,
+.text-blue-400,
+.text-blue-500,
+.text-cyan-200,
+.text-cyan-300,
+.text-cyan-400,
+.text-cyan-500,
+.text-sky-300,
+.text-sky-400,
+.text-teal-300,
+.text-teal-400           { color: var(--ah-sage-deep); }
+.text-emerald-200,
+.text-emerald-300,
+.text-emerald-400,
+.text-emerald-500,
+.text-green-300,
+.text-green-400          { color: var(--ah-cta); }
+.text-rose-200,
+.text-rose-300,
+.text-rose-400,
+.text-rose-500,
+.text-red-300,
+.text-red-400,
+.text-pink-300,
+.text-pink-400           { color: #B85C5C; }
+.text-amber-200,
+.text-amber-300,
+.text-amber-400,
+.text-amber-500,
+.text-yellow-300,
+.text-yellow-400,
+.text-orange-300,
+.text-orange-400         { color: #B07A2E; }
+
+/* Brand-color BACKGROUND tints — flip the X/500/10..25 utilities to soft
+   editorial pastels on cream. Covers the dashboard's stat-cards and chip
+   variants without per-page edits. */
+.bg-violet-500\/5,
+.bg-violet-500\/10,
+.bg-violet-500\/15,
+.bg-violet-500\/20,
+.bg-violet-500\/25,
+.bg-violet-500\/\[0\.06\],
+.bg-violet-500\/\[0\.08\],
+.bg-fuchsia-500\/10,
+.bg-fuchsia-500\/15      { background-color: var(--ah-lavender-soft); }
+
+.bg-blue-500\/5,
+.bg-blue-500\/10,
+.bg-blue-500\/15,
+.bg-blue-500\/20,
+.bg-blue-500\/25,
+.bg-cyan-500\/5,
+.bg-cyan-500\/10,
+.bg-cyan-500\/15,
+.bg-cyan-500\/20,
+.bg-cyan-500\/25,
+.bg-cyan-500\/\[0\.06\],
+.bg-cyan-500\/\[0\.08\],
+.bg-sky-500\/10,
+.bg-sky-500\/15,
+.bg-teal-500\/10,
+.bg-teal-500\/15         { background-color: var(--ah-sage-soft); }
+
+.bg-emerald-500\/5,
+.bg-emerald-500\/10,
+.bg-emerald-500\/15,
+.bg-emerald-500\/20,
+.bg-emerald-500\/25,
+.bg-emerald-500\/\[0\.08\],
+.bg-green-500\/10,
+.bg-green-500\/15        { background-color: var(--ah-sage-soft); }
+
+.bg-rose-500\/5,
+.bg-rose-500\/10,
+.bg-rose-500\/15,
+.bg-rose-500\/20,
+.bg-rose-500\/25,
+.bg-red-500\/10,
+.bg-red-500\/15,
+.bg-pink-500\/10,
+.bg-pink-500\/15         { background-color: rgba(232, 199, 199, 0.40); }
+
+.bg-amber-500\/5,
+.bg-amber-500\/10,
+.bg-amber-500\/15,
+.bg-amber-500\/20,
+.bg-amber-500\/\[0\.06\],
+.bg-amber-500\/\[0\.08\],
+.bg-yellow-500\/10,
+.bg-yellow-500\/15,
+.bg-orange-500\/10,
+.bg-orange-500\/15       { background-color: var(--ah-cream-warm); }
+
+/* Brand-color BORDER tints */
+.border-violet-300\/15,
+.border-violet-300\/20,
+.border-violet-300\/25,
+.border-violet-300\/40,
+.border-violet-300\/50,
+.border-fuchsia-300\/25  { border-color: var(--ah-lavender); }
+
+.border-blue-300\/15,
+.border-blue-300\/20,
+.border-blue-300\/25,
+.border-blue-300\/40,
+.border-cyan-300\/15,
+.border-cyan-300\/20,
+.border-cyan-300\/25,
+.border-cyan-300\/40,
+.border-sky-300\/25,
+.border-teal-300\/25     { border-color: var(--ah-sage); }
+
+.border-emerald-300\/15,
+.border-emerald-300\/20,
+.border-emerald-300\/25,
+.border-emerald-300\/40,
+.border-green-300\/25    { border-color: var(--ah-sage); }
+
+.border-rose-300\/15,
+.border-rose-300\/20,
+.border-rose-300\/25,
+.border-rose-300\/40,
+.border-red-300\/25,
+.border-pink-300\/25     { border-color: rgba(184, 92, 92, 0.30); }
+
+.border-amber-300\/15,
+.border-amber-300\/20,
+.border-amber-300\/25,
+.border-amber-300\/40,
+.border-yellow-300\/25,
+.border-orange-300\/25   { border-color: rgba(176, 122, 46, 0.30); }
+
+/* Dark-mode overrides — keep the brighter pastel variants on dark canvas */
+.dark .bg-violet-500\/5,
+.dark .bg-violet-500\/10,
+.dark .bg-violet-500\/15,
+.dark .bg-violet-500\/20,
+.dark .bg-violet-500\/25 { background-color: rgba(214, 207, 236, 0.12); }
+.dark .bg-blue-500\/10,
+.dark .bg-blue-500\/15,
+.dark .bg-cyan-500\/10,
+.dark .bg-cyan-500\/15   { background-color: rgba(184, 200, 171, 0.12); }
+.dark .bg-emerald-500\/10,
+.dark .bg-emerald-500\/15 { background-color: rgba(184, 200, 171, 0.14); }
+.dark .bg-rose-500\/10,
+.dark .bg-rose-500\/15   { background-color: rgba(201, 155, 155, 0.16); }
+.dark .bg-amber-500\/10,
+.dark .bg-amber-500\/15  { background-color: rgba(214, 175, 120, 0.14); }
+.dark .border-violet-300\/25,
+.dark .border-violet-300\/40 { border-color: rgba(214, 207, 236, 0.28); }
+.dark .border-blue-300\/25,
+.dark .border-cyan-300\/25   { border-color: rgba(184, 200, 171, 0.28); }
+.dark .border-emerald-300\/25 { border-color: rgba(184, 200, 171, 0.30); }
+.dark .border-rose-300\/25   { border-color: rgba(201, 155, 155, 0.30); }
+.dark .border-amber-300\/25  { border-color: rgba(214, 175, 120, 0.28); }
+.dark .text-violet-300,
+.dark .text-violet-400   { color: var(--ah-lavender); }
+.dark .text-blue-300,
+.dark .text-blue-400,
+.dark .text-cyan-300,
+.dark .text-cyan-400     { color: var(--ah-sage); }
+.dark .text-emerald-300,
+.dark .text-emerald-400  { color: var(--ah-sage); }
+.dark .text-rose-300,
+.dark .text-rose-400     { color: #C99B9B; }
+.dark .text-amber-300,
+.dark .text-amber-400    { color: #D6AF78; }
+
+/* Dark mode flips these back to brighter pastels for legibility on dark */
+.dark .text-white,
+.dark .text-white\/95          { color: rgba(245, 241, 230, 1); }
+.dark .text-white\/90          { color: rgba(245, 241, 230, 0.92); }
+.dark .text-white\/85          { color: rgba(245, 241, 230, 0.88); }
+.dark .text-white\/80          { color: rgba(245, 241, 230, 0.82); }
+.dark .text-white\/75          { color: rgba(245, 241, 230, 0.78); }
+.dark .text-white\/70          { color: rgba(245, 241, 230, 0.74); }
+.dark .text-white\/65          { color: rgba(245, 241, 230, 0.70); }
+.dark .text-white\/60          { color: rgba(245, 241, 230, 0.66); }
+.dark .text-white\/55          { color: rgba(245, 241, 230, 0.62); }
+.dark .text-white\/50          { color: rgba(245, 241, 230, 0.56); }
+.dark .text-white\/45          { color: rgba(245, 241, 230, 0.52); }
+.dark .text-white\/40          { color: rgba(245, 241, 230, 0.48); }
+.dark .text-white\/35          { color: rgba(245, 241, 230, 0.44); }
+.dark .text-white\/30          { color: rgba(245, 241, 230, 0.40); }
+.dark .text-white\/25          { color: rgba(245, 241, 230, 0.36); }
+.dark .text-white\/20          { color: rgba(245, 241, 230, 0.32); }
+.dark .text-white\/15          { color: rgba(245, 241, 230, 0.26); }
+.dark .text-white\/10          { color: rgba(245, 241, 230, 0.20); }
+.dark .bg-white\/5             { background-color: rgba(245, 241, 230, 0.04); }
+.dark .bg-white\/\[0\.02\]     { background-color: rgba(245, 241, 230, 0.02); }
+.dark .bg-white\/\[0\.03\]     { background-color: rgba(245, 241, 230, 0.03); }
+.dark .bg-white\/\[0\.04\]     { background-color: rgba(245, 241, 230, 0.04); }
+.dark .bg-white\/\[0\.05\]     { background-color: rgba(245, 241, 230, 0.05); }
+.dark .bg-white\/\[0\.06\]     { background-color: rgba(245, 241, 230, 0.06); }
+.dark .bg-white\/\[0\.07\]     { background-color: rgba(245, 241, 230, 0.07); }
+.dark .bg-white\/\[0\.08\]     { background-color: rgba(245, 241, 230, 0.08); }
+.dark .bg-white\/\[0\.09\]     { background-color: rgba(245, 241, 230, 0.09); }
+.dark .bg-white\/10            { background-color: rgba(245, 241, 230, 0.10); }
+.dark .bg-white\/15            { background-color: rgba(245, 241, 230, 0.14); }
+.dark .border-white\/8         { border-color: rgba(245, 241, 230, 0.08); }
+.dark .border-white\/10        { border-color: rgba(245, 241, 230, 0.10); }
+.dark .border-white\/14        { border-color: rgba(245, 241, 230, 0.14); }
+.dark .border-white\/15        { border-color: rgba(245, 241, 230, 0.15); }
+.dark .border-white\/20        { border-color: rgba(245, 241, 230, 0.20); }
+.dark .border-white\/25        { border-color: rgba(245, 241, 230, 0.25); }
+.dark .border-white\/30        { border-color: rgba(245, 241, 230, 0.30); }
+
+/* Anything painted on the forest-green CTA needs to keep cream text */
+.ah-gradient-bg,
+.ah-on-gradient {
+  background-color: var(--ah-cta);
+  color: #FFFCF6;
+}
+.ah-gradient-bg [class*="text-white"],
+.ah-on-gradient [class*="text-white"] {
+  color: #FFFCF6;
 }
 
 @layer base {
@@ -122,63 +526,406 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--ah-bg-deep);
+    color: var(--ah-text-primary);
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: 0;
+  }
+  /* Dark mode keeps a subtle ambient wash; light/editorial stays flat. */
+  .dark body {
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -10%, var(--ah-aurora-1), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 20%, var(--ah-aurora-2), transparent 60%);
+    background-attachment: fixed;
   }
   html {
     @apply font-sans;
+    /* Bump the base 1rem from 16 → 17px (+6.25%) so EB Garamond reads at
+       sans-serif optical size. Every Tailwind text-* utility scales with it. */
+    font-size: 17px;
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading), ui-serif, Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+  }
+  ::selection {
+    background: var(--ah-sage);
+    color: var(--ah-ink);
   }
 }
 
-/* AgentHub Custom Styles */
+/* ──────────────────────────────────────────────────────────────────────────
+   Editorial primitives — drop-in utility classes for new components.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Serif display — for hero headlines */
+.font-serif,
+.font-display {
+  font-family: var(--font-heading), ui-serif, Georgia, serif;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Cream-on-cream card — replaces glass-raised */
+.ah-card {
+  background: var(--ah-bg-raised);
+  border: 1px solid var(--ah-border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.6) inset,
+    0 12px 28px -16px rgba(26, 26, 26, 0.10);
+}
+.dark .ah-card {
+  box-shadow:
+    0 1px 0 0 rgba(255, 251, 240, 0.04) inset,
+    0 18px 38px -20px rgba(0, 0, 0, 0.5);
+}
+
+.ah-card-inset {
+  background: var(--ah-bg-inset);
+  border: 1px solid var(--ah-border);
+  border-radius: var(--radius-xl);
+}
+
+/* Forest-green CTA pill */
+.ah-cta {
+  background: var(--ah-cta);
+  color: #FFFCF6;
+  border-radius: 9999px;
+  transition: background-color 250ms ease-out, transform 250ms ease-out;
+}
+.ah-cta:hover {
+  background: var(--ah-cta-hover);
+  transform: translateY(-1px);
+}
+.dark .ah-cta { color: #14130E; }
+
+/* Sage-outline secondary pill */
+.ah-cta-secondary {
+  background: transparent;
+  color: var(--ah-ink);
+  border: 1px solid var(--ah-sage-deep);
+  border-radius: 9999px;
+  transition: background-color 250ms ease-out, color 250ms ease-out;
+}
+.ah-cta-secondary:hover {
+  background: var(--ah-sage);
+  color: var(--ah-ink);
+}
+
+/* Top navigation — frosted glass surface that intensifies on scroll.
+   Theme-aware so dark mode shows ink-cream-black tint instead of cream-on-cream.
+   Hero content scrolling underneath softens into the blur for a premium feel. */
+.ah-navbar {
+  background: rgba(247, 243, 236, 0.45);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 500ms ease-out,
+    border-color 500ms ease-out,
+    backdrop-filter 500ms ease-out;
+}
+.ah-navbar[data-scrolled="true"] {
+  background: rgba(247, 243, 236, 0.78);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid var(--ah-border);
+  box-shadow: 0 8px 24px -18px rgba(26, 26, 26, 0.12);
+}
+.dark .ah-navbar {
+  background: rgba(20, 19, 14, 0.45);
+}
+.dark .ah-navbar[data-scrolled="true"] {
+  background: rgba(20, 19, 14, 0.78);
+  box-shadow: 0 8px 24px -18px rgba(0, 0, 0, 0.45);
+}
+
+/* Editorial pill — used for tags, status, eyebrow text */
+.ah-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--ah-bg-inset);
+  border: 1px solid var(--ah-border);
+  color: var(--ah-ink-soft);
+}
+
+/* Brand gradient text — repurposed: sage→lavender wash for occasional flair */
+.ah-gradient-text {
+  background: linear-gradient(120deg, var(--ah-sage-deep), var(--ah-lavender-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Legacy compat: keep these utilities working but with the new palette.
+   They're kept lightweight; Phase 6 cleanup will collapse callers.
+   ────────────────────────────────────────────────────────────────────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--ah-bg-raised);
+  border: 1px solid var(--ah-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.glow-cyan {
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15), 0 0 60px rgba(0, 212, 255, 0.05);
+.glass-raised {
+  background: var(--ah-bg-raised);
+  border: 1px solid var(--ah-border-strong);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.7) inset,
+    0 14px 32px -18px rgba(26, 26, 26, 0.12);
+}
+.dark .glass-raised {
+  box-shadow:
+    0 1px 0 0 rgba(255, 251, 240, 0.06) inset,
+    0 22px 44px -22px rgba(0, 0, 0, 0.6);
 }
 
-.glow-amber {
-  box-shadow: 0 0 20px rgba(255, 184, 0, 0.15), 0 0 60px rgba(255, 184, 0, 0.05);
+.glass-floating {
+  background: var(--ah-bg-raised);
+  border: 1px solid var(--ah-border-strong);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.7) inset,
+    0 22px 48px -22px rgba(26, 26, 26, 0.18);
+}
+.dark .glass-floating {
+  box-shadow:
+    0 1px 0 0 rgba(255, 251, 240, 0.08) inset,
+    0 28px 58px -28px rgba(0, 0, 0, 0.7);
 }
 
+/* Gradient-border (legacy) — now a static sage-deep hairline; no animation */
+.gradient-border {
+  position: relative;
+  isolation: isolate;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--ah-sage-deep), var(--ah-lavender-deep));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.45;
+}
+.gradient-border.static::before { opacity: 0.35; }
+
+/* Glow utilities — collapsed to soft sage/lavender drops, no neon */
+.glow-aurora {
+  box-shadow:
+    0 18px 40px -22px rgba(94, 115, 85, 0.30),
+    0 28px 72px -32px rgba(107, 95, 176, 0.18);
+}
+.glow-violet { box-shadow: 0 14px 30px -16px rgba(107, 95, 176, 0.22); }
+.glow-blue   { box-shadow: 0 14px 30px -16px rgba(94, 115, 85, 0.22); }
+.glow-cyan   { box-shadow: 0 14px 30px -16px rgba(168, 184, 155, 0.22); }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Motion primitives — kept names for back-compat, restyled to "editorial".
+   ────────────────────────────────────────────────────────────────────────── */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50%      { transform: translateY(-6px); }
 }
-
+@keyframes float-slow {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(0, -14px, 0) scale(1.01); }
+}
 @keyframes pulse-ring {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1.5); opacity: 0; }
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.4); opacity: 0; }
 }
-
 @keyframes wave-bar {
   0%, 100% { height: 4px; }
-  50% { height: 24px; }
+  50%      { height: 24px; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes aurora-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  33%      { transform: translate3d(20px, -10px, 0); }
+  66%      { transform: translate3d(-15px, 10px, 0); }
+}
+@keyframes editorial-fade {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.animate-float       { animation: float 4s ease-in-out infinite; }
+.animate-float-slow  { animation: float-slow 18s ease-in-out infinite; }
+.animate-pulse-ring  { animation: pulse-ring 1.8s ease-out infinite; }
+.animate-aurora      { animation: aurora-drift 28s ease-in-out infinite; }
+.animate-editorial-fade { animation: editorial-fade 600ms ease-out both; }
+
+.shimmer {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(26, 26, 26, 0.05) 50%,
+      transparent 70%
+    );
+  background-size: 200% 100%;
+  animation: shimmer 2.8s linear infinite;
+}
+.dark .shimmer {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(245, 241, 230, 0.06) 50%,
+      transparent 70%
+    );
+  background-size: 200% 100%;
 }
 
-.animate-pulse-ring {
-  animation: pulse-ring 1.5s ease-out infinite;
+/* ──────────────────────────────────────────────────────────────────────────
+   Form input autofill — keep autofill background harmonized with cream.
+   ────────────────────────────────────────────────────────────────────────── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ah-text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--ah-bg-raised) inset;
+  caret-color: var(--ah-text-primary);
+  transition: background-color 9999s ease-out 0s;
 }
 
-/* Scrollbar styling for dark theme */
+/* Form-control surfaces — flip the dark-mode primitives to cream */
+[data-slot="input"],
+[data-slot="textarea"] {
+  background-color: var(--ah-bg-raised);
+  border-color: var(--ah-border);
+  color: var(--ah-text-primary);
+}
+[data-slot="input"]::placeholder,
+[data-slot="textarea"]::placeholder {
+  color: var(--ah-text-muted);
+}
+[data-slot="input"]:hover,
+[data-slot="textarea"]:hover {
+  border-color: var(--ah-border-strong);
+}
+[data-slot="input"]:focus-visible,
+[data-slot="textarea"]:focus-visible {
+  border-color: var(--ah-sage-deep);
+  box-shadow: 0 0 0 3px rgba(94, 115, 85, 0.18);
+}
+[data-slot="label"] {
+  color: var(--ah-text-secondary);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Section aurora — soft cream-paper variant for landing/marketing sections.
+   ────────────────────────────────────────────────────────────────────────── */
+.section-aurora {
+  position: relative;
+  isolation: isolate;
+}
+.section-aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 20% 0%, rgba(168, 184, 155, 0.10), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(201, 194, 224, 0.08), transparent 60%);
+  pointer-events: none;
+}
+
+/* Scroll fade */
+.scroll-fade {
+  mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 32px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 32px), transparent 100%);
+}
+
+/* Branded spinner — sage-deep ring */
+.ah-spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border-radius: 9999px;
+  border: 2px solid rgba(94, 115, 85, 0.18);
+  border-top-color: var(--ah-sage-deep);
+  animation: spin 0.7s linear infinite;
+}
+.ah-spinner-violet {
+  border-color: rgba(107, 95, 176, 0.18);
+  border-top-color: var(--ah-lavender-deep);
+}
+.dark .ah-spinner {
+  border-color: rgba(184, 200, 171, 0.20);
+  border-top-color: var(--ah-sage);
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Scrollbar — slim, sage-tinted on hover.
+   ────────────────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: rgba(26, 26, 26, 0.14);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--ah-sage-deep);
+  background-clip: content-box;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(245, 241, 230, 0.14);
+  background-clip: content-box;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--ah-sage);
+  background-clip: content-box;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Focus ring — sage-deep outline, matches editorial calm.
+   ────────────────────────────────────────────────────────────────────────── */
+.ah-focus-ring:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--ah-bg-deep),
+    0 0 0 4px rgba(94, 115, 85, 0.55);
 }

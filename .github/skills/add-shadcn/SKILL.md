@@ -1,6 +1,6 @@
 ---
 name: add-shadcn
-description: "Use when adding a new shadcn/ui component to AgentHub. Covers the install command, where components land, and import patterns."
+description: "Use when adding a new shadcn/ui component to Voxie. Covers the install command, where components land, and import patterns."
 ---
 
 # Add a shadcn/ui Component

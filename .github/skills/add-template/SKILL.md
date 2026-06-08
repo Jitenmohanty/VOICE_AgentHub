@@ -1,6 +1,6 @@
 ---
 name: add-template
-description: "Use when adding a new industry template or agent type to AgentHub (e.g. fitness, ecommerce, real-estate). Covers templates.ts, agent file, system prompt, and pre-call component."
+description: "Use when adding a new industry template or agent type to Voxie (e.g. fitness, ecommerce, real-estate). Covers templates.ts, agent file, system prompt, and pre-call component."
 ---
 
 # Add a New Industry Template

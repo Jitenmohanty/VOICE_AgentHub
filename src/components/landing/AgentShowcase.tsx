@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Hotel, Stethoscope, Code, UtensilsCrossed, Scale } from "lucide-react";
+import { Hotel, Stethoscope, Code, UtensilsCrossed, Scale, User } from "lucide-react";
 import { AGENTS } from "@/lib/agents";
+import { GlassPanel } from "@/components/ui/glass-panel";
 
 const iconMap: Record<string, React.ElementType> = {
   Hotel,
@@ -10,70 +11,94 @@ const iconMap: Record<string, React.ElementType> = {
   Code,
   UtensilsCrossed,
   Scale,
+  User,
 };
 
 export function AgentShowcase() {
   return (
-    <section id="agents" className="py-24 px-6">
+    <section id="agents" className="relative py-20 px-2 md:py-32 md:px-6">
       <div className="max-w-7xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-20"
         >
-          <h2 className="font-(family-name:--font-heading) text-4xl md:text-5xl font-bold text-white mb-4">
-            Meet Your AI Agents
+          <p
+            className="text-sm font-medium uppercase tracking-[0.2em] mb-4"
+            style={{ color: "var(--ah-ink-muted)" }}
+          >
+            Templates
+          </p>
+          <h2
+            className="font-serif text-5xl md:text-7xl tracking-[-0.02em] mb-5 leading-[1.08]"
+            style={{ color: "var(--ah-ink)" }}
+          >
+            Meet your{" "}
+            <span style={{ color: "var(--ah-sage-deep)" }}>
+              AI agents
+            </span>
           </h2>
-          <p className="text-[#8888AA] text-lg max-w-2xl mx-auto">
-            Specialized voice agents for every business domain. Each agent is an expert in its field.
+          <p className="text-xl max-w-2xl mx-auto" style={{ color: "var(--ah-ink-soft)" }}>
+            Specialized voice agents for every business domain. Each one is an expert in its field.
           </p>
         </motion.div>
 
-        <div className="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-3 lg:grid-cols-5 md:overflow-visible">
+        <div className="flex gap-5 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-3 lg:grid-cols-6 md:overflow-visible">
           {AGENTS.map((agent, index) => {
             const Icon = iconMap[agent.icon] ?? Hotel;
             return (
               <motion.div
                 key={agent.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="min-w-70 md:min-w-0 snap-center glass rounded-2xl p-6 cursor-pointer group"
-                style={{
-                  borderColor: `${agent.accentColor}20`,
-                  borderWidth: "1px",
-                }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                className="min-w-[260px] md:min-w-0 snap-center"
               >
-                <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all group-hover:scale-110"
-                  style={{ backgroundColor: `${agent.accentColor}15` }}
+                <GlassPanel
+                  elevation="subtle"
+                  interactive
+                  radius="lg"
+                  className="h-full p-6 cursor-pointer group"
                 >
-                  <Icon className="w-7 h-7" style={{ color: agent.accentColor }} />
-                </div>
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 transition-all"
+                    style={{ background: "var(--ah-sage-soft)" }}
+                  >
+                    <Icon className="w-5 h-5" style={{ color: "var(--ah-sage-deep)" }} strokeWidth={2} />
+                  </div>
 
-                <h3 className="font-(family-name:--font-heading) font-semibold text-lg text-white mb-1">
-                  {agent.name}
-                </h3>
-                <p className="text-sm text-[#8888AA] mb-4">{agent.tagline}</p>
-                <p className="text-sm text-[#666680] mb-4 line-clamp-2">{agent.description}</p>
+                  <h3
+                    className="font-serif text-lg tracking-tight mb-1"
+                    style={{ color: "var(--ah-ink)" }}
+                  >
+                    {agent.name}
+                  </h3>
+                  <p
+                    className="text-sm mb-4 leading-relaxed"
+                    style={{ color: "var(--ah-ink-soft)" }}
+                  >
+                    {agent.tagline}
+                  </p>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {agent.capabilities.slice(0, 3).map((cap) => (
-                    <span
-                      key={cap}
-                      className="text-xs px-2 py-0.5 rounded-full"
-                      style={{
-                        backgroundColor: `${agent.accentColor}10`,
-                        color: agent.accentColor,
-                      }}
-                    >
-                      {cap}
-                    </span>
-                  ))}
-                </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {agent.capabilities.slice(0, 2).map((cap) => (
+                      <span
+                        key={cap}
+                        className="text-xs tracking-wide px-2 py-0.5 rounded-full"
+                        style={{
+                          background: "var(--ah-bg-inset)",
+                          border: "1px solid var(--ah-border)",
+                          color: "var(--ah-ink-soft)",
+                        }}
+                      >
+                        {cap}
+                      </span>
+                    ))}
+                  </div>
+                </GlassPanel>
               </motion.div>
             );
           })}

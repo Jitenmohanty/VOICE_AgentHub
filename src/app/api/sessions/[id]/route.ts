@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 import { triggerPostCallAnalysis } from "@/lib/post-call";
 
 type Params = { params: Promise<{ id: string }> };
 
-/** Verify the session belongs to the authenticated owner's agents */
+/** Verify the session belongs to a business the user can access (owner or member). */
 async function findOwnedSession(userId: string, sessionId: string) {
   return prisma.agentSession.findFirst({
     where: {
       id: sessionId,
-      agent: { business: { ownerId: userId } },
+      agent: { business: businessAccessFilter(userId) },
     },
     include: {
       agent: { select: { name: true, templateType: true, business: { select: { name: true } } } },

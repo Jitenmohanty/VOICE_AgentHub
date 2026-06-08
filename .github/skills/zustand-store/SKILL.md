@@ -1,6 +1,6 @@
 ---
 name: zustand-store
-description: "Use when adding or modifying global client state in AgentHub using Zustand. Covers store creation, typed slices, and usage in client components."
+description: "Use when adding or modifying global client state in Voxie using Zustand. Covers store creation, typed slices, and usage in client components."
 ---
 
 # Add a Zustand Store

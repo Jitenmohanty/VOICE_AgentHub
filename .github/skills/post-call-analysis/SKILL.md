@@ -1,6 +1,6 @@
 ---
 name: post-call-analysis
-description: "Use when extending or modifying the post-call AI analysis in AgentHub: adding new Claude-generated fields, updating the analysis prompt, changing what gets stored on AgentSession, or displaying new analysis results in the dashboard."
+description: "Use when extending or modifying the post-call AI analysis in Voxie: adding new Claude-generated fields, updating the analysis prompt, changing what gets stored on AgentSession, or displaying new analysis results in the dashboard."
 ---
 
 # Post-Call Analysis (Claude)

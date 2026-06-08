@@ -202,7 +202,7 @@ export const TEMPLATES: AgentTemplate[] = [
       // Skills + bio
       { id: "techStack", label: "Skills / Tech Stack", type: "multi-select", options: ["React", "Next.js", "TypeScript", "Node.js", "Python", "Go", "Rust", "PostgreSQL", "AWS", "GCP", "Docker", "Kubernetes", "GraphQL", "Tailwind", "Figma", "Product Design", "ML/AI", "Mobile (iOS)", "Mobile (Android)", "Data Engineering"], defaultValue: [], section: "Skills" },
       { id: "briefBio", label: "Short Bio", type: "textarea", defaultValue: "", placeholder: "1-2 paragraphs about you. What you've built, what you care about, what you're looking for. The agent uses this as its core voice.", section: "Skills" },
-      { id: "notableProjects", label: "Notable Projects", type: "textarea", defaultValue: "", placeholder: "List 3-5 projects with one-line descriptions. e.g.,\n• AgentHub — voice AI for small businesses (Next.js, Gemini)\n• ...\nThe agent will reference these by name.", section: "Skills" },
+      { id: "notableProjects", label: "Notable Projects", type: "textarea", defaultValue: "", placeholder: "List 3-5 projects with one-line descriptions. e.g.,\n• Voxie — voice AI for small businesses (Next.js, Gemini)\n• ...\nThe agent will reference these by name.", section: "Skills" },
       // Contact + links
       { id: "linkedinUrl", label: "LinkedIn", type: "text", defaultValue: "", placeholder: "https://linkedin.com/in/...", section: "Links" },
       { id: "githubUrl", label: "GitHub", type: "text", defaultValue: "", placeholder: "https://github.com/...", section: "Links" },

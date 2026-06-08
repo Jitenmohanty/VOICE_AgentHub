@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 
 /**
  * POST — create a voice session for an authenticated business owner testing their agent.
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
     if (body.agentId) {
       // New flow: agentId provided directly
       const agent = await prisma.agent.findFirst({
-        where: { id: body.agentId, business: { ownerId: session.user.id } },
+        where: { id: body.agentId, business: businessAccessFilter(session.user.id) },
       });
       if (!agent) {
         return NextResponse.json({ error: "Agent not found" }, { status: 404 });
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
       const agent = await prisma.agent.findFirst({
         where: {
           templateType: body.agentType,
-          business: { ownerId: session.user.id },
+          business: businessAccessFilter(session.user.id),
         },
       });
       if (!agent) {

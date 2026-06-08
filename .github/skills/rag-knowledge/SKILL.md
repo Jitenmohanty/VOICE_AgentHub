@@ -1,6 +1,6 @@
 ---
 name: rag-knowledge
-description: "Use when adding, updating, or searching knowledge items with RAG in AgentHub. Covers creating KnowledgeItems, generating pgvector embeddings with Gemini text-embedding-004, and cosine similarity search."
+description: "Use when adding, updating, or searching knowledge items with RAG in Voxie. Covers creating KnowledgeItems, generating pgvector embeddings with Gemini text-embedding-004, and cosine similarity search."
 ---
 
 # RAG Knowledge Items

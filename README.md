@@ -1,8 +1,8 @@
-# AgentHub — Multi-Tenant Voice AI Platform
+# Voxie — Multi-Tenant Voice AI Platform
 
 > Build, deploy, and monetize AI voice agents for any small business. Powered by Gemini Live, Claude, RAG, and Stripe.
 
-AgentHub lets **business owners** create AI voice agents trained on their own data — menus, room inventory, policies, FAQs — and embed them into their existing website as a widget. Visitors talk to the AI; the AI answers from real business data; captured leads land in the owner's inbox (or Slack, or Zapier) within seconds. No AI expertise required.
+Voxie lets **business owners** create AI voice agents trained on their own data — menus, room inventory, policies, FAQs — and embed them into their existing website as a widget. Visitors talk to the AI; the AI answers from real business data; captured leads land in the owner's inbox (or Slack, or Zapier) within seconds. No AI expertise required.
 
 > 📄 Companion docs:
 > - **[`PRODUCT_FLOW.md`](./PRODUCT_FLOW.md)** — end-to-end runtime walkthrough (what fires when a caller clicks "Start Call," how the lead reaches the owner, how billing enforces quotas).

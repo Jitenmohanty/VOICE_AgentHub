@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 
 type Params = { params: Promise<{ businessId: string; agentId: string }> };
 
@@ -12,7 +13,7 @@ export async function GET(request: Request, { params }: Params) {
     const { businessId, agentId } = await params;
 
     const agent = await prisma.agent.findFirst({
-      where: { id: agentId, businessId, business: { ownerId: session.user.id } },
+      where: { id: agentId, businessId, business: businessAccessFilter(session.user.id) },
     });
     if (!agent) return NextResponse.json({ error: "Agent not found" }, { status: 404 });
 

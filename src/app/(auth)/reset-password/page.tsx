@@ -4,11 +4,13 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Zap, KeyRound, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { KeyRound, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { GlassPanel } from "@/components/ui/glass-panel";
+import { GradientButton } from "@/components/ui/gradient-button";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -29,23 +31,16 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="glass rounded-2xl p-8 text-center">
-        <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-          <AlertCircle className="w-7 h-7 text-red-400" />
+      <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-rose-500/15 border border-rose-300/20 flex items-center justify-center mx-auto mb-4">
+          <AlertCircle className="w-7 h-7 text-rose-300" strokeWidth={2} />
         </div>
-        <h2 className="text-lg font-semibold text-white mb-2">
-          Invalid reset link
-        </h2>
-        <p className="text-[#8888AA] text-sm mb-4">
-          This reset link is missing or malformed.
-        </p>
-        <Link
-          href="/forgot-password"
-          className="text-[#00D4FF] text-sm hover:underline"
-        >
+        <h2 className="text-lg font-semibold text-white mb-2">Invalid reset link</h2>
+        <p className="text-sm text-white/55 mb-4">This reset link is missing or malformed.</p>
+        <Link href="/forgot-password" className="text-sm ah-gradient-text font-medium hover:opacity-80">
           Request a new link
         </Link>
-      </div>
+      </GlassPanel>
     );
   }
 
@@ -83,32 +78,24 @@ function ResetPasswordForm() {
 
   if (done) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="glass rounded-2xl p-8 text-center"
-      >
-        <div className="w-14 h-14 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mx-auto mb-4">
-          <CheckCircle className="w-7 h-7 text-[#00D4FF]" />
-        </div>
-        <h2 className="text-lg font-semibold text-white mb-2">
-          Password updated!
-        </h2>
-        <p className="text-[#8888AA] text-sm">
-          Redirecting you to sign in…
-        </p>
+      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
+        <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8 text-center">
+          <div className="w-14 h-14 rounded-2xl ah-gradient-bg flex items-center justify-center mx-auto mb-4 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
+            <CheckCircle className="w-7 h-7 text-white" strokeWidth={2} />
+          </div>
+          <h2 className="text-lg font-semibold text-white mb-2">Password updated!</h2>
+          <p className="text-sm text-white/55">Redirecting you to sign in…</p>
+        </GlassPanel>
       </motion.div>
     );
   }
 
   return (
-    <div className="glass rounded-2xl p-8">
+    <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="password" className="text-[#8888AA]">
-            New password
-          </Label>
-          <div className="relative mt-1">
+          <Label htmlFor="password">New password</Label>
+          <div className="relative mt-1.5">
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -117,31 +104,23 @@ function ResetPasswordForm() {
               placeholder="Min. 8 characters"
               required
               minLength={8}
-              className="bg-white/5 border-[#2A2A3E] focus:border-[#00D4FF] text-white pr-10"
+              className="pr-10"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8888AA] hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
             >
-              {showPassword ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
           {password.length > 0 && password.length < 8 && (
-            <p className="mt-1 text-xs text-red-400">
-              At least 8 characters required
-            </p>
+            <p className="mt-1.5 text-xs text-rose-400/90">At least 8 characters required</p>
           )}
         </div>
 
         <div>
-          <Label htmlFor="confirm" className="text-[#8888AA]">
-            Confirm new password
-          </Label>
+          <Label htmlFor="confirm">Confirm new password</Label>
           <Input
             id="confirm"
             type={showPassword ? "text" : "password"}
@@ -149,72 +128,58 @@ function ResetPasswordForm() {
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="••••••••"
             required
-            className="mt-1 bg-white/5 border-[#2A2A3E] focus:border-[#00D4FF] text-white"
+            className="mt-1.5"
           />
           {confirm.length > 0 && confirm !== password && (
-            <p className="mt-1 text-xs text-red-400">Passwords do not match</p>
+            <p className="mt-1.5 text-xs text-rose-400/90">Passwords do not match</p>
           )}
         </div>
 
-        <Button
+        <GradientButton
           type="submit"
           disabled={loading || password.length < 8 || password !== confirm}
-          className="w-full bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0 hover:opacity-90"
+          className="w-full"
         >
           {loading ? (
             <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Updating...
+              <span className="ah-spinner" />
+              Updating…
             </span>
           ) : (
             <>
-              <KeyRound className="w-4 h-4 mr-2" />
+              <KeyRound className="w-4 h-4" />
               Set new password
             </>
           )}
-        </Button>
+        </GradientButton>
       </form>
-    </div>
+    </GlassPanel>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F] px-6 relative overflow-hidden">
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#00D4FF]/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-[#6366F1]/5 rounded-full blur-3xl" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md relative z-10"
-      >
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-[#00D4FF] to-[#6366F1] flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-(family-name:--font-heading) font-bold text-2xl text-white">
-              AgentHub
-            </span>
-          </Link>
-          <h1 className="font-(family-name:--font-heading) text-3xl font-bold text-white mb-2">
-            Set new password
-          </h1>
-          <p className="text-[#8888AA]">Choose a strong password for your account</p>
-        </div>
-
-        <Suspense fallback={<div className="glass rounded-2xl p-8 text-center text-[#8888AA]">Loading…</div>}>
-          <ResetPasswordForm />
-        </Suspense>
-
-        <p className="text-center mt-6 text-[#8888AA] text-sm">
+    <AuthShell
+      title="Set new password"
+      subtitle="Choose a strong password for your account"
+      footer={
+        <>
           Remember your password?{" "}
-          <Link href="/login" className="text-[#00D4FF] hover:underline">
+          <Link href="/login" className="ah-gradient-text font-medium hover:opacity-80">
             Sign in
           </Link>
-        </p>
-      </motion.div>
-    </div>
+        </>
+      }
+    >
+      <Suspense
+        fallback={
+          <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-8 text-center text-sm text-white/55">
+            Loading…
+          </GlassPanel>
+        }
+      >
+        <ResetPasswordForm />
+      </Suspense>
+    </AuthShell>
   );
 }

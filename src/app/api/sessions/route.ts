@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 
-/** GET sessions for the current business owner (all their agents) */
+/** GET sessions for the current user across every business they own or are a member of. */
 export async function GET(request: Request) {
   try {
     const session = await auth();
@@ -15,9 +16,9 @@ export async function GET(request: Request) {
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "10", 10)));
     const skip = (page - 1) * limit;
 
-    // Scope to sessions belonging to this owner's agents
+    // Scope to sessions belonging to any business the user can access.
     const ownerFilter = {
-      agent: { business: { ownerId: session.user.id } },
+      agent: { business: businessAccessFilter(session.user.id) },
     };
 
     const [sessions, total] = await Promise.all([

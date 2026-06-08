@@ -1,4 +1,4 @@
-# AgentHub AI Pipeline — Internals
+# Voxie AI Pipeline — Internals
 
 How the voice + AI stack actually works at runtime: what gets sent to Gemini, when Claude runs, how RAG retrieval is triggered, what tools the agent can call, and how the model is tuned per agent type. Read after `PRODUCT_FLOW.md` (which covers the user-facing journeys) when you need the *AI-engineering* details.
 

@@ -21,6 +21,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   businesses    Business[]
+  memberships   BusinessMember[]
+  sentInvites   BusinessInvite[] @relation("InvitedBy")
   agentSessions AgentSession[] // legacy, kept for migration
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
@@ -87,16 +89,78 @@ model Business {
   // Where lead-capture emails are sent. Falls back to owner.email at delivery time.
   notificationEmail String?
   // Optional outbound webhook for leads (Slack/HubSpot/Zapier/etc).
-  // Signed with HMAC-SHA256 using webhookSecret in X-AgentHub-Signature.
+  // Signed with HMAC-SHA256 using webhookSecret in X-Voxie-Signature.
   webhookUrl    String?
   webhookSecret String?
+  // Per-business email preferences. Missing key = default ON.
+  // Shape: { leadCapture?: bool, quotaWarning?: bool }
+  notificationPrefs Json?
   isActive    Boolean  @default(true)
   agents      Agent[]
   subscription Subscription?
+  webhookDeliveries WebhookDelivery[]
+  members     BusinessMember[]
+  invites     BusinessInvite[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([ownerId])
+}
+
+/// Team membership. Owner-equivalent access for v1 — every member can do
+/// anything the owner can EXCEPT being removed by another member (only the
+/// owner can remove members; the owner row is the implicit anchor via
+/// Business.ownerId, not stored here).
+model BusinessMember {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       String   @default("member") // member | (future: viewer, billing-only, etc.)
+  invitedBy  String?
+  joinedAt   DateTime @default(now())
+
+  @@unique([businessId, userId])
+  @@index([userId])
+}
+
+/// Pending invitation. Single-use token; expires after 7 days.
+model BusinessInvite {
+  id          String    @id @default(cuid())
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  email       String
+  role        String    @default("member")
+  token       String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  invitedById String?
+  invitedBy   User?     @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([businessId, acceptedAt])
+  @@index([email])
+}
+
+/// One row per outbound webhook attempt made by `deliverLead`. Used by the
+/// settings page to show owners whether their endpoint is actually receiving
+/// leads — without this, a misconfigured URL fails silently.
+model WebhookDelivery {
+  id           String   @id @default(cuid())
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  sessionId    String?  // AgentSession that triggered the call (no FK — sessions get hard-deleted)
+  url          String
+  event        String   @default("lead.captured")
+  statusCode   Int?     // null if the request never completed (DNS, timeout, network)
+  latencyMs    Int?
+  errorMessage String?  // populated when statusCode is null
+  ok           Boolean  @default(false)
+  attempt      Int      @default(1)
+  createdAt    DateTime @default(now())
+
+  @@index([businessId, createdAt])
 }
 
 // ── Billing ──────────────────────────────────────

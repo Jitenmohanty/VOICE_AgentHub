@@ -53,7 +53,7 @@ export function ConfigModal({ agent, onSubmit, onClose }: ConfigModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ah-bg-deep)]/80 backdrop-blur-md p-6"
         onClick={onClose}
       >
         <motion.div
@@ -61,21 +61,20 @@ export function ConfigModal({ agent, onSubmit, onClose }: ConfigModalProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-lg glass rounded-2xl p-8"
-          style={{ borderColor: `${agent.accentColor}20` }}
+          className="w-full max-w-lg glass-raised rounded-3xl p-8"
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-(family-name:--font-heading) font-bold text-xl text-white">
+              <h2 className="font-serif text-2xl text-white">
                 Configure {agent.name}
               </h2>
-              <p className="text-sm text-[#8888AA] mt-1">
+              <p className="text-base text-white/55 mt-2">
                 Set up your agent before starting the conversation
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/5 text-[#8888AA] hover:text-white transition-colors"
+              className="p-2 rounded-lg hover:bg-white/[0.06] text-white/55 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -84,14 +83,14 @@ export function ConfigModal({ agent, onSubmit, onClose }: ConfigModalProps) {
           <form onSubmit={handleSubmit} className="space-y-5">
             {agent.configFields.map((field) => (
               <div key={field.id}>
-                <Label className="text-[#8888AA] text-sm">{field.label}</Label>
+                <Label>{field.label}</Label>
 
                 {field.type === "text" && (
                   <Input
                     value={(config[field.id] as string) || ""}
                     onChange={(e) => updateField(field.id, e.target.value)}
                     placeholder={`Enter ${field.label.toLowerCase()}`}
-                    className="mt-1.5 bg-white/5 border-[#2A2A3E] focus:border-[#00D4FF] text-white"
+                    className="mt-1.5"
                   />
                 )}
 
@@ -100,12 +99,12 @@ export function ConfigModal({ agent, onSubmit, onClose }: ConfigModalProps) {
                     value={(config[field.id] as string) || ""}
                     onValueChange={(v) => v && updateField(field.id, v)}
                   >
-                    <SelectTrigger className="mt-1.5 bg-white/5 border-[#2A2A3E] text-white">
+                    <SelectTrigger className="mt-1.5 bg-white/[0.04] border-white/10 text-white">
                       <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#1A1A2E] border-[#2A2A3E]">
+                    <SelectContent className="bg-[var(--ah-bg-raised)] border-white/10">
                       {field.options.map((opt) => (
-                        <SelectItem key={opt} value={opt} className="text-white hover:bg-white/5">
+                        <SelectItem key={opt} value={opt} className="text-white hover:bg-white/[0.06]">
                           {opt}
                         </SelectItem>
                       ))}
@@ -122,13 +121,11 @@ export function ConfigModal({ agent, onSubmit, onClose }: ConfigModalProps) {
                           key={opt}
                           type="button"
                           onClick={() => toggleMultiSelect(field.id, opt)}
-                          className="px-3 py-1.5 rounded-lg text-sm transition-all"
-                          style={{
-                            backgroundColor: selected ? `${agent.accentColor}20` : "rgba(255,255,255,0.05)",
-                            color: selected ? agent.accentColor : "#8888AA",
-                            borderWidth: "1px",
-                            borderColor: selected ? `${agent.accentColor}40` : "transparent",
-                          }}
+                          className={`px-3 py-1.5 rounded-xl text-sm font-medium border transition-all ${
+                            selected
+                              ? "bg-gradient-to-br from-violet-500/15 to-cyan-500/10 border-violet-300/40 text-white"
+                              : "bg-white/[0.03] border-white/10 text-white/55 hover:bg-white/[0.06] hover:text-white/85"
+                          }`}
                         >
                           {opt}
                         </button>
@@ -139,13 +136,7 @@ export function ConfigModal({ agent, onSubmit, onClose }: ConfigModalProps) {
               </div>
             ))}
 
-            <Button
-              type="submit"
-              className="w-full mt-2 text-white border-0 hover:opacity-90"
-              style={{
-                background: `linear-gradient(135deg, ${agent.accentColor}, ${agent.accentColor}CC)`,
-              }}
-            >
+            <Button type="submit" className="w-full mt-2 ah-gradient-bg text-white border-0 hover:opacity-90 shadow-[0_8px_24px_-8px_rgba(124,58,237,0.5)]">
               <Play className="w-4 h-4 mr-2" />
               Start Session
             </Button>

@@ -4,11 +4,13 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Plus, Trash2, BookOpen, Edit2, X, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import Link from "next/link";
+import { GlassPanel } from "@/components/ui/glass-panel";
+import { GradientButton } from "@/components/ui/gradient-button";
 
 interface KnowledgeItem {
   id: string;
@@ -32,7 +34,6 @@ export default function KnowledgePage() {
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Add form
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState("faq");
@@ -94,78 +95,100 @@ export default function KnowledgePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <Link href={`/business/agents/${agentId}?bid=${businessId}`} className="flex items-center gap-1 text-sm text-[#8888AA] hover:text-white mb-4">
-          <ArrowLeft className="w-4 h-4" /> Back to Agent
+    <div className="max-w-4xl mx-auto px-2 py-6 md:p-10">
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-7">
+        <Link
+          href={`/business/agents/${agentId}?bid=${businessId}`}
+          className="inline-flex items-center gap-1.5 text-sm text-white/55 hover:text-white mb-4 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to agent
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="font-(family-name:--font-heading) text-2xl font-bold text-white">Knowledge Base</h1>
-            <p className="text-sm text-[#8888AA]">Add FAQs, policies, and information your agent should know</p>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Agent Memory</p>
+            <h1 className="font-serif text-3xl md:text-4xl tracking-[-0.02em] text-white">Knowledge base</h1>
+            <p className="text-base text-white/55 mt-2">Add FAQs, policies, and info your agent should know.</p>
           </div>
-          <Button
-            onClick={() => setShowAdd(!showAdd)}
-            className="bg-linear-to-r from-[#00D4FF] to-[#6366F1] text-white border-0"
-          >
-            <Plus className="w-4 h-4 mr-1" /> Add Item
-          </Button>
+          <GradientButton onClick={() => setShowAdd(!showAdd)} size="default">
+            <Plus className="w-4 h-4" /> Add item
+          </GradientButton>
         </div>
       </motion.div>
 
-      {/* Add form */}
       {showAdd && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="glass rounded-2xl p-6 mb-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-white">New Knowledge Item</h3>
-            <button onClick={() => setShowAdd(false)} className="text-[#8888AA] hover:text-white"><X className="w-4 h-4" /></button>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label className="text-[#8888AA]">Title</Label>
-              <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="e.g., Check-in Policy" className="mt-1 bg-white/5 border-[#2A2A3E] text-white" />
-            </div>
-            <div>
-              <Label className="text-[#8888AA]">Category</Label>
-              <select
-                value={newCategory} onChange={(e) => setNewCategory(e.target.value)}
-                className="mt-1 w-full h-10 bg-white/5 border border-[#2A2A3E] rounded-lg px-3 text-sm text-white focus:outline-none focus:border-[#00D4FF]"
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mb-6"
+        >
+          <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-white tracking-tight">New knowledge item</h3>
+              <button
+                onClick={() => setShowAdd(false)}
+                className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-all"
+                aria-label="Close"
               >
-                {CATEGORIES.map((c) => <option key={c} value={c} className="bg-[#1A1A2E]">{c}</option>)}
-              </select>
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          </div>
-          <div>
-            <Label className="text-[#8888AA]">Content</Label>
-            <textarea
-              value={newContent} onChange={(e) => setNewContent(e.target.value)}
-              placeholder="Enter the information your agent should know..."
-              rows={4}
-              className="w-full mt-1 bg-white/5 border border-[#2A2A3E] rounded-lg p-3 text-sm text-white placeholder:text-[#666680] resize-none focus:outline-none focus:border-[#00D4FF]"
-            />
-          </div>
-          <Button onClick={handleAdd} className="bg-[#00D4FF] text-black hover:bg-[#00D4FF]/80 border-0">
-            <Check className="w-4 h-4 mr-1" /> Save Item
-          </Button>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Title</Label>
+                <Input
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="e.g., Check-in Policy"
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label>Category</Label>
+                <select
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="mt-1.5 w-full h-10 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white outline-none transition-[border-color,box-shadow,background-color] duration-200 hover:bg-white/[0.06] hover:border-white/14 focus-visible:border-violet-300/55 focus-visible:bg-white/[0.06] focus-visible:shadow-[0_0_0_3px_rgba(124,58,237,0.18)]"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c} className="bg-[var(--ah-bg-raised)]">{c}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <Label>Content</Label>
+              <Textarea
+                value={newContent}
+                onChange={(e) => setNewContent(e.target.value)}
+                placeholder="Enter the information your agent should know…"
+                rows={4}
+                className="mt-1.5"
+              />
+            </div>
+            <GradientButton onClick={handleAdd} size="default">
+              <Check className="w-4 h-4" /> Save item
+            </GradientButton>
+          </GlassPanel>
         </motion.div>
       )}
 
-      {/* Items list */}
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="glass rounded-xl p-5 animate-pulse">
-              <div className="h-5 w-1/4 bg-white/5 rounded mb-2" />
-              <div className="h-4 w-full bg-white/5 rounded" />
+            <div key={i} className="glass rounded-2xl p-5 animate-pulse">
+              <div className="h-5 w-1/4 bg-white/[0.06] rounded mb-2" />
+              <div className="h-4 w-full bg-white/[0.06] rounded" />
             </div>
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-16">
-          <BookOpen className="w-16 h-16 text-[#8888AA]/30 mx-auto mb-4" />
-          <p className="text-[#8888AA]">No knowledge items yet</p>
-          <p className="text-sm text-[#666680] mt-1">Add FAQs, policies, and info so your agent can help customers</p>
-        </div>
+        <GlassPanel elevation="subtle" radius="lg" className="text-center py-16 px-6">
+          <BookOpen className="w-12 h-12 text-white/15 mx-auto mb-4" strokeWidth={1.5} />
+          <p className="text-white/65">No knowledge items yet</p>
+          <p className="text-sm text-white/40 mt-1">
+            Add FAQs, policies, and info so your agent can help customers.
+          </p>
+        </GlassPanel>
       ) : (
         <div className="space-y-3">
           {items.map((item, i) => (
@@ -202,39 +225,59 @@ function KnowledgeItemCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03 }}
-      className="glass rounded-xl p-5 group"
+      transition={{ delay: index * 0.04, duration: 0.4 }}
     >
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-2">
-          {isEditing ? (
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} className="bg-white/5 border-[#2A2A3E] text-white h-8 text-sm" />
-          ) : (
-            <h4 className="font-medium text-white">{item.title}</h4>
-          )}
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-[#8888AA]">{item.category}</span>
+      <GlassPanel elevation="subtle" interactive={!isEditing} radius="md" className="p-5 group">
+        <div className="flex items-start justify-between mb-2 gap-3">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            {isEditing ? (
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="h-9"
+              />
+            ) : (
+              <h4 className="font-medium text-white tracking-tight truncate">{item.title}</h4>
+            )}
+            <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-white/55 shrink-0">
+              {item.category}
+            </span>
+          </div>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
+            {isEditing ? (
+              <>
+                <button onClick={() => onSave({ title, content })} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-emerald-300 transition-colors" aria-label="Save">
+                  <Check className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={onCancelEdit} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/55 transition-colors" aria-label="Cancel">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/55 transition-colors" aria-label="Edit">
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-rose-300/70 hover:text-rose-300 transition-colors" aria-label="Delete">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {isEditing ? (
-            <>
-              <button onClick={() => onSave({ title, content })} className="p-1.5 rounded-lg hover:bg-white/5 text-green-400"><Check className="w-3.5 h-3.5" /></button>
-              <button onClick={onCancelEdit} className="p-1.5 rounded-lg hover:bg-white/5 text-[#8888AA]"><X className="w-3.5 h-3.5" /></button>
-            </>
-          ) : (
-            <>
-              <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-white/5 text-[#8888AA]"><Edit2 className="w-3.5 h-3.5" /></button>
-              <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-white/5 text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
-            </>
-          )}
-        </div>
-      </div>
-      {isEditing ? (
-        <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={3} className="w-full bg-white/5 border border-[#2A2A3E] rounded-lg p-2 text-sm text-white resize-none focus:outline-none focus:border-[#00D4FF]" />
-      ) : (
-        <p className="text-sm text-[#8888AA] line-clamp-3">{item.content}</p>
-      )}
+        {isEditing ? (
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={3}
+            className="px-2.5 py-2.5"
+          />
+        ) : (
+          <p className="text-sm text-white/55 line-clamp-3">{item.content}</p>
+        )}
+      </GlassPanel>
     </motion.div>
   );
 }

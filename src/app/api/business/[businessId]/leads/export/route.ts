@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 import { getAppUrl } from "@/lib/url";
 
 const ALLOWED_LEAD_STATUS = new Set(["new", "contacted", "qualified", "won", "lost", "archived"]);
@@ -40,7 +41,7 @@ export async function GET(
     const { businessId } = await params;
 
     const owns = await prisma.business.findFirst({
-      where: { id: businessId, ownerId: session.user.id },
+      where: { id: businessId, ...businessAccessFilter(session.user.id) },
       select: { id: true, slug: true },
     });
     if (!owns) {
@@ -123,7 +124,7 @@ export async function GET(
     });
 
     const body = [header, ...rows].join("\n") + "\n";
-    const filename = `agenthub-leads-${owns.slug}-${new Date().toISOString().slice(0, 10)}.csv`;
+    const filename = `voxie-leads-${owns.slug}-${new Date().toISOString().slice(0, 10)}.csv`;
 
     return new Response(body, {
       status: 200,

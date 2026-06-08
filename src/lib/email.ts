@@ -1,14 +1,75 @@
 import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
 import { traceable } from "langsmith/traceable";
 import { getAppUrl } from "@/lib/url";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Use Resend's shared domain in dev, your verified domain in production
-const FROM =
-  process.env.NODE_ENV === "development"
-    ? "AgentHub <onboarding@resend.dev>"
-    : "AgentHub <noreply@agenthub.ai>";
+// In dev we'd rather send through Gmail (Nodemailer + App Password) so we
+// can deliver to ANY recipient — Resend's shared `onboarding@resend.dev`
+// only allows sending to the Resend account owner. The Gmail path activates
+// as soon as GMAIL_SENDER + GMAIL_APP_PASSWORD are set in dev.
+const useGmail =
+  process.env.NODE_ENV === "development" &&
+  !!process.env.GMAIL_SENDER &&
+  !!process.env.GMAIL_APP_PASSWORD;
+
+const FROM = useGmail
+  ? `Voxie <${process.env.GMAIL_SENDER}>`
+  : process.env.NODE_ENV === "development"
+    ? "Voxie <onboarding@resend.dev>"
+    : "Voxie <noreply@agenthub.ai>";
+
+let gmailTransport: Transporter | null = null;
+function getGmailTransport(): Transporter {
+  if (!gmailTransport) {
+    // Gmail displays app passwords as "abcd efgh ijkl mnop" but the real
+    // credential is the 16 chars with no whitespace. Strip defensively so
+    // either form works in .env.local. Same for the sender address.
+    const user = process.env.GMAIL_SENDER!.trim();
+    const pass = process.env.GMAIL_APP_PASSWORD!.replace(/\s+/g, "");
+    gmailTransport = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user, pass },
+    });
+  }
+  return gmailTransport;
+}
+
+type SendResult = {
+  data: { id: string } | null;
+  error: { message: string; name?: string; statusCode?: number } | null;
+};
+
+async function sendMail(opts: {
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<SendResult> {
+  if (useGmail) {
+    console.log(`[Email] using Gmail transport → ${opts.to}`);
+    try {
+      const info = await getGmailTransport().sendMail(opts);
+      return { data: { id: info.messageId }, error: null };
+    } catch (err) {
+      const e = err as Error;
+      return { data: null, error: { message: e.message, name: e.name } };
+    }
+  }
+  console.log(`[Email] using Resend transport → ${opts.to}`);
+  const result = await resend.emails.send(opts);
+  return {
+    data: result.data ? { id: result.data.id } : null,
+    error: result.error
+      ? {
+          message: result.error.message,
+          name: result.error.name,
+        }
+      : null,
+  };
+}
+
 const BASE_URL = getAppUrl();
 
 // ── Shared HTML shell ─────────────────────────────────────────────────────────
@@ -19,7 +80,7 @@ function emailShell(content: string): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgentHub</title>
+  <title>Voxie</title>
 </head>
 <body style="margin:0;padding:0;background:#0A0A0F;font-family:'Helvetica Neue',Arial,sans-serif;color:#F0F0F5;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0F;padding:40px 16px;">
@@ -35,7 +96,7 @@ function emailShell(content: string): string {
                     <span style="font-size:18px;line-height:36px;">⚡</span>
                   </td>
                   <td style="padding-left:10px;font-size:18px;font-weight:700;color:#FFFFFF;letter-spacing:-0.3px;">
-                    AgentHub
+                    Voxie
                   </td>
                 </tr>
               </table>
@@ -51,7 +112,7 @@ function emailShell(content: string): string {
           <tr>
             <td style="padding:24px 40px;border-top:1px solid #2A2A3E;text-align:center;">
               <p style="margin:0;font-size:12px;color:#555577;">
-                © ${new Date().getFullYear()} AgentHub · Powered by Google Gemini &amp; Claude AI
+                © ${new Date().getFullYear()} Voxie · Powered by Google Gemini &amp; Claude AI
               </p>
               <p style="margin:8px 0 0;font-size:12px;color:#555577;">
                 If you didn't request this email, you can safely ignore it.
@@ -96,7 +157,7 @@ export async function sendWelcomeEmail(opts: {
 
   const body = emailShell(`
     <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#FFFFFF;letter-spacing:-0.5px;">
-      Welcome to AgentHub, ${opts.name || "there"}! 👋
+      Welcome to Voxie, ${opts.name || "there"}! 👋
     </h1>
     <p style="margin:0 0 20px;font-size:15px;color:#8888AA;line-height:1.6;">
       Your account and <strong style="color:#F0F0F5;">${opts.businessName}</strong> workspace are ready.
@@ -147,10 +208,10 @@ export async function sendWelcomeEmail(opts: {
     </p>
   `);
 
-  return resend.emails.send({
+  return sendMail({
     from: FROM,
     to: opts.to,
-    subject: `Welcome to AgentHub — your ${industryLabel} AI agent is ready`,
+    subject: `Welcome to Voxie — your ${industryLabel} AI agent is ready`,
     html: body,
   });
 }
@@ -169,7 +230,7 @@ export async function sendVerificationEmail(opts: {
       Verify your email
     </h1>
     <p style="margin:0 0 20px;font-size:15px;color:#8888AA;line-height:1.6;">
-      Hi ${opts.name || "there"}, thanks for signing up to AgentHub. Click the button below
+      Hi ${opts.name || "there"}, thanks for signing up to Voxie. Click the button below
       to confirm this is your email address and activate your account.
     </p>
 
@@ -194,12 +255,23 @@ export async function sendVerificationEmail(opts: {
     </table>
   `);
 
-  return resend.emails.send({
+  const result = await sendMail({
     from: FROM,
     to: opts.to,
-    subject: "Verify your email — AgentHub",
+    subject: "Verify your email — Voxie",
     html: body,
   });
+
+  // Resend returns { data, error } — the SDK never throws on send failures,
+  // it returns the error in the body. Log loudly so a misconfigured sender
+  // (e.g. onboarding@resend.dev to an unverified address) doesn't silently
+  // swallow verification emails.
+  if (result.error) {
+    console.error(`[Email] verification → ${opts.to} failed:`, result.error);
+  } else {
+    console.log(`[Email] verification → ${opts.to} sent (id: ${result.data?.id})`);
+  }
+  return result;
 }
 
 // ── Plan quota threshold email ────────────────────────────────────────────────
@@ -227,7 +299,7 @@ export async function sendQuotaWarningEmail(opts: QuotaWarningEmailOpts) {
       ${headline}
     </h1>
     <p style="margin:0 0 20px;font-size:14px;color:#8888AA;line-height:1.6;">
-      Hi ${opts.ownerName || "there"} — heads up on your AgentHub usage.
+      Hi ${opts.ownerName || "there"} — heads up on your Voxie usage.
     </p>
 
     <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:12px;border:1px solid #2A2A3E;margin:0 0 20px;">
@@ -259,7 +331,7 @@ export async function sendQuotaWarningEmail(opts: QuotaWarningEmailOpts) {
     ? `Quota reached — ${opts.businessName} calls are being declined`
     : `${opts.threshold}% of monthly quota — ${opts.businessName}`;
 
-  return resend.emails.send({
+  return sendMail({
     from: FROM,
     to: opts.to,
     subject,
@@ -394,7 +466,7 @@ export const sendLeadCaptureEmail = traceable(
     ${primaryButton(sessionUrl, "View full transcript →")}
 
     <p style="margin:24px 0 0;font-size:12px;color:#555577;line-height:1.6;">
-      You're receiving this because someone called your AgentHub voice agent. To change where these go, update the notification email in your business settings.
+      You're receiving this because someone called your Voxie voice agent. To change where these go, update the notification email in your business settings.
     </p>
   `);
 
@@ -405,7 +477,7 @@ export const sendLeadCaptureEmail = traceable(
     : "new caller";
   const callerLabel = opts.caller.name || "anonymous caller";
 
-  return resend.emails.send({
+  return sendMail({
     from: FROM,
     to: opts.to,
     subject: `New lead from ${opts.agentName} — ${callerLabel}: ${subjectIntent}`,
@@ -429,7 +501,7 @@ export async function sendPasswordResetEmail(opts: {
       Reset your password
     </h1>
     <p style="margin:0 0 20px;font-size:15px;color:#8888AA;line-height:1.6;">
-      Hi ${opts.name || "there"}, we received a request to reset the password for your AgentHub account.
+      Hi ${opts.name || "there"}, we received a request to reset the password for your Voxie account.
       Click the button below to choose a new password.
     </p>
 
@@ -454,10 +526,68 @@ export async function sendPasswordResetEmail(opts: {
     </table>
   `);
 
-  return resend.emails.send({
+  return sendMail({
     from: FROM,
     to: opts.to,
-    subject: "Reset your AgentHub password",
+    subject: "Reset your Voxie password",
     html: body,
   });
+}
+
+// ── Team invite email ─────────────────────────────────────────────────────────
+
+export async function sendTeamInviteEmail(opts: {
+  to: string;
+  inviterName: string;
+  businessName: string;
+  token: string;
+}) {
+  const acceptUrl = `${BASE_URL}/invites/${opts.token}`;
+  const inviter = opts.inviterName || "Your teammate";
+
+  const body = emailShell(`
+    <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#FFFFFF;letter-spacing:-0.5px;">
+      You're invited to ${escapeHtml(opts.businessName)}
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;color:#8888AA;line-height:1.6;">
+      ${escapeHtml(inviter)} has invited you to join <strong style="color:#F0F0F5;">${escapeHtml(opts.businessName)}</strong>
+      on Voxie. Once you accept, you'll be able to view leads, sessions, and analytics for the business.
+    </p>
+
+    ${primaryButton(acceptUrl, "Accept invitation")}
+
+    <p style="margin:0 0 8px;font-size:13px;color:#8888AA;line-height:1.6;">
+      This invite expires in <strong style="color:#F0F0F5;">7 days</strong>.
+      If you weren't expecting this, you can safely ignore it.
+    </p>
+
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:10px;border:1px solid #2A2A3E;margin:24px 0;">
+      <tr>
+        <td style="padding:16px 20px;">
+          <p style="margin:0 0 6px;font-size:12px;color:#555577;text-transform:uppercase;letter-spacing:0.5px;">
+            Or copy this link into your browser
+          </p>
+          <p style="margin:0;font-size:12px;color:#00D4FF;word-break:break-all;font-family:monospace;">
+            ${acceptUrl}
+          </p>
+        </td>
+      </tr>
+    </table>
+  `);
+
+  return sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: `${inviter} invited you to ${opts.businessName} on Voxie`,
+    html: body,
+  });
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { businessAccessFilter } from "@/lib/access";
 import { generateInterviewReport } from "@/lib/claude";
 import { flushTraces } from "@/lib/langsmith";
 import type { TranscriptMessage } from "@/types/session";
@@ -25,7 +26,7 @@ export async function POST(_request: Request, { params }: Params) {
     const agentSession = await prisma.agentSession.findFirst({
       where: {
         id,
-        agent: { business: { ownerId: session.user.id } },
+        agent: { business: businessAccessFilter(session.user.id) },
       },
       include: {
         agent: { select: { name: true, templateType: true, config: true } },
@@ -96,7 +97,7 @@ export async function GET(_request: Request, { params }: Params) {
     const agentSession = await prisma.agentSession.findFirst({
       where: {
         id,
-        agent: { business: { ownerId: session.user.id } },
+        agent: { business: businessAccessFilter(session.user.id) },
       },
       select: { summary: true, sentiment: true, sentimentScore: true, actionItems: true },
     });

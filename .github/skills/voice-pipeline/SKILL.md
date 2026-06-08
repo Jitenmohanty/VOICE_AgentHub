@@ -1,6 +1,6 @@
 ---
 name: voice-pipeline
-description: "Use when working on the real-time voice pipeline in AgentHub: Gemini Live API WebSocket, AudioWorklet, audio capture/playback, transcript handling, system prompt building, or session lifecycle."
+description: "Use when working on the real-time voice pipeline in Voxie: Gemini Live API WebSocket, AudioWorklet, audio capture/playback, transcript handling, system prompt building, or session lifecycle."
 ---
 
 # Voice Pipeline

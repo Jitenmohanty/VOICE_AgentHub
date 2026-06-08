@@ -1,8 +1,8 @@
-# AgentHub — Multi-Tenant Voice AI Platform
+# Voxie — Multi-Tenant Voice AI Platform
 
 ## Overview
 
-AgentHub is a full-stack multi-tenant SaaS platform where businesses create AI-powered voice agents for their customers. A hotel owner uploads their room details and FAQs, and customers call the AI concierge through a shareable link — no app download, no login required.
+Voxie is a full-stack multi-tenant SaaS platform where businesses create AI-powered voice agents for their customers. A hotel owner uploads their room details and FAQs, and customers call the AI concierge through a shareable link — no app download, no login required.
 
 **Built with:** Next.js 16 | TypeScript | Gemini Live API | Claude API | pgvector on Neon | Prisma | NextAuth v5 | Zustand | Tailwind CSS | LangSmith
 
