@@ -12,7 +12,13 @@ interface RazorpayWebhookEvent {
   payload: {
     subscription?: { entity: RazorpaySubscription };
     payment?: { entity: RazorpayPayment };
+    payment_link?: { entity: RazorpayPaymentLink };
   };
+}
+interface RazorpayPaymentLink {
+  id: string;
+  amount?: number; // paise
+  notes?: Record<string, string>;
 }
 interface RazorpaySubscription {
   id: string;
@@ -96,6 +102,23 @@ export async function POST(request: Request) {
           await markSubscriptionPastDueByCustomer(event.payload.payment.entity);
         }
         break;
+      // Mid-call UPI payment links (Item 8): stamp the session when paid.
+      case "payment_link.paid": {
+        const link = event.payload.payment_link?.entity;
+        const sessionId = link?.notes?.sessionId;
+        if (link && sessionId) {
+          // Match on BOTH id and stored linkId so a forged/replayed notes
+          // field can't stamp an unrelated session.
+          await prisma.agentSession.updateMany({
+            where: { id: sessionId, paymentLinkId: link.id },
+            data: {
+              paymentReceivedAt: new Date(),
+              ...(typeof link.amount === "number" ? { paymentAmountPaise: link.amount } : {}),
+            },
+          });
+        }
+        break;
+      }
       // Other events (subscription.pending, subscription.authenticated, etc.)
       // are no-ops — subscription.activated/charged is the truth source.
     }

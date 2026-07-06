@@ -374,6 +374,9 @@ export class GeminiLiveSession {
               // tool-shaped fallbacks on failure, so the model degrades
               // to captureLead gracefully.
               result = await this.callBookingEndpoint(fc.name, fc.args || {});
+            } else if (fc.name === "generatePaymentLink") {
+              // Mid-call UPI payment link — server-side (touches Razorpay).
+              result = await this.callPaymentLinkEndpoint(fc.args || {});
             }
             // For data-fetch tools, override with real data from the public API
             if (this.agentSlug && (fc.name === "getMenu" || fc.name === "listRooms" || fc.name === "listDoctors")) {
@@ -584,6 +587,33 @@ export class GeminiLiveSession {
         fallback: "captureLead",
         message: "Booking hit a technical problem — apologize and use captureLead instead.",
       });
+    }
+  }
+
+  /** Dispatch generatePaymentLink to the authenticated public endpoint (Item 8). */
+  private async callPaymentLinkEndpoint(args: Record<string, unknown>): Promise<string> {
+    if (!this.sessionId || !this.updateToken || !this.agentSlug) {
+      return JSON.stringify({ error: "session not ready", message: "Payment links are unavailable right now — continue without payment." });
+    }
+    try {
+      const res = await fetch(`/api/public/agent/${this.agentSlug}/payment-link`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.updateToken}`,
+        },
+        body: JSON.stringify({ sessionId: this.sessionId, ...args }),
+      });
+      const text = await res.text();
+      try {
+        JSON.parse(text);
+        return text;
+      } catch {
+        return JSON.stringify({ error: `payment link failed (${res.status})`, message: "Payment link could not be created — apologize and continue without payment." });
+      }
+    } catch (err) {
+      console.warn("[GeminiLive] generatePaymentLink error:", err);
+      return JSON.stringify({ error: "payment link error", message: "Payment link could not be created — apologize and continue without payment." });
     }
   }
 

@@ -142,6 +142,40 @@ Never call captureLead AND confirmAppointment for the same request unless bookin
 `;
 
 /**
+ * Mid-call UPI payment link tool (Item 8). Only offered when the owner turned
+ * on Agent.config.paymentEnabled AND the platform has Razorpay keys — the
+ * session route appends it (and paymentRule) conditionally.
+ */
+export const generatePaymentLinkTool: GeminiToolDeclaration = {
+  name: "generatePaymentLink",
+  description:
+    "Send the caller a UPI payment link by SMS for a deposit or fee this business has configured. " +
+    "Call ONLY for amounts the business itself quoted (in your instructions or business data) — NEVER invent or negotiate amounts. " +
+    "You MUST verbally confirm the exact amount and reason with the caller, and have their phone number, BEFORE calling this.",
+  parameters: {
+    type: "object",
+    properties: {
+      amountInr: { type: "number", description: "Amount in RUPEES (not paise), e.g. 200 for ₹200" },
+      description: { type: "string", description: "What the payment is for, e.g. 'Consultation booking fee'" },
+      phone: { type: "string", description: "Caller's phone number to send the link to" },
+      name: { type: "string", description: "Caller's name" },
+    },
+    required: ["amountInr", "description", "phone"],
+  },
+};
+
+export const paymentRule = `
+## UPI payments are ENABLED for this business
+
+You can send the caller a UPI payment link by SMS with the generatePaymentLink tool, under strict rules:
+- Only for deposits/fees the business has configured or quoted — NEVER invent an amount, never accept a caller-proposed amount that differs from the configured one.
+- Confirm verbally first: "So that's ₹200 for the consultation booking fee — should I send the payment link to your number?" Only call the tool after a clear yes.
+- After the tool succeeds, say the link was sent by SMS and payment can be completed via any UPI app. Do NOT read the URL aloud.
+- You cannot see whether they paid. Never claim a payment was received.
+- If the tool returns an error, apologize and continue without payment — capture the lead as usual.
+`;
+
+/**
  * Hard rule appended to every SMB agent's system prompt. Phrased so the model
  * treats it as inviolable — booking claims have been the #1 hallucination
  * failure mode in voice agents.

@@ -118,7 +118,7 @@ This is where a LangGraph-style state machine becomes defensible — evaluate it
 - Requires: `Integration` model with AES-256-GCM encrypted tokens (`src/lib/crypto.ts`) — build
   the crypto foundation here; CRM (Item 9) reuses it.
 
-### Item 8 — UPI payment links mid-call (2 weeks) — IMPLEMENTATION_PLAN.md K
+### Item 8 — UPI payment links mid-call — IMPLEMENTATION_PLAN.md K — ✅ DONE (2026-07-06; `generatePaymentLink` tool (per-agent "Payments" toggle in the existing config UI, ₹ cap enforced server-side, default ₹2,000), Razorpay Payment Link + SMS + WhatsApp copy, `payment_link.paid` webhook stamps `paymentReceivedAt` (matched on both sessionId AND linkId). Configure the `payment_link.paid` event in the Razorpay webhook dashboard. Pending `npx prisma db push`. Refund-flow surfacing: later)
 **Business:** ₹50–200 deposits kill no-shows; direct revenue story for restaurants/clinics.
 **GenAI:** Tool-use with hard guardrails baked into the tool description (owner-set amount cap,
 verbal confirmation before firing, never invent amounts) — a nice "constrained agent" case study.

@@ -8,7 +8,10 @@ import {
   bookAppointmentTool,
   confirmAppointmentTool,
   bookingRule,
+  generatePaymentLinkTool,
+  paymentRule,
 } from "@/lib/gemini/agent-prompts";
+import { isRazorpayConfigured } from "@/lib/razorpay";
 import { queryKnowledge, buildRAGContext, buildBusinessDataContext } from "@/lib/rag";
 import { checkSessionRateLimit, checkBusinessPlanQuota } from "@/lib/ratelimit";
 import { SessionCreateSchema } from "@/lib/schemas";
@@ -199,6 +202,14 @@ export async function POST(
       if (calendarIntegration?.status === "active") {
         tools.push(bookAppointmentTool, confirmAppointmentTool);
         systemPrompt += bookingRule;
+      }
+
+      // Mid-call UPI payment links (Item 8): owner toggle + platform Razorpay
+      // keys. Off = agent behaves exactly as before.
+      const config = (agent.config ?? {}) as Record<string, unknown>;
+      if (config.paymentEnabled === true && isRazorpayConfigured()) {
+        tools.push(generatePaymentLinkTool);
+        systemPrompt += paymentRule;
       }
     }
 
