@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { sendLeadCaptureEmail } from "@/lib/email";
 import { getAppUrl } from "@/lib/url";
 import { isWhatsAppConfigured, sendWhatsAppText } from "@/lib/whatsapp";
+import { pushLeadToCrm } from "@/lib/crm";
 
 interface CapturedLeadShape {
   name?: string;
@@ -20,6 +21,7 @@ export interface LeadDeliveryResult {
   reason?: string;
   webhook?: { attempted: boolean; ok?: boolean; status?: number; error?: string };
   whatsapp?: { attempted: boolean; ok?: boolean; error?: string };
+  crm?: { attempted: boolean; ok?: boolean; recordId?: string; error?: string };
 }
 
 /**
@@ -244,6 +246,39 @@ export const deliverLead = traceable(
     }
   }
 
+    // Optional CRM push (Item 9). Gated on per-business connector + a real
+    // captured lead + not yet pushed. Failures are stamped on the session
+    // (crmError) so the owner sees a red badge + can re-push — never blocks
+    // the email/webhook/WhatsApp channels.
+    let crmResult: LeadDeliveryResult["crm"] = { attempted: false };
+    if (business.crmProvider && business.crmSecretEncrypted && lead && !session.crmPushedAt) {
+      crmResult = await pushLeadToCrm({
+        provider: business.crmProvider,
+        secretEncrypted: business.crmSecretEncrypted,
+        config: business.crmConfig,
+        lead: {
+          name: caller.name,
+          phone: caller.phone,
+          email: caller.email,
+          intent: lead.intent,
+          notes: lead.notes,
+        },
+      });
+      await prisma.agentSession
+        .update({
+          where: { id: sessionId },
+          data: {
+            crmPushedAt: crmResult.ok ? new Date() : null,
+            crmRecordId: crmResult.recordId ?? null,
+            crmError: crmResult.ok ? null : (crmResult.error ?? "unknown error").slice(0, 1000),
+          },
+        })
+        .catch((err) => console.warn("[LeadDelivery] CRM status write failed:", err));
+      if (!crmResult.ok) {
+        console.warn(`[LeadDelivery] CRM push (${business.crmProvider}) failed:`, crmResult.error);
+      }
+    }
+
     // Optional WhatsApp confirmation to the CALLER (Item 4). Fully gated:
     // platform env + per-business toggle + a usable phone + not yet sent.
     // Failures never affect the email/webhook outcome above.
@@ -265,7 +300,7 @@ export const deliverLead = traceable(
       });
     }
 
-    return { delivered: true, webhook: webhookResult, whatsapp: whatsappResult };
+    return { delivered: true, webhook: webhookResult, whatsapp: whatsappResult, crm: crmResult };
   },
   { name: "deliverLead", run_type: "chain" },
 );

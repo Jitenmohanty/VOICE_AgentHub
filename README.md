@@ -282,7 +282,7 @@ RAZORPAY_WEBHOOK_SECRET=
 RAZORPAY_PLAN_STARTER=           # Razorpay Plan ID for the Starter plan
 RAZORPAY_PLAN_PRO=               # Razorpay Plan ID for the Pro plan
 
-# ── WhatsApp outbound confirmations (optional — Item 4) ──
+# ── WhatsApp channel (optional — Items 4 + 5) ──
 # Unset = WhatsApp channel silently disabled (Stripe-style gating).
 WHATSAPP_BSP_PROVIDER=           # gupshup | twilio
 WHATSAPP_BSP_API_KEY=            # Gupshup API key
@@ -291,6 +291,12 @@ WHATSAPP_BSP_APP_NAME=           # Gupshup app name
 TWILIO_ACCOUNT_SID=              # Twilio alternative
 TWILIO_AUTH_TOKEN=
 TWILIO_WHATSAPP_FROM=            # E.164, e.g. +14155238886
+# Inbound text agent (Item 5): point the BSP webhook at
+#   https://your-domain/api/whatsapp/inbound?token=$WHATSAPP_INBOUND_TOKEN
+WHATSAPP_INBOUND_TOKEN=          # `openssl rand -hex 32` — fails closed if unset
+
+# ── Integration secrets at rest (Item 9 CRM; Item 7 calendar will reuse) ──
+SECRETS_ENCRYPTION_KEY=          # `openssl rand -hex 32` — AES-256-GCM; CRM connect returns 503 without it
 
 # ── Observability ─────────────────────────────
 LANGSMITH_API_KEY=               # Optional

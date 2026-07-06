@@ -31,7 +31,9 @@ export async function GET(
       return NextResponse.json({ error: "Business not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ business });
+    // Encrypted CRM credentials never leave the server — even ciphertext.
+    const { crmSecretEncrypted: _crmSecret, ...safeBusiness } = business;
+    return NextResponse.json({ business: safeBusiness });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

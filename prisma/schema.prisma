@@ -94,6 +94,12 @@ model Business {
   whatsappEnabled    Boolean @default(false)
   // Optional per-business sender override; platform source number used if null.
   whatsappFromNumber String?
+
+  // CRM push (Item 9). crmSecretEncrypted holds the provider credentials as an
+  // AES-256-GCM blob (src/lib/crypto.ts) — NEVER return it from an API route.
+  crmProvider        String? // zoho (leadsquared/kylas planned)
+  crmConfig          Json?   // non-secret config: { region?, fieldMapping? }
+  crmSecretEncrypted String? @db.Text
   // Optional outbound webhook for leads (Slack/HubSpot/Zapier/etc).
   // Signed with HMAC-SHA256 using webhookSecret in X-Voxie-Signature.
   webhookUrl    String?
@@ -107,6 +113,7 @@ model Business {
   webhookDeliveries WebhookDelivery[]
   members     BusinessMember[]
   invites     BusinessInvite[]
+  whatsappConversations WhatsAppConversation[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -251,10 +258,39 @@ model Agent {
   businessData    BusinessData[]
   agentSessions   AgentSession[]
   knowledgeGaps   KnowledgeGap[]
+  whatsappConversations WhatsAppConversation[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([businessId])
+}
+
+// ── WhatsApp inbound text agent (Item 5) ──────
+// One row per (business, caller number). The same agent brain that answers
+// voice calls replies here over Gemini text mode. When captureLead fires,
+// an AgentSession is created and the normal post-call pipeline (Claude
+// scoring, lead email, webhook, WhatsApp confirmation) takes over.
+
+model WhatsAppConversation {
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  agentId       String
+  agent         Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  fromNumber    String   // caller's WhatsApp number — digits with country code
+  // [{ role: "user" | "agent", text, at }] — capped to the most recent 60
+  messages      Json     @default("[]")
+  capturedLead  Json?
+  // AgentSession created when a lead was captured in this thread
+  sessionId     String?
+  lastInboundAt DateTime @default(now())
+  // While set and in the future, the AI does not reply — a human has taken over.
+  humanTakeoverUntil DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([businessId, fromNumber])
+  @@index([agentId, lastInboundAt])
 }
 
 // ── Knowledge Gap (Item 2 — gap detection) ────
@@ -374,6 +410,11 @@ model AgentSession {
   whatsappDeliveredAt DateTime?
   whatsappMessageId   String?
   whatsappStatus      String?   // sent | failed
+
+  // CRM push (Item 9). crmPushedAt doubles as the idempotency marker.
+  crmPushedAt  DateTime?
+  crmRecordId  String?
+  crmError     String?   @db.Text
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

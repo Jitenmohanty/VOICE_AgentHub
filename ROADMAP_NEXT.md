@@ -93,14 +93,14 @@ Trust + show-up rate. Prereq for everything WhatsApp.
 - Provider adapter (`gupshup` first), `deliverWhatsAppConfirmation()` step in `lead-delivery.ts`,
   idempotent via `whatsappDeliveredAt`. Settings toggle + delivery status on session detail.
 
-### Item 5 — WhatsApp inbound text agent (2–3 weeks) — IMPLEMENTATION_PLAN.md G2 ✦ biggest business item
+### Item 5 — WhatsApp inbound text agent — IMPLEMENTATION_PLAN.md G2 ✦ biggest business item — ✅ DONE (2026-07-06; pending `npx prisma db push` + BSP webhook config + WHATSAPP_INBOUND_TOKEN)
 **Business:** "Our customers WhatsApp us, they don't visit our website" is the #1 India demo
 blocker. This makes Voxie omnichannel with the SAME brain.
 **GenAI:** Strong showcase — same system-prompt assembly + RAG + `captureLead` tool re-hosted
 on Gemini text mode with multi-turn state (`WhatsAppConversation`, 24h Meta window), human
 takeover switch. Proves the agent core is channel-agnostic.
 
-### Item 6 — Hindi + code-switching prompts (1–2 weeks, parallelizable) — IMPLEMENTATION_PLAN.md L1/L2
+### Item 6 — Hindi + code-switching prompts — IMPLEMENTATION_PLAN.md L1/L2 — ✅ DONE (2026-07-06; prompt layer: code-switch mirroring in baseInstructions + Indic-aware buildLanguageDirective replacing the old "never switch" rule. Dashboard i18n (L3) deliberately deferred)
 **Business:** Perceived-quality jump for the entire Indian ICP; cheap relative to impact.
 **GenAI:** Per-template Hindi prompt variants with Indian context (not literal translation),
 code-switch instruction in `baseInstructions`, voice selection that handles Hinglish.
@@ -124,7 +124,7 @@ This is where a LangGraph-style state machine becomes defensible — evaluate it
 verbal confirmation before firing, never invent amounts) — a nice "constrained agent" case study.
 - Builds directly on shipped Razorpay webhook plumbing.
 
-### Item 9 — CRM push: Zoho first (1 week per provider) — IMPLEMENTATION_PLAN.md I
+### Item 9 — CRM push: Zoho first — IMPLEMENTATION_PLAN.md I — ✅ DONE (2026-07-06; Zoho adapter + AES-256-GCM crypto foundation (`src/lib/crypto.ts`, SECRETS_ENCRYPTION_KEY — Item 7 reuses it) + deliverLead step + owner-only connect/test/disconnect routes + settings card. Pending `npx prisma db push`. LeadSquared/Kylas adapters: next)
 **Business:** "Does it go into my CRM?" is the second question in every serious demo.
 - `pushLead()` dispatcher, field-mapping JSON, dry-run test button, failure badge + manual
   re-push (the `WebhookDelivery` table pattern already shipped — reuse it).

@@ -11,6 +11,7 @@ import { GlassPanel } from "@/components/ui/glass-panel";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { WebhookDeliveriesLog } from "@/components/business/WebhookDeliveriesLog";
 import { NotificationPrefsCard, type NotificationPrefs } from "@/components/business/NotificationPrefsCard";
+import { CrmSettingsCard } from "@/components/business/CrmSettingsCard";
 
 interface BusinessInfo {
   id: string;
@@ -28,6 +29,8 @@ interface BusinessInfo {
   notificationPrefs: Partial<NotificationPrefs> | null;
   whatsappEnabled: boolean;
   whatsappFromNumber: string | null;
+  crmProvider: string | null;
+  crmConfig: { region?: string } | null;
 }
 
 export default function BusinessSettingsPage() {
@@ -309,6 +312,12 @@ export default function BusinessSettingsPage() {
       </motion.div>
 
       <NotificationPrefsCard businessId={business.id} initial={business.notificationPrefs} />
+
+      <CrmSettingsCard
+        businessId={business.id}
+        initialProvider={business.crmProvider ?? null}
+        initialConfig={business.crmConfig ?? null}
+      />
 
       {business.webhookUrl && <WebhookDeliveriesLog businessId={business.id} />}
     </div>

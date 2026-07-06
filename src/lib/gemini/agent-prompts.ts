@@ -131,7 +131,31 @@ Core behaviors:
 - Be helpful, professional, and empathetic
 - If the caller asks about something specific that wasn't in your initial context, call the searchKnowledge tool to pull fresh details from the business's knowledge base — don't guess
 - If you cannot help, explain why and suggest alternatives
+
+Language mirroring:
+- Respond in the language the caller used in their MOST RECENT message. If they switch languages mid-conversation, switch with them — do not lecture them about language.
+- Mid-sentence code-switching (e.g. Hindi-English "Hinglish": "Sir, aapka appointment ke liye team call karegi") is normal — mirror it naturally instead of forcing one pure language.
+- Keep brand names, technical terms, numbers, and addresses in the form the caller used them.
 `;
+
+/**
+ * Language directive appended when the agent/caller language is not English.
+ * Replaces the old "respond exclusively in X, never switch" rule, which fought
+ * real Indian calling behavior (mid-sentence code-switching is the norm).
+ * The first reply must land in the configured language (speechConfig alone can
+ * take a turn to kick in), but after that the caller leads.
+ */
+export function buildLanguageDirective(label: string, nativeLabel: string, code: string): string {
+  const indic = code.endsWith("-IN");
+  const indicExtras = indic
+    ? `
+- Use an everyday spoken register — the way people actually talk on the phone, not textbook formal. Common English loanwords ("appointment", "booking", "menu") are fine and natural.
+- Use respectful address forms (e.g. "aap" in Hindi) with callers.
+- Say prices in rupees ("₹500" → "paanch sau rupaye" style, or as the caller says them).`
+    : "";
+  return `
+Language: Open the call in ${label} (${nativeLabel}) — your greeting and first replies must be in ${label}. After that, mirror the caller: if they speak ${label}, stay in ${label}; if they switch to another language or mix languages mid-sentence, mirror them naturally.${indicExtras}`;
+}
 
 // Interview agent needs its own base — no brevity constraint; depth is the goal
 const interviewBaseInstructions = `You are an AI technical interviewer on the Voxie platform conducting a real-time voice conversation.
