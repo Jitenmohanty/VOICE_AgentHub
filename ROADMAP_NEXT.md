@@ -109,7 +109,7 @@ code-switch instruction in `baseInstructions`, voice selection that handles Hing
 
 ## Wave 3 — Transactional value (justifies ₹2,999+ plans)
 
-### Item 7 — Google Calendar booking (3–4 weeks) — IMPLEMENTATION_PLAN.md H ✦ highest-MRR feature
+### Item 7 — Google Calendar booking — IMPLEMENTATION_PLAN.md H ✦ highest-MRR feature — ✅ DONE v1 (2026-07-06; Google only — Calendly deferred. `Integration` model + OAuth connect/callback (reuses the NextAuth Google app; add `{APP_URL}/api/integrations/google-calendar/callback` as an authorized redirect URI), AES-encrypted refresh tokens, free/busy → 3 IST slots → real event + invite, slot-taken re-offer, needs_reauth handling, captureLead fallback on every failure path, settings card. Booking tools auto-activate for all SMB agents when the calendar is connected (per-agent toggle: later). Pending `npx prisma db push`)
 **Business:** Clinics/salons pay real money when the agent BOOKS, not just captures intent.
 **GenAI:** First true multi-step agentic workflow: `bookAppointment` (fetch free/busy → propose
 3 slots) → `confirmAppointment` (create event, invite, WhatsApp confirm). Server-side tools with

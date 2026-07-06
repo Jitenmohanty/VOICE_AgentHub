@@ -78,6 +78,70 @@ export const captureLeadTool: GeminiToolDeclaration = {
 };
 
 /**
+ * Real calendar booking tools (Item 7). Only offered when the business has an
+ * ACTIVE Google Calendar integration — the session route appends them (and
+ * the bookingRule below) conditionally; they are never part of getAgentTools.
+ */
+export const bookAppointmentTool: GeminiToolDeclaration = {
+  name: "bookAppointment",
+  description:
+    "Fetch up to 3 real available appointment slots from the business's live calendar. " +
+    "Call this when the caller wants to book an appointment, consultation, or visit. " +
+    "After it returns, offer the slots to the caller verbally (times are IST).",
+  parameters: {
+    type: "object",
+    properties: {
+      preferredDate: { type: "string", description: "Caller's preferred date as YYYY-MM-DD, if they mentioned one" },
+      timePreference: {
+        type: "string",
+        enum: ["morning", "afternoon", "evening"],
+        description: "Caller's preferred time of day, if they mentioned one",
+      },
+      service: { type: "string", description: "What the appointment is for, e.g. 'dental checkup'" },
+    },
+    required: [],
+  },
+};
+
+export const confirmAppointmentTool: GeminiToolDeclaration = {
+  name: "confirmAppointment",
+  description:
+    "Book the slot the caller chose — this creates a REAL calendar event. " +
+    "Call ONLY after (a) the caller verbally accepted one specific slot from bookAppointment's results, " +
+    "and (b) you have their name and phone number. Ask for their email too so they get a calendar invite (optional).",
+  parameters: {
+    type: "object",
+    properties: {
+      slotIso: { type: "string", description: "The startIso of the slot the caller accepted, exactly as returned by bookAppointment" },
+      name: { type: "string", description: "Caller's full name" },
+      phone: { type: "string", description: "Caller's phone number" },
+      email: { type: "string", description: "Caller's email for the calendar invite (optional)" },
+      service: { type: "string", description: "What the appointment is for" },
+    },
+    required: ["slotIso", "name", "phone"],
+  },
+};
+
+/**
+ * Appended INSTEAD-OF-NOTHING alongside leadCaptureRule when booking is
+ * active. Narrows the "you cannot book" rule: appointments CAN be booked via
+ * the tools; everything else still goes through captureLead.
+ */
+export const bookingRule = `
+## Real appointment booking is ENABLED for this business
+
+Exception to the rule above: you CAN book APPOINTMENTS — and only appointments — using your booking tools:
+1. Caller wants an appointment → call bookAppointment (pass their preferred date/time if mentioned).
+2. Offer the returned slots verbally. Never invent slots that the tool did not return.
+3. Caller accepts one → confirm their name and phone (ask for email for the invite) → call confirmAppointment with that slot's startIso.
+4. Only say the appointment is confirmed AFTER confirmAppointment returns confirmed: true.
+
+If either tool returns an error or a fallback message, apologize briefly and use captureLead instead — never retry more than once, never pretend it worked.
+For anything that is NOT an appointment (orders, reservations, purchases), the original rule stands: captureLead only.
+Never call captureLead AND confirmAppointment for the same request unless booking failed.
+`;
+
+/**
  * Hard rule appended to every SMB agent's system prompt. Phrased so the model
  * treats it as inviolable — booking claims have been the #1 hallucination
  * failure mode in voice agents.

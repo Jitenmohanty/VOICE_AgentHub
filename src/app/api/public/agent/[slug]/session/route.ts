@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
-import { getAgentSystemPrompt, getAgentTools, buildLanguageDirective } from "@/lib/gemini/agent-prompts";
+import {
+  getAgentSystemPrompt,
+  getAgentTools,
+  buildLanguageDirective,
+  bookAppointmentTool,
+  confirmAppointmentTool,
+  bookingRule,
+} from "@/lib/gemini/agent-prompts";
 import { queryKnowledge, buildRAGContext, buildBusinessDataContext } from "@/lib/rag";
 import { checkSessionRateLimit, checkBusinessPlanQuota } from "@/lib/ratelimit";
 import { SessionCreateSchema } from "@/lib/schemas";
@@ -178,6 +185,22 @@ export async function POST(
     // Filter tools to only those enabled by the business owner.
     // An empty enabledTools array means "all tools allowed" (default / legacy).
     const tools = getAgentTools(agent.templateType, agent.enabledTools);
+
+    // Real calendar booking (Item 7): the booking tools + rule are appended
+    // ONLY when the business has an active Google Calendar integration, so
+    // agents without one behave exactly as before.
+    if (agent.templateType !== "interview") {
+      const calendarIntegration = await prisma.integration
+        .findUnique({
+          where: { businessId_provider: { businessId: business.id, provider: "google-calendar" } },
+          select: { status: true },
+        })
+        .catch(() => null);
+      if (calendarIntegration?.status === "active") {
+        tools.push(bookAppointmentTool, confirmAppointmentTool);
+        systemPrompt += bookingRule;
+      }
+    }
 
     // Per-session bearer token. Required on subsequent PATCH so anonymous
     // callers can't overwrite each other's transcripts using only the cuid.

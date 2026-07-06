@@ -295,8 +295,12 @@ TWILIO_WHATSAPP_FROM=            # E.164, e.g. +14155238886
 #   https://your-domain/api/whatsapp/inbound?token=$WHATSAPP_INBOUND_TOKEN
 WHATSAPP_INBOUND_TOKEN=          # `openssl rand -hex 32` — fails closed if unset
 
-# ── Integration secrets at rest (Item 9 CRM; Item 7 calendar will reuse) ──
-SECRETS_ENCRYPTION_KEY=          # `openssl rand -hex 32` — AES-256-GCM; CRM connect returns 503 without it
+# ── Integration secrets at rest (Item 9 CRM + Item 7 calendar) ──
+SECRETS_ENCRYPTION_KEY=          # `openssl rand -hex 32` — AES-256-GCM; CRM/calendar connect return 503 without it
+
+# ── Google Calendar booking (Item 7) reuses GOOGLE_CLIENT_ID/SECRET above.
+# One-time setup: add {APP_URL}/api/integrations/google-calendar/callback
+# as an authorized redirect URI in the Google Cloud console.
 
 # ── Observability ─────────────────────────────
 LANGSMITH_API_KEY=               # Optional

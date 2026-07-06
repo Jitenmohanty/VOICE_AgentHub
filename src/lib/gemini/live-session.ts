@@ -368,6 +368,12 @@ export class GeminiLiveSession {
               // Dynamic RAG retrieval — replaces the default ack with real
               // top-k snippets fetched from the owner's knowledge base.
               result = await this.searchKnowledge(String(fc.args.query ?? ""));
+            } else if (fc.name === "bookAppointment" || fc.name === "confirmAppointment") {
+              // Real calendar booking (server-side — bookings touch the
+              // owner's actual Google Calendar). The endpoints return
+              // tool-shaped fallbacks on failure, so the model degrades
+              // to captureLead gracefully.
+              result = await this.callBookingEndpoint(fc.name, fc.args || {});
             }
             // For data-fetch tools, override with real data from the public API
             if (this.agentSlug && (fc.name === "getMenu" || fc.name === "listRooms" || fc.name === "listDoctors")) {
@@ -529,6 +535,55 @@ export class GeminiLiveSession {
     } catch (err) {
       console.warn("[GeminiLive] searchKnowledge error:", err);
       return JSON.stringify({ error: "search error", results: [] });
+    }
+  }
+
+  /**
+   * Dispatch a booking tool call to the authenticated public booking
+   * endpoints (Item 7). Uses the same per-session bearer token as
+   * searchKnowledge / session PATCH.
+   */
+  private async callBookingEndpoint(
+    toolName: "bookAppointment" | "confirmAppointment",
+    args: Record<string, unknown>,
+  ): Promise<string> {
+    if (!this.sessionId || !this.updateToken || !this.agentSlug) {
+      return JSON.stringify({
+        error: "session not ready",
+        fallback: "captureLead",
+        message: "Booking is unavailable — capture the caller's details with captureLead instead.",
+      });
+    }
+    const path = toolName === "bookAppointment" ? "book-appointment" : "confirm-appointment";
+    try {
+      const res = await fetch(`/api/public/agent/${this.agentSlug}/${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.updateToken}`,
+        },
+        body: JSON.stringify({ sessionId: this.sessionId, ...args }),
+      });
+      const text = await res.text();
+      // Booking endpoints answer tool-shaped JSON on both success AND
+      // failure paths; only a transport-level breakdown lands in catch.
+      try {
+        JSON.parse(text);
+        return text;
+      } catch {
+        return JSON.stringify({
+          error: `booking failed (${res.status})`,
+          fallback: "captureLead",
+          message: "Booking hit a technical problem — apologize and use captureLead instead.",
+        });
+      }
+    } catch (err) {
+      console.warn(`[GeminiLive] ${toolName} error:`, err);
+      return JSON.stringify({
+        error: "booking error",
+        fallback: "captureLead",
+        message: "Booking hit a technical problem — apologize and use captureLead instead.",
+      });
     }
   }
 

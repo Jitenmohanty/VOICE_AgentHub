@@ -12,6 +12,7 @@ import { GradientButton } from "@/components/ui/gradient-button";
 import { WebhookDeliveriesLog } from "@/components/business/WebhookDeliveriesLog";
 import { NotificationPrefsCard, type NotificationPrefs } from "@/components/business/NotificationPrefsCard";
 import { CrmSettingsCard } from "@/components/business/CrmSettingsCard";
+import { GoogleCalendarCard } from "@/components/business/GoogleCalendarCard";
 
 interface BusinessInfo {
   id: string;
@@ -312,6 +313,8 @@ export default function BusinessSettingsPage() {
       </motion.div>
 
       <NotificationPrefsCard businessId={business.id} initial={business.notificationPrefs} />
+
+      <GoogleCalendarCard businessId={business.id} />
 
       <CrmSettingsCard
         businessId={business.id}
