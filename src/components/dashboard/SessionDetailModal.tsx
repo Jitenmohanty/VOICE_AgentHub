@@ -321,6 +321,9 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                 </div>
               )}
 
+              {/* Call recording (Item 12) */}
+              {session.recordingKey && <RecordingPlayer sessionId={sessionId} />}
+
               {/* Summary */}
               {summary && (
                 <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06]">
@@ -504,6 +507,48 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 }
 
 /* ── Helpers ─────────────────────────────────── */
+
+/**
+ * Lazily fetches a short-lived presigned URL and renders a native audio
+ * player. The URL is only requested when the owner actually clicks Load —
+ * no storage traffic for sessions nobody listens to.
+ */
+function RecordingPlayer({ sessionId }: { sessionId: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/recording`);
+      const d = await res.json();
+      if (!res.ok || !d.url) throw new Error(d.error || "failed");
+      setUrl(d.url);
+    } catch {
+      toast.error("Couldn't load the recording");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06]">
+      <h3 className="text-base font-semibold text-white mb-3">Call recording</h3>
+      {url ? (
+        <audio controls src={url} className="w-full" preload="none" />
+      ) : (
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border bg-white/[0.04] border-white/10 text-white/75 hover:bg-white/[0.08] hover:text-white transition-all disabled:opacity-50"
+        >
+          {loading ? "Loading…" : "Load recording"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 function StatCard({
   icon: Icon,

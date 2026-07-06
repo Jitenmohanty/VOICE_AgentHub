@@ -38,6 +38,9 @@ export interface AgentSessionData {
   leadScore?: number | null;
   intentCategory?: string | null;
   suggestedReply?: string | null;
+  // Call recording (Item 12) — R2 object key; playback via presigned URL only.
+  recordingKey?: string | null;
+  recordingConsent?: boolean | null;
   createdAt: Date;
   updatedAt: Date;
 

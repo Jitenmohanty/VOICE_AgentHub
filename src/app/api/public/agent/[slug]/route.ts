@@ -57,6 +57,9 @@ export async function GET(
         name: business.name,
         logoUrl: business.logoUrl,
         slug: business.slug,
+        // Item 12: when true, the pre-call screen must show the recording
+        // consent notice before starting a recorded call.
+        recordingEnabled: business.recordingEnabled,
       },
     });
   } catch {

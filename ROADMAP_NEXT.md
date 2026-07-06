@@ -147,7 +147,11 @@ close 1006/1011 + offline detection, with ≤10s mic buffering. Prerequisite for
 - LangSmith datasets + CI script (`npm run eval`) with pass/fail thresholds per template.
 - Run before merging any prompt change.
 
-### Item 12 — Call recording with consent + PII redaction (2 weeks) — IMPLEMENTATION_PLAN.md N4
+### Item 12 — Call recording with consent — IMPLEMENTATION_PLAN.md N4 — ✅ DONE v1 infra (2026-07-06)
+
+Shipped: dependency-free R2 SigV4 client (`src/lib/storage/r2.ts`, env `R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_BUCKET`), `Business.recordingEnabled` toggle (settings card, consent-first wording), token-gated upload route (8MB cap, idempotent), owner-only presigned playback route (15-min URLs, object stays private), `CallRecorder` engine (mixes mic + agent audio via the new `getRecordingDestination()` tap in live-session, webm/opus @32kbps, 2s timeslices), audio player in SessionDetailModal, `recordingEnabled` exposed in public agent metadata for the consent notice.
+
+**Remaining wiring (needs a live-mic test — do NOT ship blind):** in `PublicAgentExperience.tsx`: (1) when `business.recordingEnabled`, show a "This call may be recorded — [Accept] / [Continue without recording]" line on the pre-call screen; (2) on consent + connect: `const rec = new CallRecorder(liveSession.getPlaybackAudioContext()!, liveSession.getRecordingDestination()!)`, `rec.addMicStream(micStream)`, `rec.start()`; (3) in handleEndCall: `await rec.stopAndUpload(slug, sessionId, updateToken)`. Deferred: PII redaction of audio (needs word-level timestamps — separate project), retention auto-delete cron.
 **Business:** Larger SMB/agency eval requirement; QA + dispute resolution.
 **GenAI:** Post-call redaction pass (regex for phone/PAN/Aadhaar + Claude verification), raw vs
 redacted URLs, audit-logged access. Good responsible-AI story.

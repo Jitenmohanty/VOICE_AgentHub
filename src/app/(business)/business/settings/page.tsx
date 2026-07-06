@@ -14,6 +14,7 @@ import { NotificationPrefsCard, type NotificationPrefs } from "@/components/busi
 import { CrmSettingsCard } from "@/components/business/CrmSettingsCard";
 import { GoogleCalendarCard } from "@/components/business/GoogleCalendarCard";
 import { OverageCard } from "@/components/business/OverageCard";
+import { RecordingCard } from "@/components/business/RecordingCard";
 
 interface BusinessInfo {
   id: string;
@@ -35,6 +36,7 @@ interface BusinessInfo {
   crmConfig: { region?: string } | null;
   overageEnabled: boolean;
   overageCapMinutes: number;
+  recordingEnabled: boolean;
 }
 
 export default function BusinessSettingsPage() {
@@ -324,6 +326,8 @@ export default function BusinessSettingsPage() {
         initialEnabled={!!business.overageEnabled}
         initialCapMinutes={business.overageCapMinutes ?? 120}
       />
+
+      <RecordingCard businessId={business.id} initialEnabled={!!business.recordingEnabled} />
 
       <CrmSettingsCard
         businessId={business.id}

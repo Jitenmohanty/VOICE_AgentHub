@@ -302,6 +302,12 @@ SECRETS_ENCRYPTION_KEY=          # `openssl rand -hex 32` — AES-256-GCM; CRM/c
 # One-time setup: add {APP_URL}/api/integrations/google-calendar/callback
 # as an authorized redirect URI in the Google Cloud console.
 
+# ── Call recording storage (Item 12) — Cloudflare R2. Unset = recording off.
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET=                       # private bucket; playback via presigned URLs only
+
 # ── Observability ─────────────────────────────
 LANGSMITH_API_KEY=               # Optional
 LANGSMITH_TRACING_V2=true

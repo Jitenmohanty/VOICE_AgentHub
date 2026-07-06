@@ -101,6 +101,11 @@ model Business {
   crmConfig          Json?   // non-secret config: { region?, fieldMapping? }
   crmSecretEncrypted String? @db.Text
 
+  // Call recording (Item 12). Off by default; also requires platform R2_*
+  // env. When on, the pre-call screen shows a consent notice and recordings
+  // land in R2 (see src/lib/storage/r2.ts).
+  recordingEnabled Boolean @default(false)
+
   // Metered overage (Item 13). Off = hard cap (429 at 100%, today's default).
   // On = calls keep flowing past the plan cap up to overageCapMinutes extra,
   // invoiced monthly at BillingPlan.overagePaisePerMinute.
@@ -458,6 +463,12 @@ model AgentSession {
   paymentLinkId      String?   // Razorpay payment link id (plink_…)
   paymentAmountPaise Int?
   paymentReceivedAt  DateTime? // stamped by the payment_link.paid webhook
+
+  // Call recording (Item 12). recordingKey is the R2 object key; playback is
+  // via short-lived presigned URLs only. recordingConsent: null = never
+  // asked, true = caller consented, false = caller declined (no recording).
+  recordingKey     String?
+  recordingConsent Boolean?
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

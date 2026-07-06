@@ -504,6 +504,26 @@ export class GeminiLiveSession {
     return this.resumptionHandle;
   }
 
+  // Call recording tap (Item 12). Lazily created; when present, every agent
+  // audio chunk is ALSO routed into it (see scheduleAudioPlayback) so a
+  // CallRecorder can mix agent + mic into one stream. Zero effect when the
+  // recording feature isn't in use.
+  private recordingDestination: MediaStreamAudioDestinationNode | null = null;
+
+  /** AudioContext that plays the agent's voice — CallRecorder needs it for mixing. */
+  getPlaybackAudioContext(): AudioContext | null {
+    return this.audioContext;
+  }
+
+  /** Create (once) and return the recording tap. Call after connect(). */
+  getRecordingDestination(): MediaStreamAudioDestinationNode | null {
+    if (!this.audioContext) return null;
+    if (!this.recordingDestination) {
+      this.recordingDestination = this.audioContext.createMediaStreamDestination();
+    }
+    return this.recordingDestination;
+  }
+
   /**
    * Schedule audio chunk for sequential playback.
    * Each chunk starts after the previous one ends, preventing overlap.
@@ -517,6 +537,10 @@ export class GeminiLiveSession {
     const source = this.audioContext.createBufferSource();
     source.buffer = buffer;
     source.connect(this.audioContext.destination);
+    // Mirror the agent's voice into the recording tap when one exists.
+    if (this.recordingDestination) {
+      try { source.connect(this.recordingDestination); } catch { /* recording is best-effort */ }
+    }
 
     // Track active source for interrupt support
     this.activeSourceNodes.add(source);

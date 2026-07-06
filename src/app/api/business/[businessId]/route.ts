@@ -97,6 +97,7 @@ export async function PATCH(
         ...(notificationPrefs !== undefined && { notificationPrefs }),
         ...(body.whatsappEnabled !== undefined && { whatsappEnabled: Boolean(body.whatsappEnabled) }),
         ...(body.overageEnabled !== undefined && { overageEnabled: Boolean(body.overageEnabled) }),
+        ...(body.recordingEnabled !== undefined && { recordingEnabled: Boolean(body.recordingEnabled) }),
         ...(body.overageCapMinutes !== undefined && {
           overageCapMinutes: Math.min(10000, Math.max(0, Math.round(Number(body.overageCapMinutes) || 0))),
         }),
