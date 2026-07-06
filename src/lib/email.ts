@@ -666,6 +666,63 @@ export async function sendWeeklyDigestEmail(opts: {
   });
 }
 
+// ── Overage invoice email (Item 13) ──────────────────────────────────────────
+
+export async function sendOverageInvoiceEmail(opts: {
+  to: string;
+  ownerName: string;
+  businessName: string;
+  monthLabel: string; // e.g. "June 2026"
+  overageMinutes: number;
+  ratePaisePerMinute: number;
+  amountPaise: number;
+  paymentUrl: string;
+}) {
+  const rupees = (paise: number) =>
+    `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+
+  const body = emailShell(`
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#FFFFFF;letter-spacing:-0.4px;">
+      Overage usage for ${escapeHtml(opts.monthLabel)}
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#B8B8CC;">
+      Hi ${escapeHtml(opts.ownerName || "there")} — <strong style="color:#FFFFFF;">${escapeHtml(opts.businessName)}</strong>
+      went past its plan minutes in ${escapeHtml(opts.monthLabel)}. Because overage billing is on,
+      your agents kept answering instead of turning callers away.
+    </p>
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:10px;border:1px solid #2A2A3E;">
+      <tr>
+        <td style="padding:14px 16px;font-size:14px;color:#B8B8CC;border-bottom:1px solid #2A2A3E;">Extra minutes used</td>
+        <td style="padding:14px 16px;font-size:14px;color:#FFFFFF;text-align:right;border-bottom:1px solid #2A2A3E;">${opts.overageMinutes} min</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:14px;color:#B8B8CC;border-bottom:1px solid #2A2A3E;">Rate</td>
+        <td style="padding:14px 16px;font-size:14px;color:#FFFFFF;text-align:right;border-bottom:1px solid #2A2A3E;">${rupees(opts.ratePaisePerMinute)}/min</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:15px;font-weight:700;color:#FFFFFF;">Total due</td>
+        <td style="padding:14px 16px;font-size:15px;font-weight:700;color:#FFFFFF;text-align:right;">${rupees(opts.amountPaise)}</td>
+      </tr>
+    </table>
+    ${primaryButton(opts.paymentUrl, "Pay with UPI / card")}
+    <p style="margin:0;font-size:12px;color:#555577;line-height:1.6;">
+      The payment link is valid for 7 days. You can turn overage off any time in Settings —
+      your agents will then pause at 100% of plan minutes instead.
+    </p>
+  `);
+
+  const result = await sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: `Voxie overage for ${opts.monthLabel}: ${opts.overageMinutes} min — ${rupees(opts.amountPaise)}`,
+    html: body,
+  });
+  if (result.error) {
+    console.error("[Email] overage invoice send failed:", result.error.message);
+  }
+  return result;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")

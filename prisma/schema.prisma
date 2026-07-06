@@ -100,6 +100,14 @@ model Business {
   crmProvider        String? // zoho (leadsquared/kylas planned)
   crmConfig          Json?   // non-secret config: { region?, fieldMapping? }
   crmSecretEncrypted String? @db.Text
+
+  // Metered overage (Item 13). Off = hard cap (429 at 100%, today's default).
+  // On = calls keep flowing past the plan cap up to overageCapMinutes extra,
+  // invoiced monthly at BillingPlan.overagePaisePerMinute.
+  overageEnabled       Boolean  @default(false)
+  overageCapMinutes    Int      @default(120)
+  // End of the last calendar month whose overage was invoiced (idempotency).
+  overageBilledThrough DateTime?
   // Optional outbound webhook for leads (Slack/HubSpot/Zapier/etc).
   // Signed with HMAC-SHA256 using webhookSecret in X-Voxie-Signature.
   webhookUrl    String?
@@ -193,6 +201,9 @@ model BillingPlan {
   priceInrPaise   Int?     // monthly price in INR paise (1 INR = 100 paise)
   stripePriceId   String?  // Stripe Price ID (null for free or India-only)
   razorpayPlanId  String?  // Razorpay Plan ID (null for free or US-only)
+  // Metered overage rate (Item 13) in INR paise per minute past the cap.
+  // null = overage not offered on this plan (free tier stays hard-capped).
+  overagePaisePerMinute Int?
   isActive        Boolean  @default(true)
   sortOrder       Int      @default(0)
   subscriptions   Subscription[]

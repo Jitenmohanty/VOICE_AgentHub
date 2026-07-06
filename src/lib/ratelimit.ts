@@ -193,6 +193,8 @@ interface ResolvedPlan {
   monthlyMinutes: number;
   maxAgents: number;
   periodStart: Date;
+  /** INR paise per overage minute; null = overage not offered on this plan. */
+  overagePaisePerMinute: number | null;
 }
 
 /**
@@ -212,15 +214,18 @@ async function resolvePlan(businessId: string): Promise<ResolvedPlan> {
       monthlyMinutes: sub.plan.monthlyMinutes,
       maxAgents: sub.plan.maxAgents,
       periodStart: sub.currentPeriodStart,
+      overagePaisePerMinute: sub.plan.overagePaisePerMinute,
     };
   }
-  // No subscription on file → free tier, monthly window.
+  // No subscription on file → free tier, monthly window. Free stays
+  // hard-capped — overage is a paid-plan feature.
   const now = new Date();
   return {
     planId: FREE_PLAN_FALLBACK.id,
     monthlyMinutes: FREE_PLAN_FALLBACK.monthlyMinutes,
     maxAgents: FREE_PLAN_FALLBACK.maxAgents,
     periodStart: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)),
+    overagePaisePerMinute: null,
   };
 }
 
@@ -256,6 +261,25 @@ export async function checkBusinessPlanQuota(businessId: string): Promise<Respon
   const usedSeconds = await periodUsageSeconds(businessId, plan.periodStart);
 
   if (usedSeconds >= capSeconds) {
+    // Metered overage (Item 13): with the owner's opt-in and a plan that
+    // offers a rate, calls keep flowing past the cap — up to the owner's
+    // configured extra-minute ceiling. Invoiced monthly by the
+    // overage-invoice Inngest cron.
+    if (plan.overagePaisePerMinute != null) {
+      const biz = await prisma.business
+        .findUnique({
+          where: { id: businessId },
+          select: { overageEnabled: true, overageCapMinutes: true },
+        })
+        .catch(() => null);
+      if (biz?.overageEnabled) {
+        const softCapSeconds = capSeconds + Math.max(0, biz.overageCapMinutes) * 60;
+        if (usedSeconds < softCapSeconds) {
+          return null; // allowed — running on paid overage
+        }
+      }
+    }
+
     const overageMinutes = Math.ceil((usedSeconds - capSeconds) / 60);
     return new Response(
       JSON.stringify({

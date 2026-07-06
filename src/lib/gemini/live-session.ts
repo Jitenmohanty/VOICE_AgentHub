@@ -55,7 +55,15 @@ export type SessionEventType =
   | "agent-done"
   | "error"
   | "interrupted"
-  | "session-expiring";
+  | "session-expiring"
+  | "reconnecting"
+  | "reconnected";
+
+// Reconnect budget between healthy stretches — resets on every setupComplete.
+const MAX_RECONNECT_ATTEMPTS = 2;
+// ~10s of mic audio buffered while the socket is down (worklet chunks are
+// short; the cap guards memory, not exact duration).
+const MAX_QUEUED_AUDIO_CHUNKS = 160;
 
 export interface SessionEvent {
   type: SessionEventType;
@@ -83,6 +91,12 @@ export class GeminiLiveSession {
   private isDisconnecting = false;
   private isSetupComplete = false;
   private audioChunkQueue: string[] = [];
+
+  // Reconnect state (Item 10). apiKey is retained so an abnormal drop can
+  // re-dial with sessionResumption.handle and continue the same conversation.
+  private apiKey: string | null = null;
+  private isReconnecting = false;
+  private reconnectAttempts = 0;
 
   // Audio playback queue: schedule chunks sequentially to prevent overlap
   private nextPlayTime = 0;
@@ -139,6 +153,7 @@ export class GeminiLiveSession {
 
   async connect(apiKey: string) {
     try {
+      this.apiKey = apiKey;
       this.client = new GoogleGenAI({ apiKey });
 
       try {
@@ -152,20 +167,37 @@ export class GeminiLiveSession {
         );
       }
 
-      const systemInstruction = this.prebuiltPrompt || getAgentSystemPrompt(this.agentType, this.config);
-      const tools = (this.prebuiltTools as import("@/types/gemini").GeminiToolDeclaration[]) || getAgentTools(this.agentType);
+      await this.openSession(null);
+      console.log("[GeminiLive] Session created successfully");
+    } catch (error) {
+      console.error("[GeminiLive] Connection failed:", error);
+      this.emit({ type: "error", data: error });
+      throw error;
+    }
+  }
 
-      console.log("[GeminiLive] Connecting with model: gemini-3.1-flash-live-preview");
-      console.log("[GeminiLive] System instruction length:", systemInstruction.length);
-      console.log("[GeminiLive] Tools count:", tools.length);
+  /**
+   * Open (or re-open) the Gemini Live WebSocket. When resumeHandle is set,
+   * the server restores the prior conversation state mid-call (Item 10 —
+   * the handle is captured continuously in handleMessage).
+   */
+  private async openSession(resumeHandle: string | null) {
+    if (!this.client) throw new Error("Gemini client not initialized");
 
-      const tuning = tuningForAgent(this.agentType);
-      console.log(
-        "[GeminiLive] Tuning:",
-        { agentType: this.agentType, temperature: tuning.temperature, silenceDurationMs: tuning.silenceDurationMs },
-      );
+    const systemInstruction = this.prebuiltPrompt || getAgentSystemPrompt(this.agentType, this.config);
+    const tools = (this.prebuiltTools as import("@/types/gemini").GeminiToolDeclaration[]) || getAgentTools(this.agentType);
 
-      const session = await this.client.live.connect({
+    console.log("[GeminiLive] Connecting with model: gemini-3.1-flash-live-preview", resumeHandle ? "(resuming)" : "");
+    console.log("[GeminiLive] System instruction length:", systemInstruction.length);
+    console.log("[GeminiLive] Tools count:", tools.length);
+
+    const tuning = tuningForAgent(this.agentType);
+    console.log(
+      "[GeminiLive] Tuning:",
+      { agentType: this.agentType, temperature: tuning.temperature, silenceDurationMs: tuning.silenceDurationMs },
+    );
+
+    const session = await this.client.live.connect({
         model: "gemini-3.1-flash-live-preview",
         config: {
           responseModalities: [Modality.AUDIO],
@@ -196,10 +228,10 @@ export class GeminiLiveSession {
             triggerTokens: "16000",
             slidingWindow: { targetTokens: "8000" },
           },
-          // Capture session-resumption handles so a future reconnect
-          // feature can replay state. We don't actively reconnect yet —
-          // see handleMessage() for handle capture.
-          sessionResumption: {},
+          // Session resumption: on the first dial we just ask the server to
+          // emit handles (captured in handleMessage); on a reconnect we pass
+          // the latest handle back and the conversation continues mid-call.
+          sessionResumption: resumeHandle ? { handle: resumeHandle } : {},
           // Voice + spoken-output language. Both live under speechConfig.
           // languageCode is BCP-47 (e.g. "hi-IN"). The previous implementation
           // passed `systemLanguageCode` at the top level — that field doesn't
@@ -219,7 +251,7 @@ export class GeminiLiveSession {
           onopen: () => {
             console.log("[GeminiLive] WebSocket opened (onopen)");
             this.isConnected = true;
-            this.emit({ type: "connected" });
+            this.emit({ type: this.isReconnecting ? "reconnected" : "connected" });
           },
           onmessage: (message: LiveServerMessage) => {
             console.log("[GeminiLive] Received message:", Object.keys(message).filter(k => (message as unknown as Record<string, unknown>)[k] != null));
@@ -233,25 +265,77 @@ export class GeminiLiveSession {
             this.isConnected = false;
             this.isSetupComplete = false;
             console.info("[GeminiLive] WebSocket closed. code:", event.code, "reason:", event.reason, "isDisconnecting:", this.isDisconnecting);
-            if (!this.isDisconnecting) {
-              if (event.code && event.code !== 1000) {
-                this.emit({
-                  type: "error",
-                  data: `Connection closed (code ${event.code}): ${event.reason || "Unknown reason"}`,
-                });
-              }
-              this.emit({ type: "disconnected" });
+            if (this.isDisconnecting) return;
+            // A reconnect attempt's own socket closing is handled by
+            // attemptReconnect's retry logic — don't double-report.
+            if (this.isReconnecting) return;
+            // Abnormal drop (network blip 1006 / server error 1011) with a
+            // resumption handle in hand → try to continue the same call.
+            const abnormal = event.code === 1006 || event.code === 1011;
+            if (abnormal && this.resumptionHandle && this.reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+              void this.attemptReconnect();
+              return;
             }
+            if (event.code && event.code !== 1000) {
+              this.emit({
+                type: "error",
+                data: `Connection closed (code ${event.code}): ${event.reason || "Unknown reason"}`,
+              });
+            }
+            this.emit({ type: "disconnected" });
           },
         },
       });
 
       this.session = session;
-      console.log("[GeminiLive] Session created successfully");
-    } catch (error) {
-      console.error("[GeminiLive] Connection failed:", error);
-      this.emit({ type: "error", data: error });
-      throw error;
+  }
+
+  /**
+   * Try to resume the call after an abnormal drop (Item 10). Waits briefly
+   * for the network to return, re-dials with the captured resumption handle,
+   * and lets the setupComplete handler flush any mic audio queued during the
+   * gap. Gives up after MAX_RECONNECT_ATTEMPTS and reports the disconnect.
+   */
+  private async attemptReconnect() {
+    if (this.isReconnecting || this.isDisconnecting) return;
+    this.isReconnecting = true;
+    this.reconnectAttempts++;
+    console.warn(`[GeminiLive] Attempting reconnect ${this.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`);
+    this.emit({ type: "reconnecting", data: { attempt: this.reconnectAttempts } });
+
+    // Halt any scheduled playback from the dead session.
+    for (const source of this.activeSourceNodes) {
+      try { source.stop(); } catch { /* already stopped */ }
+    }
+    this.activeSourceNodes.clear();
+    this.nextPlayTime = 0;
+
+    // If the browser knows it's offline, wait (up to 8s) for it to come back
+    // before burning an attempt, then a small growing backoff.
+    const onlineDeadline = Date.now() + 8_000;
+    while (typeof navigator !== "undefined" && !navigator.onLine && Date.now() < onlineDeadline) {
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    await new Promise((r) => setTimeout(r, 300 * this.reconnectAttempts));
+
+    if (this.isDisconnecting) {
+      this.isReconnecting = false;
+      return;
+    }
+
+    try {
+      await this.openSession(this.resumptionHandle);
+      this.isReconnecting = false;
+      console.log("[GeminiLive] Reconnected with resumption handle");
+    } catch (err) {
+      this.isReconnecting = false;
+      if (this.reconnectAttempts < MAX_RECONNECT_ATTEMPTS && !this.isDisconnecting) {
+        void this.attemptReconnect();
+        return;
+      }
+      console.error("[GeminiLive] Reconnect failed permanently:", err);
+      this.emit({ type: "error", data: "Connection lost and could not be restored" });
+      this.emit({ type: "disconnected" });
     }
   }
 
@@ -260,6 +344,8 @@ export class GeminiLiveSession {
     if (message.setupComplete) {
       console.log("[GeminiLive] Setup complete received!");
       this.isSetupComplete = true;
+      // Healthy session (fresh or resumed) — restore the reconnect budget.
+      this.reconnectAttempts = 0;
       // Flush any queued audio
       if (this.audioChunkQueue.length > 0) {
         console.log("[GeminiLive] Flushing", this.audioChunkQueue.length, "queued audio chunks");
@@ -690,9 +776,20 @@ export class GeminiLiveSession {
   }
 
   sendAudio(base64Audio: string) {
-    if (!this.session || !this.isConnected || this.isDisconnecting) return;
+    if (this.isDisconnecting) return;
+    // During a reconnect window, buffer the caller's mic so the first words
+    // after the blip aren't lost. Flushed by the setupComplete handler.
+    if (this.isReconnecting) {
+      if (this.audioChunkQueue.length < MAX_QUEUED_AUDIO_CHUNKS) {
+        this.audioChunkQueue.push(base64Audio);
+      }
+      return;
+    }
+    if (!this.session || !this.isConnected) return;
     if (!this.isSetupComplete) {
-      this.audioChunkQueue.push(base64Audio);
+      if (this.audioChunkQueue.length < MAX_QUEUED_AUDIO_CHUNKS) {
+        this.audioChunkQueue.push(base64Audio);
+      }
       return;
     }
     this.sendAudioInternal(base64Audio);

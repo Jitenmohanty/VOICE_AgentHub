@@ -133,7 +133,7 @@ verbal confirmation before firing, never invent amounts) — a nice "constrained
 
 ## Wave 4 — Reliability + GenAI engineering moat
 
-### Item 10 — WebSocket reconnect (1 week) — IMPLEMENTATION_PLAN.md N1
+### Item 10 — WebSocket reconnect — IMPLEMENTATION_PLAN.md N1 — ✅ DONE (2026-07-06; abnormal close 1006/1011 + captured `sessionResumption` handle → auto re-dial (2 attempts, waits up to 8s for `navigator.onLine`, growing backoff), mic audio buffered (~10s cap) during the gap and flushed on setupComplete, budget resets on every healthy setupComplete. New `reconnecting`/`reconnected` events — UI banner optional follow-up. Intentional disconnects and non-resumable closes behave exactly as before)
 Resumption handles are already captured in `live-session.ts`; wire the actual reconnect on
 close 1006/1011 + offline detection, with ≤10s mic buffering. Prerequisite for any phone work.
 
@@ -152,7 +152,7 @@ close 1006/1011 + offline detection, with ≤10s mic buffering. Prerequisite for
 **GenAI:** Post-call redaction pass (regex for phone/PAN/Aadhaar + Claude verification), raw vs
 redacted URLs, audit-logged access. Good responsible-AI story.
 
-### Item 13 — Metered overage billing (1 week) — IMPLEMENTATION_PLAN.md N3
+### Item 13 — Metered overage billing — IMPLEMENTATION_PLAN.md N3 — ✅ DONE (2026-07-06; owner opt-in soft cap with extra-minute ceiling (default 120 min), per-plan rate (`BillingPlan.overagePaisePerMinute`: Starter ₹3/min, Pro ₹2.50/min, Free hard-capped — re-run `node prisma/seed-plans.mjs`), monthly Inngest cron invoices the previous calendar month via Razorpay email payment link + Resend invoice email, idempotent via `overageBilledThrough`, settings card. Calendar-month vs subscription-anchor approximation documented in the cron. Pending `npx prisma db push`)
 Soft-cap option at ₹X/min with month-end Razorpay one-time charge. Converts quota 429s into
 revenue instead of churn.
 

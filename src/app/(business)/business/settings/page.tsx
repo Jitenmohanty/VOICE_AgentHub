@@ -13,6 +13,7 @@ import { WebhookDeliveriesLog } from "@/components/business/WebhookDeliveriesLog
 import { NotificationPrefsCard, type NotificationPrefs } from "@/components/business/NotificationPrefsCard";
 import { CrmSettingsCard } from "@/components/business/CrmSettingsCard";
 import { GoogleCalendarCard } from "@/components/business/GoogleCalendarCard";
+import { OverageCard } from "@/components/business/OverageCard";
 
 interface BusinessInfo {
   id: string;
@@ -32,6 +33,8 @@ interface BusinessInfo {
   whatsappFromNumber: string | null;
   crmProvider: string | null;
   crmConfig: { region?: string } | null;
+  overageEnabled: boolean;
+  overageCapMinutes: number;
 }
 
 export default function BusinessSettingsPage() {
@@ -315,6 +318,12 @@ export default function BusinessSettingsPage() {
       <NotificationPrefsCard businessId={business.id} initial={business.notificationPrefs} />
 
       <GoogleCalendarCard businessId={business.id} />
+
+      <OverageCard
+        businessId={business.id}
+        initialEnabled={!!business.overageEnabled}
+        initialCapMinutes={business.overageCapMinutes ?? 120}
+      />
 
       <CrmSettingsCard
         businessId={business.id}

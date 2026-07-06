@@ -96,6 +96,10 @@ export async function PATCH(
         ...(body.webhookUrl !== undefined && { webhookUrl: body.webhookUrl || null }),
         ...(notificationPrefs !== undefined && { notificationPrefs }),
         ...(body.whatsappEnabled !== undefined && { whatsappEnabled: Boolean(body.whatsappEnabled) }),
+        ...(body.overageEnabled !== undefined && { overageEnabled: Boolean(body.overageEnabled) }),
+        ...(body.overageCapMinutes !== undefined && {
+          overageCapMinutes: Math.min(10000, Math.max(0, Math.round(Number(body.overageCapMinutes) || 0))),
+        }),
         ...(body.whatsappFromNumber !== undefined && {
           whatsappFromNumber:
             typeof body.whatsappFromNumber === "string" && body.whatsappFromNumber.trim()
