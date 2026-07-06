@@ -34,6 +34,10 @@ export interface AgentSessionData {
   } | null;
   leadStatus?: "new" | "contacted" | "qualified" | "won" | "lost" | "archived";
   leadDeliveredAt?: Date | string | null;
+  // AI lead scoring (Claude post-call) — null on sessions analyzed before the feature.
+  leadScore?: number | null;
+  intentCategory?: string | null;
+  suggestedReply?: string | null;
   createdAt: Date;
   updatedAt: Date;
 

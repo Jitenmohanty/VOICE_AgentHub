@@ -13,4 +13,7 @@ export type Events = {
   "session/post-call": {
     data: { sessionId: string };
   };
+  "knowledge/ingest-website": {
+    data: { agentId: string; url: string };
+  };
 };

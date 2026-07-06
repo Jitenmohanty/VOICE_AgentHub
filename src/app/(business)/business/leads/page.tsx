@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Flame,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { GlassPanel } from "@/components/ui/glass-panel";
@@ -46,6 +47,8 @@ interface LeadRow {
   capturedLead: CapturedLead | null;
   summary: string | null;
   sentiment: string | null;
+  leadScore: number | null;
+  intentCategory: string | null;
   agent: { id: string; name: string; templateType: string } | null;
 }
 
@@ -88,6 +91,13 @@ const URGENCY_PILL: Record<NonNullable<CapturedLead["urgency"]>, string> = {
   high: "bg-rose-500/15 text-rose-300 border-rose-300/30",
 };
 
+/** Pill styling for the AI lead score, by heat tier. */
+function scorePillClass(score: number): string {
+  if (score >= 70) return "bg-orange-500/15 text-orange-300 border-orange-300/30";
+  if (score >= 40) return "bg-amber-500/10 text-amber-300 border-amber-300/20";
+  return "bg-white/[0.04] text-white/55 border-white/10";
+}
+
 export default function LeadsPage() {
   const [business, setBusiness] = useState<BusinessInfo | null>(null);
   const [bootLoading, setBootLoading] = useState(true);
@@ -95,6 +105,7 @@ export default function LeadsPage() {
   const [status, setStatus] = useState<LeadStatus | "all">("all");
   const [search, setSearch] = useState("");
   const [agentId, setAgentId] = useState<string>("");
+  const [sort, setSort] = useState<"recent" | "score">("recent");
   const [page, setPage] = useState(1);
 
   const [data, setData] = useState<LeadsResponse | null>(null);
@@ -119,13 +130,14 @@ export default function LeadsPage() {
       if (status !== "all") params.set("status", status);
       if (agentId) params.set("agentId", agentId);
       if (search.trim()) params.set("search", search.trim());
+      if (sort !== "recent") params.set("sort", sort);
       fetch(`/api/business/${business.id}/leads?${params.toString()}`)
         .then((r) => r.json())
         .then((d: LeadsResponse) => setData(d))
         .catch(() => toast.error("Couldn't load leads"))
         .finally(() => setListLoading(false));
     },
-    [business, page, status, agentId, search],
+    [business, page, status, agentId, search, sort],
   );
 
   useEffect(() => {
@@ -141,7 +153,7 @@ export default function LeadsPage() {
   // Debounce search a touch so we don't hammer the API while typing.
   useEffect(() => {
     setPage(1);
-  }, [search, status, agentId]);
+  }, [search, status, agentId, sort]);
 
   const handleExport = async () => {
     if (!business) return;
@@ -304,6 +316,15 @@ export default function LeadsPage() {
                 ))}
               </select>
             )}
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as "recent" | "score")}
+              className="h-10 bg-white/[0.04] border border-white/10 rounded-xl px-3 text-sm text-white outline-none transition-[border-color,box-shadow,background-color] duration-200 hover:bg-white/[0.06] hover:border-white/14 focus-visible:border-violet-300/55 focus-visible:bg-white/[0.06] focus-visible:shadow-[0_0_0_3px_rgba(124,58,237,0.18)]"
+              aria-label="Sort leads"
+            >
+              <option value="recent" className="bg-[var(--ah-bg-raised)]">Newest first</option>
+              <option value="score" className="bg-[var(--ah-bg-raised)]">Hot leads first</option>
+            </select>
           </div>
         </GlassPanel>
       </motion.div>
@@ -393,6 +414,22 @@ export default function LeadsPage() {
                               >
                                 {captured.urgency === "high" && <AlertCircle className="w-2.5 h-2.5" />}
                                 {captured.urgency}
+                              </span>
+                            )}
+                            {lead.leadScore != null && (
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full font-medium border inline-flex items-center gap-1 tabular-nums ${scorePillClass(
+                                  lead.leadScore,
+                                )}`}
+                                title="AI lead score (0–100)"
+                              >
+                                <Flame className="w-2.5 h-2.5" />
+                                {lead.leadScore}
+                              </span>
+                            )}
+                            {lead.intentCategory && (
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium border capitalize bg-cyan-500/10 text-cyan-300 border-cyan-300/20">
+                                {lead.intentCategory}
                               </span>
                             )}
                           </div>

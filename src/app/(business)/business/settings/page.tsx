@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Building2, Save, Globe, Phone, MapPin, Mail, Webhook, Eye, EyeOff, Copy, Check } from "lucide-react";
+import { Building2, Save, Globe, Phone, MapPin, Mail, Webhook, Eye, EyeOff, Copy, Check, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,8 @@ interface BusinessInfo {
   webhookUrl: string | null;
   webhookSecret: string | null;
   notificationPrefs: Partial<NotificationPrefs> | null;
+  whatsappEnabled: boolean;
+  whatsappFromNumber: string | null;
 }
 
 export default function BusinessSettingsPage() {
@@ -42,6 +44,8 @@ export default function BusinessSettingsPage() {
   const [webhookUrl, setWebhookUrl] = useState("");
   const [showSecret, setShowSecret] = useState(false);
   const [secretCopied, setSecretCopied] = useState(false);
+  const [whatsappEnabled, setWhatsappEnabled] = useState(false);
+  const [whatsappFromNumber, setWhatsappFromNumber] = useState("");
 
   useEffect(() => {
     fetch("/api/business")
@@ -57,6 +61,8 @@ export default function BusinessSettingsPage() {
           setAddress(b.address || "");
           setNotificationEmail(b.notificationEmail || "");
           setWebhookUrl(b.webhookUrl || "");
+          setWhatsappEnabled(!!b.whatsappEnabled);
+          setWhatsappFromNumber(b.whatsappFromNumber || "");
         }
       })
       .catch(() => {})
@@ -78,6 +84,8 @@ export default function BusinessSettingsPage() {
           address: address || null,
           notificationEmail: notificationEmail || null,
           webhookUrl: webhookUrl || null,
+          whatsappEnabled,
+          whatsappFromNumber: whatsappFromNumber || null,
         }),
       });
       if (!res.ok) {
@@ -257,6 +265,38 @@ export default function BusinessSettingsPage() {
               <p className="text-xs text-white/40 mt-2">
                 A signing secret will be generated automatically the first time a lead fires.
               </p>
+            )}
+          </div>
+
+          <div>
+            <Label>
+              <MessageCircle className="w-3 h-3" /> WhatsApp confirmation to callers
+            </Label>
+            <p className="text-xs text-white/40 mb-2 mt-0.5 leading-relaxed">
+              After a caller leaves a lead with their phone number, send them a WhatsApp message
+              confirming your team will get back to them. Requires the platform WhatsApp provider
+              to be configured — if it isn&apos;t, this setting is saved but nothing is sent.
+            </p>
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={whatsappEnabled}
+                onChange={(e) => setWhatsappEnabled(e.target.checked)}
+                className="w-4 h-4 rounded accent-violet-500"
+              />
+              <span className="text-sm text-white/75">Send WhatsApp confirmations</span>
+            </label>
+            {whatsappEnabled && (
+              <div className="mt-3">
+                <p className="text-xs text-white/40 mb-1.5">
+                  Optional: your own WhatsApp Business sender number (uses the platform number if blank).
+                </p>
+                <Input
+                  value={whatsappFromNumber}
+                  onChange={(e) => setWhatsappFromNumber(e.target.value)}
+                  placeholder="+91XXXXXXXXXX"
+                />
+              </div>
             )}
           </div>
 

@@ -3,6 +3,7 @@ import { traceable } from "langsmith/traceable";
 import { prisma } from "@/lib/db";
 import { sendLeadCaptureEmail } from "@/lib/email";
 import { getAppUrl } from "@/lib/url";
+import { isWhatsAppConfigured, sendWhatsAppText } from "@/lib/whatsapp";
 
 interface CapturedLeadShape {
   name?: string;
@@ -18,6 +19,7 @@ export interface LeadDeliveryResult {
   delivered: boolean;
   reason?: string;
   webhook?: { attempted: boolean; ok?: boolean; status?: number; error?: string };
+  whatsapp?: { attempted: boolean; ok?: boolean; error?: string };
 }
 
 /**
@@ -242,7 +244,69 @@ export const deliverLead = traceable(
     }
   }
 
-    return { delivered: true, webhook: webhookResult };
+    // Optional WhatsApp confirmation to the CALLER (Item 4). Fully gated:
+    // platform env + per-business toggle + a usable phone + not yet sent.
+    // Failures never affect the email/webhook outcome above.
+    let whatsappResult: LeadDeliveryResult["whatsapp"] = { attempted: false };
+    if (
+      business.whatsappEnabled &&
+      isWhatsAppConfigured() &&
+      lead &&
+      caller.phone &&
+      !session.whatsappDeliveredAt
+    ) {
+      whatsappResult = await deliverWhatsAppConfirmation({
+        sessionId: session.id,
+        businessName: business.name,
+        fromNumber: business.whatsappFromNumber,
+        callerName: caller.name,
+        callerPhone: caller.phone,
+        intent: lead.intent,
+      });
+    }
+
+    return { delivered: true, webhook: webhookResult, whatsapp: whatsappResult };
   },
   { name: "deliverLead", run_type: "chain" },
+);
+
+/** Send the templated confirmation and stamp idempotency + status on the session. */
+const deliverWhatsAppConfirmation = traceable(
+  async function deliverWhatsAppConfirmation(opts: {
+    sessionId: string;
+    businessName: string;
+    fromNumber: string | null;
+    callerName: string | null;
+    callerPhone: string;
+    intent: string;
+  }): Promise<NonNullable<LeadDeliveryResult["whatsapp"]>> {
+    const greeting = opts.callerName ? `Hi ${opts.callerName}` : "Hi";
+    const text =
+      `${greeting}, thanks for contacting ${opts.businessName}! ` +
+      `We've noted your request: "${opts.intent.slice(0, 200)}". ` +
+      `Our team will get back to you shortly.`;
+
+    const result = await sendWhatsAppText({
+      to: opts.callerPhone,
+      text,
+      from: opts.fromNumber,
+    });
+
+    await prisma.agentSession
+      .update({
+        where: { id: opts.sessionId },
+        data: {
+          whatsappDeliveredAt: result.ok ? new Date() : null,
+          whatsappMessageId: result.messageId ?? null,
+          whatsappStatus: result.ok ? "sent" : "failed",
+        },
+      })
+      .catch((err) => console.warn("[LeadDelivery] WhatsApp status write failed:", err));
+
+    if (!result.ok) {
+      console.warn(`[LeadDelivery] WhatsApp confirmation failed:`, result.error);
+    }
+    return { attempted: true, ok: result.ok, error: result.error };
+  },
+  { name: "deliverWhatsAppConfirmation", run_type: "tool" },
 );

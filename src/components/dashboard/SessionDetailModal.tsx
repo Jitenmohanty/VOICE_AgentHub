@@ -14,6 +14,8 @@ import {
   Target,
   Award,
   UserCheck,
+  Flame,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getAgentById } from "@/lib/agents";
@@ -293,6 +295,29 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                       <p className="text-sm text-white/75 mt-1 leading-relaxed">{session.capturedLead.notes}</p>
                     </div>
                   )}
+
+                  {session.suggestedReply && (
+                    <div className="pt-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs text-white/55 uppercase tracking-wider">Suggested reply</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard
+                              .writeText(session.suggestedReply!)
+                              .then(() => toast.success("Reply copied"))
+                              .catch(() => toast.error("Couldn't copy"));
+                          }}
+                          className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/65 hover:text-white transition-colors"
+                        >
+                          <Copy className="w-3 h-3" /> Copy
+                        </button>
+                      </div>
+                      <p className="text-sm text-white/75 mt-1.5 leading-relaxed bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2.5 italic">
+                        {session.suggestedReply}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -335,6 +360,34 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                       {session.escalated && (
                         <span className="text-sm px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-300/20">
                           Escalation needed
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* AI lead score + intent category */}
+                  {(session.leadScore != null || session.intentCategory) && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {session.leadScore != null && (
+                        <>
+                          <span className="text-sm text-white/55">Lead score:</span>
+                          <span
+                            className={`text-sm font-medium px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 tabular-nums ${
+                              session.leadScore >= 70
+                                ? "bg-orange-500/15 text-orange-300 border-orange-300/30"
+                                : session.leadScore >= 40
+                                  ? "bg-amber-500/10 text-amber-300 border-amber-300/20"
+                                  : "bg-white/[0.06] text-white/55 border-white/10"
+                            }`}
+                          >
+                            <Flame className="w-3 h-3" />
+                            {session.leadScore}/100
+                          </span>
+                        </>
+                      )}
+                      {session.intentCategory && (
+                        <span className="text-sm px-2.5 py-0.5 rounded-full capitalize bg-cyan-500/10 text-cyan-300 border border-cyan-300/20">
+                          {session.intentCategory}
                         </span>
                       )}
                     </div>

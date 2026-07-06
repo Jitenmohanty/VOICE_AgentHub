@@ -93,6 +93,13 @@ export async function PATCH(
         ...(body.notificationEmail !== undefined && { notificationEmail: body.notificationEmail || null }),
         ...(body.webhookUrl !== undefined && { webhookUrl: body.webhookUrl || null }),
         ...(notificationPrefs !== undefined && { notificationPrefs }),
+        ...(body.whatsappEnabled !== undefined && { whatsappEnabled: Boolean(body.whatsappEnabled) }),
+        ...(body.whatsappFromNumber !== undefined && {
+          whatsappFromNumber:
+            typeof body.whatsappFromNumber === "string" && body.whatsappFromNumber.trim()
+              ? body.whatsappFromNumber.replace(/[^\d+]/g, "").slice(0, 20)
+              : null,
+        }),
       },
     });
 

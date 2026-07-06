@@ -115,6 +115,9 @@ export async function POST(request: Request) {
         actionItems: JSON.parse(JSON.stringify(analysis.actionItems)),
         topics: analysis.topics,
         escalated: analysis.escalated,
+        leadScore: analysis.leadScore,
+        intentCategory: analysis.intentCategory,
+        suggestedReply: analysis.suggestedReply,
       },
     });
 

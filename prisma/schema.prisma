@@ -88,6 +88,12 @@ model Business {
   address     String?
   // Where lead-capture emails are sent. Falls back to owner.email at delivery time.
   notificationEmail String?
+
+  // WhatsApp outbound confirmations (Item 4). Off by default; requires the
+  // platform-level WHATSAPP_BSP_* env to be configured too (Stripe-style gating).
+  whatsappEnabled    Boolean @default(false)
+  // Optional per-business sender override; platform source number used if null.
+  whatsappFromNumber String?
   // Optional outbound webhook for leads (Slack/HubSpot/Zapier/etc).
   // Signed with HMAC-SHA256 using webhookSecret in X-Voxie-Signature.
   webhookUrl    String?
@@ -244,10 +250,33 @@ model Agent {
   knowledgeItems  KnowledgeItem[]
   businessData    BusinessData[]
   agentSessions   AgentSession[]
+  knowledgeGaps   KnowledgeGap[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([businessId])
+}
+
+// ── Knowledge Gap (Item 2 — gap detection) ────
+// A caller asked something and the agent's searchKnowledge tool returned
+// zero hits. Each row is a deduped "unanswered question" the owner can turn
+// into a KnowledgeItem, or dismiss. Written fire-and-forget from the
+// search-knowledge route; surfaced on the knowledge page + weekly digest.
+
+model KnowledgeGap {
+  id          String   @id @default(cuid())
+  agentId     String
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  // Normalized (lowercased, trimmed) query text for dedup; display uses this too.
+  query       String
+  // open | dismissed | resolved (resolved = owner added an answer from it)
+  status      String   @default("open")
+  // How many times callers asked this (increments on dedup hit).
+  hits        Int      @default(1)
+  lastAskedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([agentId, status])
 }
 
 model KnowledgeItem {
@@ -333,6 +362,18 @@ model AgentSession {
   // Owner-managed lead state.
   // new | contacted | qualified | won | lost | archived
   leadStatus     String   @default("new")
+
+  // AI lead scoring (Claude post-call). All nullable — additive, older
+  // sessions simply have no score until re-analyzed.
+  leadScore      Int?     // 0-100 lead quality estimate
+  intentCategory String?  // booking | pricing | support | complaint | information | spam | other
+  suggestedReply String?  @db.Text // one-tap follow-up draft for the owner
+
+  // WhatsApp confirmation to the caller (Item 4). Idempotency mirror of
+  // leadDeliveredAt for the WhatsApp channel.
+  whatsappDeliveredAt DateTime?
+  whatsappMessageId   String?
+  whatsappStatus      String?   // sent | failed
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

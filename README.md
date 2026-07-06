@@ -79,7 +79,8 @@ Voxie lets **business owners** create AI voice agents trained on their own data 
 | **Phase 4** — Polish | Outbound webhook with HMAC-SHA256 signing; lead status workflow (new → contacted → qualified → won / lost / archived); CSV export; settings UI for notification email + webhook URL | ✅ |
 | **Phase 5** — AI pipeline tuning | Per-agent VAD config (`silenceDurationMs` 1.2s/2s, `endOfSpeechSensitivity: LOW`); per-agent `temperature` (0.7 SMB, 0.75 interview); `enableAffectiveDialog`; sliding-window `contextWindowCompression`; `sessionResumption` handle capture; universal `searchKnowledge` tool for dynamic mid-call RAG; per-session variety seed + topic angles for interview agents (no more identical questions across sessions); LangSmith tracing on `deliverLead`, `sendLeadCaptureEmail`, `deliverWebhook`, `searchKnowledgeDispatch` | ✅ |
 | **Phase 6** — Razorpay + hardening | Razorpay subscriptions alongside Stripe (Indian SMB market): hosted checkout via short_url, HMAC-SHA256-signed webhook handling `subscription.{activated,charged,cancelled,completed,paused}` + `payment.failed`; dual-provider billing UI with currency-aware display (USD / INR); per-business `paymentProvider` field; INR plan pricing seeded (₹2399 / ₹7999 / Free); IP rate-limit on `/search-knowledge` (30/min); `robots.ts` + `sitemap.ts` for SEO basics | ✅ |
-| **Phase 7+** — Future | WebSocket reconnect handler (resumption data is captured but the reconnect flow is unbuilt); per-agent webhook overrides; metered overage billing; audio call recording; multi-business per owner; dedicated webhook retry queue with dead-letter UI; LangGraph for real booking workflows (not needed until we add Calendly/EHR integrations) | Planned |
+| **Phase 7** — Dashboard depth + AI lead scoring | Analytics page (KPIs, calls/day chart, sentiment breakdown, top topics — 7/30/90d); Lead inbox (`/business/leads`) with status tabs, search, agent filter, CSV export; team management (`BusinessMember` + single-use email invites, owner-gated mutations); webhook delivery log (`WebhookDelivery` rows + settings UI); `personal` portfolio agent template; resume PDF parsing (Claude) for interview candidates; **AI lead scoring** — Claude post-call now also returns `leadScore` (0-100), `intentCategory` (booking/pricing/support/complaint/information/spam/other), and a `suggestedReply` follow-up draft; lead inbox gains "Hot leads first" sort + score/intent pills; CSV export includes both columns | ✅ |
+| **Phase 8+** — Future | WebSocket reconnect handler (resumption data is captured but the reconnect flow is unbuilt); per-agent webhook overrides; metered overage billing; audio call recording; multi-business per owner (schema allows it, UI assumes `businesses[0]`); dedicated webhook retry queue with dead-letter UI (delivery log exists, retries are Inngest-level only); LangGraph for real booking workflows (not needed until we add Calendly/EHR integrations). See `ROADMAP_NEXT.md` for the prioritized plan | Planned |
 
 ---
 
@@ -119,6 +120,9 @@ User (NextAuth — credentials + OAuth)
       │     ├── stripeCustomerId / stripeSubscriptionId
       │     ├── currentPeriodStart / End
       │     └── lastQuotaNotice    none | 80 | 95 | 100  (threshold idempotency)
+      ├── BusinessMember (userId, role="member")   ← team access; owner stays on Business.ownerId
+      ├── BusinessInvite (email, unique token, 7-day expiry, acceptedAt)
+      ├── WebhookDelivery (sessionId, statusCode, latencyMs, ok, errorMessage)  ← one row per webhook attempt
       └── Agent (one per business in v1, schema supports many)
            ├── templateType        hotel | medical | restaurant | legal | interview
            ├── config (JSON)       template-specific fields (hotelName, cuisineType, …)
@@ -133,6 +137,7 @@ User (NextAuth — credentials + OAuth)
                 ├── leadStatus     new | contacted | qualified | won | lost | archived
                 ├── leadDeliveredAt    idempotency marker for email + webhook
                 ├── summary, sentiment, sentimentScore, topics[], escalated  (Claude)
+                ├── leadScore (0-100), intentCategory, suggestedReply  (Claude AI lead scoring)
                 └── rating, feedback   (caller's own rating)
 
 BillingPlan
@@ -276,6 +281,16 @@ RAZORPAY_KEY_SECRET=
 RAZORPAY_WEBHOOK_SECRET=
 RAZORPAY_PLAN_STARTER=           # Razorpay Plan ID for the Starter plan
 RAZORPAY_PLAN_PRO=               # Razorpay Plan ID for the Pro plan
+
+# ── WhatsApp outbound confirmations (optional — Item 4) ──
+# Unset = WhatsApp channel silently disabled (Stripe-style gating).
+WHATSAPP_BSP_PROVIDER=           # gupshup | twilio
+WHATSAPP_BSP_API_KEY=            # Gupshup API key
+WHATSAPP_BSP_SOURCE_NUMBER=      # Gupshup WhatsApp Business number (digits, country code, no +)
+WHATSAPP_BSP_APP_NAME=           # Gupshup app name
+TWILIO_ACCOUNT_SID=              # Twilio alternative
+TWILIO_AUTH_TOKEN=
+TWILIO_WHATSAPP_FROM=            # E.164, e.g. +14155238886
 
 # ── Observability ─────────────────────────────
 LANGSMITH_API_KEY=               # Optional

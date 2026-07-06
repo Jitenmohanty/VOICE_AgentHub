@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { businessAccessFilter } from "@/lib/access";
 
 const ALLOWED_LEAD_STATUS = new Set(["new", "contacted", "qualified", "won", "lost", "archived"]);
+const ALLOWED_INTENT_CATEGORY = new Set(["booking", "pricing", "support", "complaint", "information", "spam", "other"]);
 
 /**
  * GET /api/business/[businessId]/leads
@@ -16,6 +17,8 @@ const ALLOWED_LEAD_STATUS = new Set(["new", "contacted", "qualified", "won", "lo
  *   - status: leadStatus filter (one of ALLOWED_LEAD_STATUS) — omit for all
  *   - agentId: scope to one agent
  *   - search: case-insensitive caller-name / phone / email / intent match
+ *   - intent: AI intentCategory filter (booking/pricing/support/complaint/information/spam/other)
+ *   - sort: "recent" (default, newest first) | "score" (AI leadScore desc, unscored last)
  *   - page (default 1) / limit (default 20, max 100)
  */
 export async function GET(
@@ -41,6 +44,8 @@ export async function GET(
     const statusParam = url.searchParams.get("status");
     const agentIdParam = url.searchParams.get("agentId");
     const searchParam = url.searchParams.get("search")?.trim() || "";
+    const intentParam = url.searchParams.get("intent");
+    const sortParam = url.searchParams.get("sort");
     const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
     const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") || "20", 10)));
     const skip = (page - 1) * limit;
@@ -53,6 +58,7 @@ export async function GET(
     const where: Prisma.AgentSessionWhereInput = {
       ...baseWhere,
       ...(statusParam && ALLOWED_LEAD_STATUS.has(statusParam) ? { leadStatus: statusParam } : {}),
+      ...(intentParam && ALLOWED_INTENT_CATEGORY.has(intentParam) ? { intentCategory: intentParam } : {}),
       ...(searchParam
         ? {
             OR: [
@@ -65,10 +71,17 @@ export async function GET(
         : {}),
     };
 
+    // "score" surfaces the hottest AI-scored leads first; unscored (older,
+    // pre-scoring) rows sink to the bottom instead of disappearing.
+    const orderBy: Prisma.AgentSessionOrderByWithRelationInput[] =
+      sortParam === "score"
+        ? [{ leadScore: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }]
+        : [{ createdAt: "desc" }];
+
     const [leads, total, statusGroups] = await Promise.all([
       prisma.agentSession.findMany({
         where,
-        orderBy: { createdAt: "desc" },
+        orderBy,
         skip,
         take: limit,
         include: {

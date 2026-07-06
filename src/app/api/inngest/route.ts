@@ -1,6 +1,8 @@
 import { serve } from "inngest/next";
 import { inngest } from "@/inngest/client";
 import { postCallAnalysis } from "@/inngest/functions/post-call-analysis";
+import { ingestWebsite } from "@/inngest/functions/ingest-website";
+import { weeklyDigest } from "@/inngest/functions/weekly-digest";
 
 /**
  * Inngest serve handler — registers all background functions with the Inngest platform.
@@ -9,5 +11,5 @@ import { postCallAnalysis } from "@/inngest/functions/post-call-analysis";
  */
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [postCallAnalysis],
+  functions: [postCallAnalysis, ingestWebsite, weeklyDigest],
 });

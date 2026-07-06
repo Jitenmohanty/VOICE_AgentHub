@@ -583,6 +583,89 @@ export async function sendTeamInviteEmail(opts: {
   });
 }
 
+// ── Weekly digest email (Item 2) ──────────────────────────────────────────────
+
+export async function sendWeeklyDigestEmail(opts: {
+  to: string;
+  businessName: string;
+  narrative: string;
+  gapAdvice: string;
+  stats: {
+    totalCalls: number;
+    leadsCaptured: number;
+    hotLeadCount: number;
+    wonLeads: number;
+  };
+  gaps: { query: string; hits: number }[];
+  knowledgeUrl: string;
+  leadsUrl: string;
+}) {
+  const statCell = (label: string, value: string | number) => `
+    <td style="padding:14px 8px;text-align:center;background:#13131F;border-radius:10px;border:1px solid #2A2A3E;">
+      <p style="margin:0;font-size:22px;font-weight:700;color:#FFFFFF;">${value}</p>
+      <p style="margin:4px 0 0;font-size:11px;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">${label}</p>
+    </td>`;
+
+  const gapRows = opts.gaps
+    .slice(0, 5)
+    .map(
+      (g) => `
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #2A2A3E;font-size:14px;color:#F0F0F5;">
+          &ldquo;${escapeHtml(g.query)}&rdquo;
+        </td>
+        <td style="padding:10px 16px;border-bottom:1px solid #2A2A3E;font-size:12px;color:#8888AA;text-align:right;white-space:nowrap;">
+          asked ${g.hits}&times;
+        </td>
+      </tr>`,
+    )
+    .join("");
+
+  const body = emailShell(`
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#FFFFFF;letter-spacing:-0.4px;">
+      Your week with ${escapeHtml(opts.businessName)}
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#B8B8CC;">
+      ${escapeHtml(opts.narrative)}
+    </p>
+
+    <table cellpadding="0" cellspacing="8" width="100%" style="margin:0 0 8px;">
+      <tr>
+        ${statCell("Calls", opts.stats.totalCalls)}
+        ${statCell("Leads", opts.stats.leadsCaptured)}
+        ${statCell("Hot leads", opts.stats.hotLeadCount)}
+        ${statCell("Won", opts.stats.wonLeads)}
+      </tr>
+    </table>
+
+    ${
+      opts.gaps.length > 0
+        ? `
+    <h2 style="margin:28px 0 6px;font-size:16px;font-weight:600;color:#FFFFFF;">
+      Callers asked — your agent had no answer
+    </h2>
+    ${
+      opts.gapAdvice
+        ? `<p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#B8B8CC;">${escapeHtml(opts.gapAdvice)}</p>`
+        : ""
+    }
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:10px;border:1px solid #2A2A3E;overflow:hidden;">
+      ${gapRows}
+    </table>
+    ${primaryButton(opts.knowledgeUrl, "Add answers to your knowledge base")}
+    `
+        : primaryButton(opts.leadsUrl, "Review this week's leads")
+    }
+  `);
+
+  return sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: `Voxie weekly: ${opts.stats.totalCalls} calls, ${opts.stats.leadsCaptured} leads for ${opts.businessName}`,
+    html: body,
+  });
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")

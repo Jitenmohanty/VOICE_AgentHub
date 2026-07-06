@@ -30,6 +30,28 @@ const BodySchema = z.object({
   k: z.number().int().min(1).max(10).optional(),
 });
 
+/** Upsert-style gap logging: same normalized query bumps hits instead of duplicating. */
+async function recordKnowledgeGap(agentId: string, query: string): Promise<void> {
+  try {
+    const normalized = query.trim().toLowerCase().slice(0, 300);
+    if (normalized.length < 3) return;
+    const existing = await prisma.knowledgeGap.findFirst({
+      where: { agentId, query: normalized, status: "open" },
+      select: { id: true },
+    });
+    if (existing) {
+      await prisma.knowledgeGap.update({
+        where: { id: existing.id },
+        data: { hits: { increment: 1 }, lastAskedAt: new Date() },
+      });
+    } else {
+      await prisma.knowledgeGap.create({ data: { agentId, query: normalized } });
+    }
+  } catch (err) {
+    console.warn("[KnowledgeGap] logging failed (non-fatal):", err);
+  }
+}
+
 function tokensMatch(provided: string, expected: string): boolean {
   const a = Buffer.from(provided);
   const b = Buffer.from(expected);
@@ -93,6 +115,15 @@ export async function POST(
     }
 
     const results = await traceableSearch(sessionId, session.agentId, query, k ?? 5);
+
+    // Knowledge-gap detection: a caller asked something the knowledge base
+    // couldn't answer. Log it (deduped per agent) so the owner sees "callers
+    // asked X and your agent had no answer" on the knowledge page + weekly
+    // digest. Fire-and-forget — never delays or fails the live call.
+    if (results.length === 0) {
+      void recordKnowledgeGap(session.agentId, query);
+    }
+
     await flushTraces();
     return NextResponse.json({ results });
   } catch (err) {
