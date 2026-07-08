@@ -357,6 +357,61 @@ node prisma/seed-plans.mjs # Upsert the three billing plans (idempotent)
 
 ---
 
+## Operating Voxie (what you, the owner, need to know)
+
+### Every advanced feature is off until you configure it
+
+Voxie boots and runs the **core loop (voice call → captured lead → email + AI scoring)**
+with just the required env vars. Every integration below is *gated the same way as
+Stripe* — leave its env unset and that feature is silently disabled; nothing else
+breaks. So you can ship the core today and switch features on one at a time.
+
+| Feature | Turns on when you set | Extra dashboard step |
+|---|---|---|
+| AI lead scoring, digests, evals | `ANTHROPIC_API_KEY` (already required) | — |
+| Website → auto knowledge base | required keys only | — |
+| Stripe billing (USD) | `STRIPE_*` (4 vars) | Webhook → `/api/billing/webhook` |
+| Razorpay billing (INR) | `RAZORPAY_*` (5 vars) | Webhook → `/api/billing/razorpay/webhook` |
+| WhatsApp outbound + inbound agent | `WHATSAPP_BSP_*` + `WHATSAPP_INBOUND_TOKEN` | BSP webhook → `/api/whatsapp/inbound?token=…` |
+| Google Calendar booking | `GOOGLE_CLIENT_*` (already set) + `SECRETS_ENCRYPTION_KEY` | Redirect URI → `/api/integrations/google-calendar/callback`; owner clicks **Connect** in Settings |
+| UPI payment links (mid-call) | `RAZORPAY_*` | Razorpay webhook must include `payment_link.paid`; owner enables per-agent + sets ₹ cap |
+| Zoho CRM push | `SECRETS_ENCRYPTION_KEY` | Owner pastes Zoho creds in Settings, clicks **Test connection** |
+| Metered overage billing | `RAZORPAY_*` | Owner opts in per-business in Settings |
+| Call recording | `R2_*` (4 vars) | Owner enables in Settings *(see caveat below)* |
+
+Per-agent toggles (payments, overage, recording, WhatsApp sender) live in the owner
+dashboard — the platform env just makes each feature *available* to enable.
+
+### Go-live checklist (in order)
+
+1. `cp .env.example .env.local` and fill the **required** blocks (database, auth, AI, `INTERNAL_API_SECRET`).
+2. `npx prisma generate && npx prisma db push` — **mandatory**; the app selects columns that don't exist until you do this.
+3. `node prisma/seed-plans.mjs` — seeds Free/Starter/Pro (+ overage rates). Re-run after adding Stripe/Razorpay IDs.
+4. `npm run build` to confirm a clean production build, then deploy (Vercel).
+5. Add any providers you want from the table above, one at a time, and smoke-test each (the CRM card has a **Test connection** button; make one ₹1 payment link; connect a calendar and book a test slot).
+6. `npm run eval` once your AI keys are live — baselines agent behavior; run it before any future prompt change.
+
+### Two things deliberately NOT finished (by design)
+
+- **Call recording capture** — storage, consent flag, upload/playback, and 30-day
+  retention are all built, but the ~20 lines that start the recorder on the caller's
+  device (`PublicAgentExperience.tsx`) are **not wired**, because that's the live-call
+  hot path and must be tested with a real microphone, not shipped blind. Exact steps
+  are in `ROADMAP_NEXT.md` → Item 12. Until then, the recording toggle is inert.
+- **Audio PII redaction** — a separate project (needs word-level transcript timestamps).
+
+### Where your money & leads actually flow
+
+- **Leads**: every call → `AgentSession` → Claude scores it → email to you (hot leads get a
+  🔥 subject) + optional signed webhook + optional Zoho + optional WhatsApp confirmation. All
+  idempotent; see `PRODUCT_FLOW.md`.
+- **Money in**: subscriptions via Stripe/Razorpay; mid-call UPI deposits via payment links;
+  month-end overage auto-invoiced by the `overage-invoice` cron.
+- **Full runtime walkthrough**: `PRODUCT_FLOW.md`. **AI internals**: `AI_PIPELINE.md`.
+  **Next ideas + status**: `ROADMAP_NEXT.md`.
+
+---
+
 ## License
 
 Private project — not open source.
