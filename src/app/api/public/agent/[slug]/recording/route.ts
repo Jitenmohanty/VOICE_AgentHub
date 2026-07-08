@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { r2PutObject, isR2Configured } from "@/lib/storage/r2";
 import { authenticateBookingRequest, extractSessionToken } from "@/lib/calendar/booking";
+import { checkTransactionRateLimit } from "@/lib/ratelimit";
 
 /**
  * POST /api/public/agent/[slug]/recording?sessionId=...
@@ -21,6 +22,9 @@ const MAX_BYTES = 8 * 1024 * 1024;
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
+    const limited = await checkTransactionRateLimit(request);
+    if (limited) return limited;
+
     const sessionId = new URL(request.url).searchParams.get("sessionId") || "";
     if (!sessionId) return NextResponse.json({ error: "sessionId required" }, { status: 400 });
 

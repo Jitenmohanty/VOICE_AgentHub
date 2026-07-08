@@ -149,6 +149,56 @@ export async function checkSearchKnowledgeRateLimit(
 }
 
 /**
+ * Transactional tool limiter (booking / payment / recording upload):
+ * - 10 calls per IP per minute. These endpoints are auth-gated by the
+ *   per-session bearer token, but each one hits a PAID external API
+ *   (Google Calendar, Razorpay payment links, Cloudflare R2) or creates
+ *   real-world side effects, so a compromised token must not be able to
+ *   spam them. 10/min is far above an honest call's rate (a caller books
+ *   or pays once) while blocking abuse.
+ */
+let transactionByIp: Ratelimit | null = null;
+
+function getTransactionLimiter(): Ratelimit | null {
+  const r = getRedis();
+  if (!r) return null;
+  if (!transactionByIp) {
+    transactionByIp = new Ratelimit({
+      redis: r,
+      limiter: Ratelimit.slidingWindow(10, "1 m"),
+      prefix: "rl:txn:ip",
+      analytics: true,
+    });
+  }
+  return transactionByIp;
+}
+
+export async function checkTransactionRateLimit(
+  request: Request,
+): Promise<Response | null> {
+  const limiter = getTransactionLimiter();
+  if (!limiter) return null; // Upstash not configured — allow through (dev)
+
+  const ip = getIp(request);
+  const result = await limiter.limit(ip);
+  if (!result.success) {
+    return new Response(
+      JSON.stringify({ error: "Too many requests. Please slow down." }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(Math.ceil((result.reset - Date.now()) / 1000)),
+          "X-RateLimit-Limit": String(result.limit),
+          "X-RateLimit-Remaining": "0",
+        },
+      },
+    );
+  }
+  return null;
+}
+
+/**
  * Resume parse limiter:
  * - 5 parses per IP per minute (Claude PDF parsing is expensive)
  */

@@ -12,6 +12,7 @@ import {
   extractSessionToken,
   getCalendarAccess,
 } from "@/lib/calendar/booking";
+import { checkTransactionRateLimit } from "@/lib/ratelimit";
 
 /**
  * POST /api/public/agent/[slug]/confirm-appointment
@@ -34,6 +35,9 @@ const BodySchema = z.object({
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
+    const limited = await checkTransactionRateLimit(request);
+    if (limited) return limited;
+
     const parse = BodySchema.safeParse(await request.json().catch(() => ({})));
     if (!parse.success) {
       return NextResponse.json({ error: parse.error.issues[0]?.message ?? "Bad request" }, { status: 400 });

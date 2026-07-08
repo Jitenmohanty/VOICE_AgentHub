@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { createPaymentLink } from "@/lib/payments/razorpay-payment-link";
 import { authenticateBookingRequest, extractSessionToken } from "@/lib/calendar/booking";
 import { isRazorpayConfigured } from "@/lib/razorpay";
+import { checkTransactionRateLimit } from "@/lib/ratelimit";
 import { isWhatsAppConfigured, sendWhatsAppText } from "@/lib/whatsapp";
 
 /**
@@ -31,6 +32,9 @@ const BodySchema = z.object({
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await params;
+    const limited = await checkTransactionRateLimit(request);
+    if (limited) return limited;
+
     const parse = BodySchema.safeParse(await request.json().catch(() => ({})));
     if (!parse.success) {
       return NextResponse.json({ error: parse.error.issues[0]?.message ?? "Bad request" }, { status: 400 });
