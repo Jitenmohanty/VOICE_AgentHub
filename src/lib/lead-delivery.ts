@@ -58,6 +58,10 @@ interface WebhookPayload {
     sentimentScore: number | null;
     topics: string[];
     escalated: boolean;
+    // AI lead scoring (Item 3) — additive JSON fields, safe for receivers.
+    leadScore: number | null;
+    intentCategory: string | null;
+    suggestedReply: string | null;
   };
 }
 
@@ -177,7 +181,10 @@ export const deliverLead = traceable(
       sentiment: session.sentiment,
       topics: session.topics,
       escalated: session.escalated,
+      leadScore: session.leadScore,
+      intentCategory: session.intentCategory,
     },
+    suggestedReply: session.suggestedReply,
   });
 
   // Stamp idempotency marker AFTER successful email send so a transient
@@ -214,6 +221,9 @@ export const deliverLead = traceable(
           sentimentScore: session.sentimentScore,
           topics: session.topics,
           escalated: session.escalated,
+          leadScore: session.leadScore,
+          intentCategory: session.intentCategory,
+          suggestedReply: session.suggestedReply,
         },
       });
       const latencyMs = Date.now() - startedAt;

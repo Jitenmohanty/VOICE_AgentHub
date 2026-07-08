@@ -4,6 +4,7 @@ import { postCallAnalysis } from "@/inngest/functions/post-call-analysis";
 import { ingestWebsite } from "@/inngest/functions/ingest-website";
 import { weeklyDigest } from "@/inngest/functions/weekly-digest";
 import { overageInvoice } from "@/inngest/functions/overage-invoice";
+import { recordingRetention } from "@/inngest/functions/recording-retention";
 
 /**
  * Inngest serve handler — registers all background functions with the Inngest platform.
@@ -12,5 +13,5 @@ import { overageInvoice } from "@/inngest/functions/overage-invoice";
  */
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [postCallAnalysis, ingestWebsite, weeklyDigest, overageInvoice],
+  functions: [postCallAnalysis, ingestWebsite, weeklyDigest, overageInvoice, recordingRetention],
 });

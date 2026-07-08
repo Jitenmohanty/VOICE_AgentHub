@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Bot, Save, BookOpen, Database, MessageSquare, ArrowLeft,
-  Globe, Volume2, Building2, Phone, MapPin, ChevronDown, Code,
+  Globe, Volume2, Building2, Phone, MapPin, ChevronDown, Code, MessageCircle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -190,7 +190,7 @@ export default function AgentConfigPage() {
       </motion.div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         <Link
           href={`/business/agents/${agentId}/knowledge?bid=${businessId}`}
           className="glass rounded-2xl p-4 text-center hover:bg-white/[0.07] transition-all"
@@ -214,6 +214,14 @@ export default function AgentConfigPage() {
           <MessageSquare className="w-4 h-4 mx-auto mb-1.5 text-blue-300" />
           <p className="text-lg font-semibold tracking-tight text-white tabular-nums">{agent._count.agentSessions}</p>
           <p className="text-xs text-white/45 uppercase tracking-wider mt-0.5">Sessions</p>
+        </Link>
+        <Link
+          href={`/business/agents/${agentId}/whatsapp?bid=${businessId}`}
+          className="glass rounded-2xl p-4 text-center hover:bg-white/[0.07] transition-all"
+        >
+          <MessageCircle className="w-4 h-4 mx-auto mb-1.5 text-emerald-300" />
+          <p className="text-lg font-semibold tracking-tight text-white">Chats</p>
+          <p className="text-xs text-white/45 uppercase tracking-wider mt-0.5">WhatsApp</p>
         </Link>
       </div>
 

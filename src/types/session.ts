@@ -41,6 +41,18 @@ export interface AgentSessionData {
   // Call recording (Item 12) — R2 object key; playback via presigned URL only.
   recordingKey?: string | null;
   recordingConsent?: boolean | null;
+  // CRM push (Item 9)
+  crmPushedAt?: Date | string | null;
+  crmRecordId?: string | null;
+  crmError?: string | null;
+  // Real calendar booking (Item 7)
+  bookedAppointmentAt?: Date | string | null;
+  bookedSlot?: string | null;
+  bookedEventId?: string | null;
+  // Mid-call UPI payment (Item 8) — paise
+  paymentLinkId?: string | null;
+  paymentAmountPaise?: number | null;
+  paymentReceivedAt?: Date | string | null;
   createdAt: Date;
   updatedAt: Date;
 

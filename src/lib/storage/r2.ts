@@ -111,6 +111,39 @@ export async function r2PutObject(key: string, body: Buffer, contentType: string
   }
 }
 
+/** Delete an object (retention cleanup). 404s are treated as success. */
+export async function r2DeleteObject(key: string): Promise<void> {
+  const cfg = getConfig();
+  if (!cfg) throw new Error("R2 is not configured");
+
+  const host = `${cfg.accountId}.r2.cloudflarestorage.com`;
+  const path = `/${cfg.bucket}/${encodePath(key)}`;
+  const { amzDate, dateStamp } = amzTimestamp();
+  const payloadHash = sha256Hex("");
+
+  const canonicalHeaders =
+    `host:${host}\n` + `x-amz-content-sha256:${payloadHash}\n` + `x-amz-date:${amzDate}\n`;
+  const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+
+  const canonicalRequest = ["DELETE", path, "", canonicalHeaders, signedHeaders, payloadHash].join("\n");
+  const sig = signature(cfg.secretAccessKey, dateStamp, stringToSign(amzDate, dateStamp, canonicalRequest));
+
+  const res = await fetch(`https://${host}${path}`, {
+    method: "DELETE",
+    headers: {
+      "x-amz-content-sha256": payloadHash,
+      "x-amz-date": amzDate,
+      Authorization:
+        `AWS4-HMAC-SHA256 Credential=${cfg.accessKeyId}/${dateStamp}/${REGION}/${SERVICE}/aws4_request, ` +
+        `SignedHeaders=${signedHeaders}, Signature=${sig}`,
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`R2 DELETE failed: HTTP ${res.status}`);
+  }
+}
+
 /**
  * Short-lived presigned GET URL for playback in the owner dashboard.
  * The object itself stays private — this is the only read path.

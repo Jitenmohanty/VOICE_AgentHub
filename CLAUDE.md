@@ -14,6 +14,7 @@ Multi-tenant voice AI SaaS. Business owners create industry-specific Gemini Live
 npm run dev                  # Next.js dev (port 3000)
 npm run build                # Production build
 npm run lint                 # ESLint
+npm run eval                 # Prompt-regression evals (Claude personas vs real prompts; run before merging prompt changes)
 
 npx prisma db push           # Push schema to Neon (no migration files)
 npx prisma studio            # Prisma Studio GUI

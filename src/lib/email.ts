@@ -364,7 +364,11 @@ export interface LeadCaptureEmailOpts {
     sentiment?: string | null;
     topics?: string[];
     escalated?: boolean;
+    leadScore?: number | null;
+    intentCategory?: string | null;
   } | null;
+  /** Claude-drafted one-tap follow-up message (Item 3). */
+  suggestedReply?: string | null;
 }
 
 export const sendLeadCaptureEmail = traceable(
@@ -378,6 +382,17 @@ export const sendLeadCaptureEmail = traceable(
         : "#10B981";
   const escalatedBanner = opts.analysis?.escalated
     ? `<div style="margin:0 0 16px;padding:12px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;color:#FCA5A5;font-size:13px;font-weight:600;">⚠ Call flagged for escalation</div>`
+    : "";
+
+  // AI lead score pill (Item 3) — color-tiered like the dashboard.
+  const score = opts.analysis?.leadScore;
+  const scoreColor = score == null ? "" : score >= 70 ? "#F97316" : score >= 40 ? "#F59E0B" : "#8888AA";
+  const scorePill =
+    score != null
+      ? `<span style="display:inline-block;margin-left:10px;padding:2px 8px;background:${scoreColor}20;color:${scoreColor};border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.3px;">🔥 ${score}/100</span>`
+      : "";
+  const categoryPill = opts.analysis?.intentCategory
+    ? `<span style="display:inline-block;margin-left:6px;padding:2px 8px;background:rgba(34,211,238,0.12);color:#22D3EE;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;">${opts.analysis.intentCategory}</span>`
     : "";
 
   const fmtRow = (label: string, value: string | null | undefined) =>
@@ -409,6 +424,7 @@ export const sendLeadCaptureEmail = traceable(
           <p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">
             What they want
             ${opts.lead.urgency ? `<span style="display:inline-block;margin-left:10px;padding:2px 8px;background:${urgencyColor}20;color:${urgencyColor};border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.3px;">${opts.lead.urgency.toUpperCase()}</span>` : ""}
+            ${scorePill}${categoryPill}
           </p>
           <p style="margin:0;font-size:15px;color:#F0F0F5;line-height:1.5;">${opts.lead.intent}</p>
           ${opts.lead.notes ? `<p style="margin:10px 0 0;font-size:13px;color:#C0C0D8;line-height:1.5;">${opts.lead.notes}</p>` : ""}
@@ -459,6 +475,22 @@ export const sendLeadCaptureEmail = traceable(
         : ""
     }
 
+    ${
+      opts.suggestedReply
+        ? `
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:12px;border:1px solid #2A2A3E;margin:0 0 16px;">
+      <tr>
+        <td style="padding:18px 22px;">
+          <p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">
+            Suggested reply — copy &amp; send
+          </p>
+          <p style="margin:0;font-size:14px;color:#C0C0D8;line-height:1.6;font-style:italic;">${opts.suggestedReply}</p>
+        </td>
+      </tr>
+    </table>`
+        : ""
+    }
+
     <p style="margin:0 0 16px;font-size:12px;color:#555577;">
       Call placed ${opts.capturedAt.toUTCString()} · Duration ${durationStr}
     </p>
@@ -477,10 +509,12 @@ export const sendLeadCaptureEmail = traceable(
     : "new caller";
   const callerLabel = opts.caller.name || "anonymous caller";
 
+  const hotPrefix = score != null && score >= 70 ? "🔥 Hot lead" : "New lead";
+
   return sendMail({
     from: FROM,
     to: opts.to,
-    subject: `New lead from ${opts.agentName} — ${callerLabel}: ${subjectIntent}`,
+    subject: `${hotPrefix} from ${opts.agentName} — ${callerLabel}: ${subjectIntent}`,
     html: body,
   });
   },
