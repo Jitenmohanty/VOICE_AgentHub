@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
-import { getAgentSystemPrompt, getAgentTools } from "@/lib/gemini/agent-prompts";
+import {
+  getAgentSystemPrompt,
+  getAgentTools,
+  buildLanguageDirective,
+  bookAppointmentTool,
+  confirmAppointmentTool,
+  bookingRule,
+  generatePaymentLinkTool,
+  paymentRule,
+} from "@/lib/gemini/agent-prompts";
+import { isRazorpayConfigured } from "@/lib/razorpay";
 import { queryKnowledge, buildRAGContext, buildBusinessDataContext } from "@/lib/rag";
 import { checkSessionRateLimit, checkBusinessPlanQuota } from "@/lib/ratelimit";
 import { SessionCreateSchema } from "@/lib/schemas";
@@ -128,10 +138,10 @@ export async function POST(
     // Language directive — paired with speechConfig.languageCode in the Live
     // connect config. Speech-config alone occasionally takes a turn or two to
     // kick in; the prompt directive makes the very first reply land in the
-    // right language. Native-script label is included so the model recognizes
-    // the language even if the BCP-47 code is unfamiliar to it.
+    // right language. After the opening, the caller leads — mid-sentence
+    // code-switching (Hinglish etc.) is mirrored, not fought.
     if (languageOption.code !== "en-US") {
-      systemPrompt += `\n\nLanguage: Respond exclusively in ${languageOption.label} (${languageOption.nativeLabel}). Every reply — including the greeting — must be in ${languageOption.label}. Do not switch to English unless the caller explicitly asks you to.`;
+      systemPrompt += `\n${buildLanguageDirective(languageOption.label, languageOption.nativeLabel, languageOption.code)}`;
     }
 
     // 2. Inject personality and rules
@@ -178,6 +188,30 @@ export async function POST(
     // Filter tools to only those enabled by the business owner.
     // An empty enabledTools array means "all tools allowed" (default / legacy).
     const tools = getAgentTools(agent.templateType, agent.enabledTools);
+
+    // Real calendar booking (Item 7): the booking tools + rule are appended
+    // ONLY when the business has an active Google Calendar integration, so
+    // agents without one behave exactly as before.
+    if (agent.templateType !== "interview") {
+      const calendarIntegration = await prisma.integration
+        .findUnique({
+          where: { businessId_provider: { businessId: business.id, provider: "google-calendar" } },
+          select: { status: true },
+        })
+        .catch(() => null);
+      if (calendarIntegration?.status === "active") {
+        tools.push(bookAppointmentTool, confirmAppointmentTool);
+        systemPrompt += bookingRule;
+      }
+
+      // Mid-call UPI payment links (Item 8): owner toggle + platform Razorpay
+      // keys. Off = agent behaves exactly as before.
+      const config = (agent.config ?? {}) as Record<string, unknown>;
+      if (config.paymentEnabled === true && isRazorpayConfigured()) {
+        tools.push(generatePaymentLinkTool);
+        systemPrompt += paymentRule;
+      }
+    }
 
     // Per-session bearer token. Required on subsequent PATCH so anonymous
     // callers can't overwrite each other's transcripts using only the cuid.

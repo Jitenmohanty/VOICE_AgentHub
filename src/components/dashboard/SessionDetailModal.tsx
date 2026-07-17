@@ -14,6 +14,8 @@ import {
   Target,
   Award,
   UserCheck,
+  Flame,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getAgentById } from "@/lib/agents";
@@ -293,8 +295,70 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                       <p className="text-sm text-white/75 mt-1 leading-relaxed">{session.capturedLead.notes}</p>
                     </div>
                   )}
+
+                  {/* Real booking + payment outcomes (Items 7 + 8) */}
+                  {(session.bookedSlot || session.paymentLinkId) && (
+                    <div className="flex items-center gap-2 flex-wrap pt-1">
+                      {session.bookedSlot && (
+                        <span className="text-xs px-2.5 py-1 rounded-full font-medium border bg-emerald-500/15 text-emerald-300 border-emerald-300/25 inline-flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3" />
+                          Appointment booked · {formatIST(session.bookedSlot)}
+                        </span>
+                      )}
+                      {session.paymentLinkId && (
+                        <span
+                          className={`text-xs px-2.5 py-1 rounded-full font-medium border inline-flex items-center gap-1.5 ${
+                            session.paymentReceivedAt
+                              ? "bg-emerald-500/15 text-emerald-300 border-emerald-300/25"
+                              : "bg-amber-500/10 text-amber-300 border-amber-300/20"
+                          }`}
+                        >
+                          {session.paymentReceivedAt ? "Paid" : "Payment link sent"}
+                          {session.paymentAmountPaise != null &&
+                            ` · ₹${(session.paymentAmountPaise / 100).toLocaleString("en-IN")}`}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {session.suggestedReply && (
+                    <div className="pt-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xs text-white/55 uppercase tracking-wider">Suggested reply</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard
+                              .writeText(session.suggestedReply!)
+                              .then(() => toast.success("Reply copied"))
+                              .catch(() => toast.error("Couldn't copy"));
+                          }}
+                          className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/65 hover:text-white transition-colors"
+                        >
+                          <Copy className="w-3 h-3" /> Copy
+                        </button>
+                      </div>
+                      <p className="text-sm text-white/75 mt-1.5 leading-relaxed bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2.5 italic">
+                        {session.suggestedReply}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
+
+              {/* CRM push status + manual retry (Item 9) */}
+              {(session.crmPushedAt || session.crmError) && (
+                <CrmPushRow
+                  sessionId={sessionId}
+                  pushedAt={session.crmPushedAt ?? null}
+                  recordId={session.crmRecordId ?? null}
+                  error={session.crmError ?? null}
+                  onUpdated={(patch) => setSession({ ...session, ...patch })}
+                />
+              )}
+
+              {/* Call recording (Item 12) */}
+              {session.recordingKey && <RecordingPlayer sessionId={sessionId} />}
 
               {/* Summary */}
               {summary && (
@@ -335,6 +399,34 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                       {session.escalated && (
                         <span className="text-sm px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-300/20">
                           Escalation needed
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* AI lead score + intent category */}
+                  {(session.leadScore != null || session.intentCategory) && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {session.leadScore != null && (
+                        <>
+                          <span className="text-sm text-white/55">Lead score:</span>
+                          <span
+                            className={`text-sm font-medium px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 tabular-nums ${
+                              session.leadScore >= 70
+                                ? "bg-orange-500/15 text-orange-300 border-orange-300/30"
+                                : session.leadScore >= 40
+                                  ? "bg-amber-500/10 text-amber-300 border-amber-300/20"
+                                  : "bg-white/[0.06] text-white/55 border-white/10"
+                            }`}
+                          >
+                            <Flame className="w-3 h-3" />
+                            {session.leadScore}/100
+                          </span>
+                        </>
+                      )}
+                      {session.intentCategory && (
+                        <span className="text-sm px-2.5 py-0.5 rounded-full capitalize bg-cyan-500/10 text-cyan-300 border border-cyan-300/20">
+                          {session.intentCategory}
                         </span>
                       )}
                     </div>
@@ -451,6 +543,113 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
 }
 
 /* ── Helpers ─────────────────────────────────── */
+
+/**
+ * CRM delivery status with a manual retry (Item 9 follow-up). Shown only
+ * when the pipeline attempted a push, which implies a CRM is connected.
+ */
+function CrmPushRow({
+  sessionId,
+  pushedAt,
+  recordId,
+  error,
+  onUpdated,
+}: {
+  sessionId: string;
+  pushedAt: Date | string | null;
+  recordId: string | null;
+  error: string | null;
+  onUpdated: (patch: { crmPushedAt: string | null; crmRecordId: string | null; crmError: string | null }) => void;
+}) {
+  const [pushing, setPushing] = useState(false);
+
+  const rePush = async () => {
+    setPushing(true);
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/crm-push`, { method: "POST" });
+      const d = await res.json();
+      if (res.ok && d.result?.ok) {
+        toast.success(`Lead pushed to CRM${d.result.recordId ? ` (record ${d.result.recordId})` : ""}`);
+        onUpdated({ crmPushedAt: new Date().toISOString(), crmRecordId: d.result.recordId ?? null, crmError: null });
+      } else {
+        const msg = d.result?.error || d.error || "push failed";
+        toast.error(`CRM push failed: ${msg}`);
+        onUpdated({ crmPushedAt: null, crmRecordId: null, crmError: msg });
+      }
+    } catch {
+      toast.error("CRM push failed");
+    } finally {
+      setPushing(false);
+    }
+  };
+
+  return (
+    <div className="bg-white/[0.03] rounded-2xl px-5 py-3.5 border border-white/[0.06] flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="text-sm text-white/55 shrink-0">CRM:</span>
+        {pushedAt ? (
+          <span className="text-sm px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-300/20">
+            Pushed{recordId ? ` · ${recordId}` : ""}
+          </span>
+        ) : (
+          <span className="text-sm px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-300/20 truncate max-w-xs" title={error ?? undefined}>
+            Failed{error ? ` — ${error.slice(0, 80)}` : ""}
+          </span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={rePush}
+        disabled={pushing}
+        className="text-xs font-medium px-3 py-1.5 rounded-xl border bg-white/[0.04] border-white/10 text-white/75 hover:bg-white/[0.08] hover:text-white transition-all disabled:opacity-50"
+      >
+        {pushing ? "Pushing…" : pushedAt ? "Push again" : "Retry push"}
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Lazily fetches a short-lived presigned URL and renders a native audio
+ * player. The URL is only requested when the owner actually clicks Load —
+ * no storage traffic for sessions nobody listens to.
+ */
+function RecordingPlayer({ sessionId }: { sessionId: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/recording`);
+      const d = await res.json();
+      if (!res.ok || !d.url) throw new Error(d.error || "failed");
+      setUrl(d.url);
+    } catch {
+      toast.error("Couldn't load the recording");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06]">
+      <h3 className="text-base font-semibold text-white mb-3">Call recording</h3>
+      {url ? (
+        <audio controls src={url} className="w-full" preload="none" />
+      ) : (
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          className="inline-flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border bg-white/[0.04] border-white/10 text-white/75 hover:bg-white/[0.08] hover:text-white transition-all disabled:opacity-50"
+        >
+          {loading ? "Loading…" : "Load recording"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 function StatCard({
   icon: Icon,

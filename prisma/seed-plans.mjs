@@ -14,6 +14,7 @@ const PLANS = [
     id: "free", name: "Free",
     monthlyMinutes: 30, maxAgents: 1,
     priceCents: 0, priceInrPaise: 0,
+    overagePaisePerMinute: null, // free stays hard-capped
     sortOrder: 0,
   },
   {
@@ -21,6 +22,7 @@ const PLANS = [
     monthlyMinutes: 200, maxAgents: 3,
     priceCents: 2900,        // $29
     priceInrPaise: 239900,   // ₹2399
+    overagePaisePerMinute: 300, // ₹3/min past the cap (Item 13)
     sortOrder: 1,
     stripePriceId: process.env.STRIPE_PRICE_STARTER ?? null,
     razorpayPlanId: process.env.RAZORPAY_PLAN_STARTER ?? null,
@@ -30,6 +32,7 @@ const PLANS = [
     monthlyMinutes: 800, maxAgents: 10,
     priceCents: 9900,        // $99
     priceInrPaise: 799900,   // ₹7999
+    overagePaisePerMinute: 250, // ₹2.50/min past the cap (Item 13)
     sortOrder: 2,
     stripePriceId: process.env.STRIPE_PRICE_PRO ?? null,
     razorpayPlanId: process.env.RAZORPAY_PLAN_PRO ?? null,
@@ -48,6 +51,7 @@ for (const plan of PLANS) {
       sortOrder: plan.sortOrder,
       stripePriceId: plan.stripePriceId ?? null,
       razorpayPlanId: plan.razorpayPlanId ?? null,
+      overagePaisePerMinute: plan.overagePaisePerMinute ?? null,
     },
     create: plan,
   });

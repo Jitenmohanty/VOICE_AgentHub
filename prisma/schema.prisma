@@ -88,6 +88,31 @@ model Business {
   address     String?
   // Where lead-capture emails are sent. Falls back to owner.email at delivery time.
   notificationEmail String?
+
+  // WhatsApp outbound confirmations (Item 4). Off by default; requires the
+  // platform-level WHATSAPP_BSP_* env to be configured too (Stripe-style gating).
+  whatsappEnabled    Boolean @default(false)
+  // Optional per-business sender override; platform source number used if null.
+  whatsappFromNumber String?
+
+  // CRM push (Item 9). crmSecretEncrypted holds the provider credentials as an
+  // AES-256-GCM blob (src/lib/crypto.ts) — NEVER return it from an API route.
+  crmProvider        String? // zoho (leadsquared/kylas planned)
+  crmConfig          Json?   // non-secret config: { region?, fieldMapping? }
+  crmSecretEncrypted String? @db.Text
+
+  // Call recording (Item 12). Off by default; also requires platform R2_*
+  // env. When on, the pre-call screen shows a consent notice and recordings
+  // land in R2 (see src/lib/storage/r2.ts).
+  recordingEnabled Boolean @default(false)
+
+  // Metered overage (Item 13). Off = hard cap (429 at 100%, today's default).
+  // On = calls keep flowing past the plan cap up to overageCapMinutes extra,
+  // invoiced monthly at BillingPlan.overagePaisePerMinute.
+  overageEnabled       Boolean  @default(false)
+  overageCapMinutes    Int      @default(120)
+  // End of the last calendar month whose overage was invoiced (idempotency).
+  overageBilledThrough DateTime?
   // Optional outbound webhook for leads (Slack/HubSpot/Zapier/etc).
   // Signed with HMAC-SHA256 using webhookSecret in X-Voxie-Signature.
   webhookUrl    String?
@@ -101,6 +126,8 @@ model Business {
   webhookDeliveries WebhookDelivery[]
   members     BusinessMember[]
   invites     BusinessInvite[]
+  whatsappConversations WhatsAppConversation[]
+  integrations Integration[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -179,6 +206,9 @@ model BillingPlan {
   priceInrPaise   Int?     // monthly price in INR paise (1 INR = 100 paise)
   stripePriceId   String?  // Stripe Price ID (null for free or India-only)
   razorpayPlanId  String?  // Razorpay Plan ID (null for free or US-only)
+  // Metered overage rate (Item 13) in INR paise per minute past the cap.
+  // null = overage not offered on this plan (free tier stays hard-capped).
+  overagePaisePerMinute Int?
   isActive        Boolean  @default(true)
   sortOrder       Int      @default(0)
   subscriptions   Subscription[]
@@ -244,10 +274,82 @@ model Agent {
   knowledgeItems  KnowledgeItem[]
   businessData    BusinessData[]
   agentSessions   AgentSession[]
+  knowledgeGaps   KnowledgeGap[]
+  whatsappConversations WhatsAppConversation[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([businessId])
+}
+
+// ── Third-party integrations (Item 7: Google Calendar; more later) ──────
+// secretEncrypted is an AES-256-GCM blob (src/lib/crypto.ts) holding the
+// provider's long-lived credential (e.g. { refreshToken }). NEVER return it
+// from an API route.
+
+model Integration {
+  id              String   @id @default(cuid())
+  businessId      String
+  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  provider        String   // google-calendar
+  secretEncrypted String   @db.Text
+  accountEmail    String?  // which Google account is connected (display only)
+  status          String   @default("active") // active | needs_reauth
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([businessId, provider])
+}
+
+// ── WhatsApp inbound text agent (Item 5) ──────
+// One row per (business, caller number). The same agent brain that answers
+// voice calls replies here over Gemini text mode. When captureLead fires,
+// an AgentSession is created and the normal post-call pipeline (Claude
+// scoring, lead email, webhook, WhatsApp confirmation) takes over.
+
+model WhatsAppConversation {
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  agentId       String
+  agent         Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  fromNumber    String   // caller's WhatsApp number — digits with country code
+  // [{ role: "user" | "agent", text, at }] — capped to the most recent 60
+  messages      Json     @default("[]")
+  capturedLead  Json?
+  // AgentSession created when a lead was captured in this thread
+  sessionId     String?
+  lastInboundAt DateTime @default(now())
+  // While set and in the future, the AI does not reply — a human has taken over.
+  humanTakeoverUntil DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([businessId, fromNumber])
+  @@index([agentId, lastInboundAt])
+}
+
+// ── Knowledge Gap (Item 2 — gap detection) ────
+// A caller asked something and the agent's searchKnowledge tool returned
+// zero hits. Each row is a deduped "unanswered question" the owner can turn
+// into a KnowledgeItem, or dismiss. Written fire-and-forget from the
+// search-knowledge route; surfaced on the knowledge page + weekly digest.
+
+model KnowledgeGap {
+  id          String   @id @default(cuid())
+  agentId     String
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  // Normalized (lowercased, trimmed) query text for dedup; display uses this too.
+  query       String
+  // open | dismissed | resolved (resolved = owner added an answer from it)
+  status      String   @default("open")
+  // How many times callers asked this (increments on dedup hit).
+  hits        Int      @default(1)
+  lastAskedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([agentId, status])
 }
 
 model KnowledgeItem {
@@ -333,6 +435,40 @@ model AgentSession {
   // Owner-managed lead state.
   // new | contacted | qualified | won | lost | archived
   leadStatus     String   @default("new")
+
+  // AI lead scoring (Claude post-call). All nullable — additive, older
+  // sessions simply have no score until re-analyzed.
+  leadScore      Int?     // 0-100 lead quality estimate
+  intentCategory String?  // booking | pricing | support | complaint | information | spam | other
+  suggestedReply String?  @db.Text // one-tap follow-up draft for the owner
+
+  // WhatsApp confirmation to the caller (Item 4). Idempotency mirror of
+  // leadDeliveredAt for the WhatsApp channel.
+  whatsappDeliveredAt DateTime?
+  whatsappMessageId   String?
+  whatsappStatus      String?   // sent | failed
+
+  // CRM push (Item 9). crmPushedAt doubles as the idempotency marker.
+  crmPushedAt  DateTime?
+  crmRecordId  String?
+  crmError     String?   @db.Text
+
+  // Real calendar booking (Item 7). Stamped by /confirm-appointment when the
+  // agent books an actual Google Calendar event mid-call.
+  bookedAppointmentAt DateTime?
+  bookedSlot          String?   // ISO start time of the booked slot
+  bookedEventId       String?   // Google Calendar event id
+
+  // Mid-call UPI payment links (Item 8). Amounts in PAISE (₹1 = 100 paise).
+  paymentLinkId      String?   // Razorpay payment link id (plink_…)
+  paymentAmountPaise Int?
+  paymentReceivedAt  DateTime? // stamped by the payment_link.paid webhook
+
+  // Call recording (Item 12). recordingKey is the R2 object key; playback is
+  // via short-lived presigned URLs only. recordingConsent: null = never
+  // asked, true = caller consented, false = caller declined (no recording).
+  recordingKey     String?
+  recordingConsent Boolean?
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

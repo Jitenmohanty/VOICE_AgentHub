@@ -78,6 +78,104 @@ export const captureLeadTool: GeminiToolDeclaration = {
 };
 
 /**
+ * Real calendar booking tools (Item 7). Only offered when the business has an
+ * ACTIVE Google Calendar integration — the session route appends them (and
+ * the bookingRule below) conditionally; they are never part of getAgentTools.
+ */
+export const bookAppointmentTool: GeminiToolDeclaration = {
+  name: "bookAppointment",
+  description:
+    "Fetch up to 3 real available appointment slots from the business's live calendar. " +
+    "Call this when the caller wants to book an appointment, consultation, or visit. " +
+    "After it returns, offer the slots to the caller verbally (times are IST).",
+  parameters: {
+    type: "object",
+    properties: {
+      preferredDate: { type: "string", description: "Caller's preferred date as YYYY-MM-DD, if they mentioned one" },
+      timePreference: {
+        type: "string",
+        enum: ["morning", "afternoon", "evening"],
+        description: "Caller's preferred time of day, if they mentioned one",
+      },
+      service: { type: "string", description: "What the appointment is for, e.g. 'dental checkup'" },
+    },
+    required: [],
+  },
+};
+
+export const confirmAppointmentTool: GeminiToolDeclaration = {
+  name: "confirmAppointment",
+  description:
+    "Book the slot the caller chose — this creates a REAL calendar event. " +
+    "Call ONLY after (a) the caller verbally accepted one specific slot from bookAppointment's results, " +
+    "and (b) you have their name and phone number. Ask for their email too so they get a calendar invite (optional).",
+  parameters: {
+    type: "object",
+    properties: {
+      slotIso: { type: "string", description: "The startIso of the slot the caller accepted, exactly as returned by bookAppointment" },
+      name: { type: "string", description: "Caller's full name" },
+      phone: { type: "string", description: "Caller's phone number" },
+      email: { type: "string", description: "Caller's email for the calendar invite (optional)" },
+      service: { type: "string", description: "What the appointment is for" },
+    },
+    required: ["slotIso", "name", "phone"],
+  },
+};
+
+/**
+ * Appended INSTEAD-OF-NOTHING alongside leadCaptureRule when booking is
+ * active. Narrows the "you cannot book" rule: appointments CAN be booked via
+ * the tools; everything else still goes through captureLead.
+ */
+export const bookingRule = `
+## Real appointment booking is ENABLED for this business
+
+Exception to the rule above: you CAN book APPOINTMENTS — and only appointments — using your booking tools:
+1. Caller wants an appointment → call bookAppointment (pass their preferred date/time if mentioned).
+2. Offer the returned slots verbally. Never invent slots that the tool did not return.
+3. Caller accepts one → confirm their name and phone (ask for email for the invite) → call confirmAppointment with that slot's startIso.
+4. Only say the appointment is confirmed AFTER confirmAppointment returns confirmed: true.
+
+If either tool returns an error or a fallback message, apologize briefly and use captureLead instead — never retry more than once, never pretend it worked.
+For anything that is NOT an appointment (orders, reservations, purchases), the original rule stands: captureLead only.
+Never call captureLead AND confirmAppointment for the same request unless booking failed.
+`;
+
+/**
+ * Mid-call UPI payment link tool (Item 8). Only offered when the owner turned
+ * on Agent.config.paymentEnabled AND the platform has Razorpay keys — the
+ * session route appends it (and paymentRule) conditionally.
+ */
+export const generatePaymentLinkTool: GeminiToolDeclaration = {
+  name: "generatePaymentLink",
+  description:
+    "Send the caller a UPI payment link by SMS for a deposit or fee this business has configured. " +
+    "Call ONLY for amounts the business itself quoted (in your instructions or business data) — NEVER invent or negotiate amounts. " +
+    "You MUST verbally confirm the exact amount and reason with the caller, and have their phone number, BEFORE calling this.",
+  parameters: {
+    type: "object",
+    properties: {
+      amountInr: { type: "number", description: "Amount in RUPEES (not paise), e.g. 200 for ₹200" },
+      description: { type: "string", description: "What the payment is for, e.g. 'Consultation booking fee'" },
+      phone: { type: "string", description: "Caller's phone number to send the link to" },
+      name: { type: "string", description: "Caller's name" },
+    },
+    required: ["amountInr", "description", "phone"],
+  },
+};
+
+export const paymentRule = `
+## UPI payments are ENABLED for this business
+
+You can send the caller a UPI payment link by SMS with the generatePaymentLink tool, under strict rules:
+- Only for deposits/fees the business has configured or quoted — NEVER invent an amount, never accept a caller-proposed amount that differs from the configured one.
+- Confirm verbally first: "So that's ₹200 for the consultation booking fee — should I send the payment link to your number?" Only call the tool after a clear yes.
+- After the tool succeeds, say the link was sent by SMS and payment can be completed via any UPI app. Do NOT read the URL aloud.
+- You cannot see whether they paid. Never claim a payment was received.
+- If the tool returns an error, apologize and continue without payment — capture the lead as usual.
+`;
+
+/**
  * Hard rule appended to every SMB agent's system prompt. Phrased so the model
  * treats it as inviolable — booking claims have been the #1 hallucination
  * failure mode in voice agents.
@@ -131,7 +229,31 @@ Core behaviors:
 - Be helpful, professional, and empathetic
 - If the caller asks about something specific that wasn't in your initial context, call the searchKnowledge tool to pull fresh details from the business's knowledge base — don't guess
 - If you cannot help, explain why and suggest alternatives
+
+Language mirroring:
+- Respond in the language the caller used in their MOST RECENT message. If they switch languages mid-conversation, switch with them — do not lecture them about language.
+- Mid-sentence code-switching (e.g. Hindi-English "Hinglish": "Sir, aapka appointment ke liye team call karegi") is normal — mirror it naturally instead of forcing one pure language.
+- Keep brand names, technical terms, numbers, and addresses in the form the caller used them.
 `;
+
+/**
+ * Language directive appended when the agent/caller language is not English.
+ * Replaces the old "respond exclusively in X, never switch" rule, which fought
+ * real Indian calling behavior (mid-sentence code-switching is the norm).
+ * The first reply must land in the configured language (speechConfig alone can
+ * take a turn to kick in), but after that the caller leads.
+ */
+export function buildLanguageDirective(label: string, nativeLabel: string, code: string): string {
+  const indic = code.endsWith("-IN");
+  const indicExtras = indic
+    ? `
+- Use an everyday spoken register — the way people actually talk on the phone, not textbook formal. Common English loanwords ("appointment", "booking", "menu") are fine and natural.
+- Use respectful address forms (e.g. "aap" in Hindi) with callers.
+- Say prices in rupees ("₹500" → "paanch sau rupaye" style, or as the caller says them).`
+    : "";
+  return `
+Language: Open the call in ${label} (${nativeLabel}) — your greeting and first replies must be in ${label}. After that, mirror the caller: if they speak ${label}, stay in ${label}; if they switch to another language or mix languages mid-sentence, mirror them naturally.${indicExtras}`;
+}
 
 // Interview agent needs its own base — no brevity constraint; depth is the goal
 const interviewBaseInstructions = `You are an AI technical interviewer on the Voxie platform conducting a real-time voice conversation.

@@ -149,6 +149,56 @@ export async function checkSearchKnowledgeRateLimit(
 }
 
 /**
+ * Transactional tool limiter (booking / payment / recording upload):
+ * - 10 calls per IP per minute. These endpoints are auth-gated by the
+ *   per-session bearer token, but each one hits a PAID external API
+ *   (Google Calendar, Razorpay payment links, Cloudflare R2) or creates
+ *   real-world side effects, so a compromised token must not be able to
+ *   spam them. 10/min is far above an honest call's rate (a caller books
+ *   or pays once) while blocking abuse.
+ */
+let transactionByIp: Ratelimit | null = null;
+
+function getTransactionLimiter(): Ratelimit | null {
+  const r = getRedis();
+  if (!r) return null;
+  if (!transactionByIp) {
+    transactionByIp = new Ratelimit({
+      redis: r,
+      limiter: Ratelimit.slidingWindow(10, "1 m"),
+      prefix: "rl:txn:ip",
+      analytics: true,
+    });
+  }
+  return transactionByIp;
+}
+
+export async function checkTransactionRateLimit(
+  request: Request,
+): Promise<Response | null> {
+  const limiter = getTransactionLimiter();
+  if (!limiter) return null; // Upstash not configured — allow through (dev)
+
+  const ip = getIp(request);
+  const result = await limiter.limit(ip);
+  if (!result.success) {
+    return new Response(
+      JSON.stringify({ error: "Too many requests. Please slow down." }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(Math.ceil((result.reset - Date.now()) / 1000)),
+          "X-RateLimit-Limit": String(result.limit),
+          "X-RateLimit-Remaining": "0",
+        },
+      },
+    );
+  }
+  return null;
+}
+
+/**
  * Resume parse limiter:
  * - 5 parses per IP per minute (Claude PDF parsing is expensive)
  */
@@ -193,6 +243,8 @@ interface ResolvedPlan {
   monthlyMinutes: number;
   maxAgents: number;
   periodStart: Date;
+  /** INR paise per overage minute; null = overage not offered on this plan. */
+  overagePaisePerMinute: number | null;
 }
 
 /**
@@ -212,15 +264,18 @@ async function resolvePlan(businessId: string): Promise<ResolvedPlan> {
       monthlyMinutes: sub.plan.monthlyMinutes,
       maxAgents: sub.plan.maxAgents,
       periodStart: sub.currentPeriodStart,
+      overagePaisePerMinute: sub.plan.overagePaisePerMinute,
     };
   }
-  // No subscription on file → free tier, monthly window.
+  // No subscription on file → free tier, monthly window. Free stays
+  // hard-capped — overage is a paid-plan feature.
   const now = new Date();
   return {
     planId: FREE_PLAN_FALLBACK.id,
     monthlyMinutes: FREE_PLAN_FALLBACK.monthlyMinutes,
     maxAgents: FREE_PLAN_FALLBACK.maxAgents,
     periodStart: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)),
+    overagePaisePerMinute: null,
   };
 }
 
@@ -256,6 +311,25 @@ export async function checkBusinessPlanQuota(businessId: string): Promise<Respon
   const usedSeconds = await periodUsageSeconds(businessId, plan.periodStart);
 
   if (usedSeconds >= capSeconds) {
+    // Metered overage (Item 13): with the owner's opt-in and a plan that
+    // offers a rate, calls keep flowing past the cap — up to the owner's
+    // configured extra-minute ceiling. Invoiced monthly by the
+    // overage-invoice Inngest cron.
+    if (plan.overagePaisePerMinute != null) {
+      const biz = await prisma.business
+        .findUnique({
+          where: { id: businessId },
+          select: { overageEnabled: true, overageCapMinutes: true },
+        })
+        .catch(() => null);
+      if (biz?.overageEnabled) {
+        const softCapSeconds = capSeconds + Math.max(0, biz.overageCapMinutes) * 60;
+        if (usedSeconds < softCapSeconds) {
+          return null; // allowed — running on paid overage
+        }
+      }
+    }
+
     const overageMinutes = Math.ceil((usedSeconds - capSeconds) / 60);
     return new Response(
       JSON.stringify({

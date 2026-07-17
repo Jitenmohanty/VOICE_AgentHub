@@ -3,6 +3,8 @@ import { traceable } from "langsmith/traceable";
 import { prisma } from "@/lib/db";
 import { sendLeadCaptureEmail } from "@/lib/email";
 import { getAppUrl } from "@/lib/url";
+import { isWhatsAppConfigured, sendWhatsAppText } from "@/lib/whatsapp";
+import { pushLeadToCrm } from "@/lib/crm";
 
 interface CapturedLeadShape {
   name?: string;
@@ -18,6 +20,8 @@ export interface LeadDeliveryResult {
   delivered: boolean;
   reason?: string;
   webhook?: { attempted: boolean; ok?: boolean; status?: number; error?: string };
+  whatsapp?: { attempted: boolean; ok?: boolean; error?: string };
+  crm?: { attempted: boolean; ok?: boolean; recordId?: string; error?: string };
 }
 
 /**
@@ -54,6 +58,10 @@ interface WebhookPayload {
     sentimentScore: number | null;
     topics: string[];
     escalated: boolean;
+    // AI lead scoring (Item 3) — additive JSON fields, safe for receivers.
+    leadScore: number | null;
+    intentCategory: string | null;
+    suggestedReply: string | null;
   };
 }
 
@@ -173,7 +181,10 @@ export const deliverLead = traceable(
       sentiment: session.sentiment,
       topics: session.topics,
       escalated: session.escalated,
+      leadScore: session.leadScore,
+      intentCategory: session.intentCategory,
     },
+    suggestedReply: session.suggestedReply,
   });
 
   // Stamp idempotency marker AFTER successful email send so a transient
@@ -210,6 +221,9 @@ export const deliverLead = traceable(
           sentimentScore: session.sentimentScore,
           topics: session.topics,
           escalated: session.escalated,
+          leadScore: session.leadScore,
+          intentCategory: session.intentCategory,
+          suggestedReply: session.suggestedReply,
         },
       });
       const latencyMs = Date.now() - startedAt;
@@ -242,7 +256,102 @@ export const deliverLead = traceable(
     }
   }
 
-    return { delivered: true, webhook: webhookResult };
+    // Optional CRM push (Item 9). Gated on per-business connector + a real
+    // captured lead + not yet pushed. Failures are stamped on the session
+    // (crmError) so the owner sees a red badge + can re-push — never blocks
+    // the email/webhook/WhatsApp channels.
+    let crmResult: LeadDeliveryResult["crm"] = { attempted: false };
+    if (business.crmProvider && business.crmSecretEncrypted && lead && !session.crmPushedAt) {
+      crmResult = await pushLeadToCrm({
+        provider: business.crmProvider,
+        secretEncrypted: business.crmSecretEncrypted,
+        config: business.crmConfig,
+        lead: {
+          name: caller.name,
+          phone: caller.phone,
+          email: caller.email,
+          intent: lead.intent,
+          notes: lead.notes,
+        },
+      });
+      await prisma.agentSession
+        .update({
+          where: { id: sessionId },
+          data: {
+            crmPushedAt: crmResult.ok ? new Date() : null,
+            crmRecordId: crmResult.recordId ?? null,
+            crmError: crmResult.ok ? null : (crmResult.error ?? "unknown error").slice(0, 1000),
+          },
+        })
+        .catch((err) => console.warn("[LeadDelivery] CRM status write failed:", err));
+      if (!crmResult.ok) {
+        console.warn(`[LeadDelivery] CRM push (${business.crmProvider}) failed:`, crmResult.error);
+      }
+    }
+
+    // Optional WhatsApp confirmation to the CALLER (Item 4). Fully gated:
+    // platform env + per-business toggle + a usable phone + not yet sent.
+    // Failures never affect the email/webhook outcome above.
+    let whatsappResult: LeadDeliveryResult["whatsapp"] = { attempted: false };
+    if (
+      business.whatsappEnabled &&
+      isWhatsAppConfigured() &&
+      lead &&
+      caller.phone &&
+      !session.whatsappDeliveredAt
+    ) {
+      whatsappResult = await deliverWhatsAppConfirmation({
+        sessionId: session.id,
+        businessName: business.name,
+        fromNumber: business.whatsappFromNumber,
+        callerName: caller.name,
+        callerPhone: caller.phone,
+        intent: lead.intent,
+      });
+    }
+
+    return { delivered: true, webhook: webhookResult, whatsapp: whatsappResult, crm: crmResult };
   },
   { name: "deliverLead", run_type: "chain" },
+);
+
+/** Send the templated confirmation and stamp idempotency + status on the session. */
+const deliverWhatsAppConfirmation = traceable(
+  async function deliverWhatsAppConfirmation(opts: {
+    sessionId: string;
+    businessName: string;
+    fromNumber: string | null;
+    callerName: string | null;
+    callerPhone: string;
+    intent: string;
+  }): Promise<NonNullable<LeadDeliveryResult["whatsapp"]>> {
+    const greeting = opts.callerName ? `Hi ${opts.callerName}` : "Hi";
+    const text =
+      `${greeting}, thanks for contacting ${opts.businessName}! ` +
+      `We've noted your request: "${opts.intent.slice(0, 200)}". ` +
+      `Our team will get back to you shortly.`;
+
+    const result = await sendWhatsAppText({
+      to: opts.callerPhone,
+      text,
+      from: opts.fromNumber,
+    });
+
+    await prisma.agentSession
+      .update({
+        where: { id: opts.sessionId },
+        data: {
+          whatsappDeliveredAt: result.ok ? new Date() : null,
+          whatsappMessageId: result.messageId ?? null,
+          whatsappStatus: result.ok ? "sent" : "failed",
+        },
+      })
+      .catch((err) => console.warn("[LeadDelivery] WhatsApp status write failed:", err));
+
+    if (!result.ok) {
+      console.warn(`[LeadDelivery] WhatsApp confirmation failed:`, result.error);
+    }
+    return { attempted: true, ok: result.ok, error: result.error };
+  },
+  { name: "deliverWhatsAppConfirmation", run_type: "tool" },
 );

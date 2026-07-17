@@ -14,6 +14,7 @@ Multi-tenant voice AI SaaS. Business owners create industry-specific Gemini Live
 npm run dev                  # Next.js dev (port 3000)
 npm run build                # Production build
 npm run lint                 # ESLint
+npm run eval                 # Prompt-regression evals (Claude personas vs real prompts; run before merging prompt changes)
 
 npx prisma db push           # Push schema to Neon (no migration files)
 npx prisma studio            # Prisma Studio GUI
@@ -54,8 +55,12 @@ src/
 │   │   └── business/
 │   │       ├── dashboard/    Overview + usage gauge
 │   │       ├── agents/       Agent config, knowledge, data, sessions
-│   │       ├── billing/      Plan picker + Stripe portal
-│   │       ├── settings/     Profile + lead-delivery (email + webhook URL)
+│   │       ├── analytics/    KPIs, calls/day chart, sentiment + topics (7/30/90d)
+│   │       ├── leads/        Lead inbox — status tabs, search, AI score sort, CSV export
+│   │       ├── sessions/     All sessions across agents (+ /sessions/[id] detail)
+│   │       ├── team/         Team members + email invites (owner-gated mutations)
+│   │       ├── billing/      Plan picker + Stripe/Razorpay portal
+│   │       ├── settings/     Profile + lead-delivery (email + webhook URL + delivery log)
 │   │       └── onboarding/   4-step wizard
 │   ├── a/[slug]/         Public voice agent — full page (anonymous)
 │   ├── embed/[slug]/     Iframe widget — same UI, no chrome (anonymous)
@@ -109,6 +114,9 @@ User (NextAuth)
  └── Business (slug unique)
       ├── notificationEmail        Lead-delivery destination (defaults to owner.email)
       ├── webhookUrl + webhookSecret   Optional outbound webhook with HMAC-SHA256 signing
+      ├── BusinessMember (userId, role="member")   Team access — owner lives on Business.ownerId, NOT here
+      ├── BusinessInvite (email, token unique, 7-day expiry, acceptedAt)   Single-use email invites
+      ├── WebhookDelivery (sessionId, statusCode, latencyMs, ok, errorMessage)   One row per outbound webhook attempt
       ├── Subscription (1:1)
       │     ├── planId             → BillingPlan
       │     ├── status             active | trialing | past_due | canceled
@@ -125,6 +133,7 @@ User (NextAuth)
                 ├── leadStatus                             new | contacted | qualified | won | lost | archived
                 ├── leadDeliveredAt                        Email + webhook idempotency marker
                 ├── summary / sentiment / topics / actionItems / escalated   (Claude post-call)
+                ├── leadScore (0-100) / intentCategory / suggestedReply      (Claude AI lead scoring — nullable on pre-feature rows)
                 └── rating, feedback                       Caller's own rating
 
 BillingPlan (id = "free" | "starter" | "pro")
@@ -140,6 +149,7 @@ BillingPlan (id = "free" | "starter" | "pro")
 - `AgentSession` has **no User FK** — callers are anonymous; identity gated by `updateToken` for PATCH
 - `Subscription` is 1:1 with `Business`; **no row = free fallback** (graceful for legacy data + dev)
 - Prisma client uses Neon HTTP adapter — always import from `@/lib/db`
+- **Access model**: `businessAccessFilter(userId)` in `src/lib/access.ts` grants owner OR accepted team member. Read routes (analytics, leads, sessions, webhook log) use it; team/invite **mutations** are owner-only (`ownerId` checked inline). The owner is NOT a `BusinessMember` row.
 
 ---
 
@@ -154,7 +164,8 @@ Per-template logic in `src/lib/agents/<template>-agent.ts`.
 | `medical`   | `listDoctors`, `flagEmergency` | `flagEmergency` returns canonical 911/108 instructions |
 | `restaurant`| `getMenu`           | Real menu via `BusinessData.menu` |
 | `legal`     | (none — LLM answers from prompt) | |
-| `interview` | `scoreAnswer`, `advanceRound`, `endInterview` | B2C scoring product, NOT lead-capture |
+| `personal`  | (none — relies on universal `searchKnowledge` + `captureLead`) | First-person portfolio/personal-brand agent; recruiters/clients talk to "the person's AI" |
+| `interview` | `scoreAnswer`, `advanceRound`, `endInterview` | B2C scoring product, NOT lead-capture. Candidates can upload a resume PDF — parsed by Claude via public `/api/public/resume/parse` (5/IP/min rate limit) |
 
 **Universal `searchKnowledge` tool** (every agent — SMB and interview) — dynamic RAG retrieval via `POST /api/public/agent/[slug]/search-knowledge`. Auth-gated by the per-session `updateToken`. Defined in `src/lib/gemini/agent-prompts.ts:searchKnowledgeTool`, dispatched in `live-session.ts:searchKnowledge()`. Non-removable.
 
@@ -188,7 +199,8 @@ Caller hangs up
   → triggerPostCallAnalysis(sessionId)
   → Inngest: session/post-call
        1. fetch-session
-       2. generate-analysis (Claude)        — summary, sentiment, action items
+       2. generate-analysis (Claude)        — summary, sentiment, action items,
+                                              leadScore (0-100), intentCategory, suggestedReply
        3. save-analysis                     — writes to AgentSession
        4. deliver-lead-email                — calls deliverLead(sessionId)
             ├─ skip if leadDeliveredAt set (idempotent)

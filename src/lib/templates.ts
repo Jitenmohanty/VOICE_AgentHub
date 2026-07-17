@@ -43,6 +43,9 @@ export const TEMPLATES: AgentTemplate[] = [
       { id: "cancellationPolicy", label: "Cancellation Policy", type: "textarea", defaultValue: "Free cancellation up to 24 hours before check-in. Late cancellations are charged one night's stay.", placeholder: "Describe your cancellation policy...", section: "Policies" },
       { id: "petPolicy", label: "Pet Friendly", type: "toggle", defaultValue: false, section: "Policies" },
       { id: "nearbyAttractions", label: "Nearby Attractions", type: "textarea", defaultValue: "", placeholder: "List nearby landmarks, restaurants, attractions...", section: "Local Info" },
+      // Payments (Item 8) — off by default; also requires platform Razorpay keys
+      { id: "paymentEnabled", label: "UPI payment links during calls", type: "toggle", defaultValue: false, section: "Payments" },
+      { id: "maxPaymentAmountInr", label: "Max payment amount (₹)", type: "number", defaultValue: 2000, min: 1, max: 100000, section: "Payments" },
     ],
     defaultGreeting: "Welcome! How can I help you today?",
     defaultPersonality: "Warm, professional, and attentive. Speak like a 5-star concierge.",
@@ -75,6 +78,9 @@ export const TEMPLATES: AgentTemplate[] = [
       // Emergency
       { id: "emergencyProtocol", label: "Emergency Instructions", type: "textarea", defaultValue: "For emergencies, please call 108 or go to the nearest emergency room immediately.", placeholder: "What should patients do in an emergency?", section: "Emergency" },
       { id: "hasEmergencyServices", label: "Emergency Services Available", type: "toggle", defaultValue: false, section: "Emergency" },
+      // Payments (Item 8) — off by default; also requires platform Razorpay keys
+      { id: "paymentEnabled", label: "UPI payment links during calls", type: "toggle", defaultValue: false, section: "Payments" },
+      { id: "maxPaymentAmountInr", label: "Max payment amount (₹)", type: "number", defaultValue: 2000, min: 1, max: 100000, section: "Payments" },
     ],
     defaultGreeting: "Hello! Welcome to our clinic. How can I assist you?",
     defaultPersonality: "Compassionate, clear, and reassuring. Always clarify you are an AI, not a doctor.",
@@ -146,6 +152,9 @@ export const TEMPLATES: AgentTemplate[] = [
       { id: "alcoholServed", label: "Alcohol Served", type: "toggle", defaultValue: true, section: "Dietary" },
       // Special
       { id: "specialNotes", label: "Special Notes", type: "textarea", defaultValue: "", placeholder: "e.g., Live music on Fridays, private dining available, seasonal menu changes...", section: "Special" },
+      // Payments (Item 8) — off by default; also requires platform Razorpay keys
+      { id: "paymentEnabled", label: "UPI payment links during calls", type: "toggle", defaultValue: false, section: "Payments" },
+      { id: "maxPaymentAmountInr", label: "Max payment amount (₹)", type: "number", defaultValue: 2000, min: 1, max: 100000, section: "Payments" },
     ],
     defaultGreeting: "Welcome! Would you like to place an order or make a reservation?",
     defaultPersonality: "Friendly, enthusiastic about food. Repeat orders back for confirmation.",
@@ -177,6 +186,9 @@ export const TEMPLATES: AgentTemplate[] = [
       { id: "disclaimerText", label: "Custom Disclaimer", type: "textarea", defaultValue: "This service provides general legal information only, not legal advice. Always consult a qualified attorney for your specific situation.", placeholder: "Your legal disclaimer...", section: "Legal Specifics" },
       { id: "documentTypes", label: "Document Types Supported", type: "multi-select", options: ["NDA", "Employment Contract", "Lease Agreement", "Partnership Agreement", "Terms of Service", "Privacy Policy", "Will / Testament", "Power of Attorney", "Complaint / Petition", "Legal Notice"], defaultValue: ["NDA", "Employment Contract", "Terms of Service"], section: "Legal Specifics" },
       { id: "proBonoAvailable", label: "Pro Bono Services Available", type: "toggle", defaultValue: false, section: "Legal Specifics" },
+      // Payments (Item 8) — off by default; also requires platform Razorpay keys
+      { id: "paymentEnabled", label: "UPI payment links during calls", type: "toggle", defaultValue: false, section: "Payments" },
+      { id: "maxPaymentAmountInr", label: "Max payment amount (₹)", type: "number", defaultValue: 2000, min: 1, max: 100000, section: "Payments" },
     ],
     defaultGreeting: "Hello! I can help with general legal information. How can I assist?",
     defaultPersonality: "Professional, precise, cautious. Always disclaim: general info only, not legal advice.",

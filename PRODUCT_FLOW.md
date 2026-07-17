@@ -129,7 +129,7 @@ Three exit paths, all converge:
 
 1. **`fetch-session`** step — pulls the session + agent + business
 2. Skip if `summary != null` (deduplication — Inngest may retry the whole function)
-3. **`generate-analysis`** step — Claude Sonnet 4 analyzes the transcript and returns `{ summary, sentiment, sentimentScore, actionItems, topics, escalated }`
+3. **`generate-analysis`** step — Claude Sonnet 4 analyzes the transcript and returns `{ summary, sentiment, sentimentScore, actionItems, topics, escalated, leadScore, intentCategory, suggestedReply }`. `leadScore` (0-100) rates the caller's value as a sales lead, `intentCategory` classifies the primary intent (booking / pricing / support / complaint / information / spam / other), and `suggestedReply` is a short SMS/WhatsApp-style follow-up draft the owner can copy with one click. All three are validated/clamped server-side and nullable — sessions analyzed before this feature simply have none.
 4. **`save-analysis`** step — writes those to `AgentSession`
 5. **`deliver-lead-email`** step — calls `deliverLead(sessionId)`
 
@@ -152,13 +152,20 @@ If Inngest is unavailable, `post-call.ts` falls back to a direct HTTP POST to `/
 The owner sees a structured email within ~30 seconds of the call ending. If they wired Slack, the lead also lands as a JSON message in the channel.
 
 ### 8. Owner reviews + acts
-The owner opens `/business/agents/{agentId}/sessions`, clicks a session → `<SessionDetailModal>` opens with:
+The owner has two entry points:
+
+**Lead inbox** (`/business/leads`) — every session with a captured lead, as a pipeline: status tabs with counts (`new` → `contacted` → `qualified` → `won` / `lost` / `archived`), search (name/phone/email/summary), per-agent filter, and a sort toggle — "Newest first" (default) or **"Hot leads first"** (AI `leadScore` descending, unscored rows last). Each card shows the AI score pill (flame, color-tiered) and the intent-category pill.
+
+**Session detail** (`<SessionDetailModal>`, opened from leads or sessions lists) shows:
 - **Captured lead** block — name / phone / email (with `tel:` and `mailto:` links) / intent / urgency / notes
-- **Lead status dropdown** — `new` → `contacted` → `qualified` → `won` / `lost` / `archived`. Optimistic update PATCHes `/api/sessions/{id}` with `{ leadStatus }`.
-- Claude summary, sentiment, topics, action items
+- **Suggested reply** — Claude's follow-up draft with a one-click Copy button
+- **Lead status dropdown** — optimistic update PATCHes `/api/sessions/{id}` with `{ leadStatus }`
+- Claude summary, sentiment, **lead score (0-100)** + **intent category**, topics, action items
 - Full transcript
 
-At month-end, owner clicks "Export CSV" on the sessions list. `/api/business/{businessId}/leads/export` returns a CSV of every session in the date window with a captured lead OR a Claude summary.
+There's also an **Analytics page** (`/business/analytics`) with KPIs (calls, leads, conversion, won rate), a calls-per-day chart, sentiment breakdown, and top topics over 7/30/90 days.
+
+At month-end, owner clicks "Export CSV". `/api/business/{businessId}/leads/export` returns a CSV of every session in the date window with a captured lead OR a Claude summary — including `leadScore` and `intentCategory` columns.
 
 ---
 

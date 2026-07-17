@@ -31,7 +31,9 @@ export async function GET(
       return NextResponse.json({ error: "Business not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ business });
+    // Encrypted CRM credentials never leave the server — even ciphertext.
+    const { crmSecretEncrypted: _crmSecret, ...safeBusiness } = business;
+    return NextResponse.json({ business: safeBusiness });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -93,6 +95,18 @@ export async function PATCH(
         ...(body.notificationEmail !== undefined && { notificationEmail: body.notificationEmail || null }),
         ...(body.webhookUrl !== undefined && { webhookUrl: body.webhookUrl || null }),
         ...(notificationPrefs !== undefined && { notificationPrefs }),
+        ...(body.whatsappEnabled !== undefined && { whatsappEnabled: Boolean(body.whatsappEnabled) }),
+        ...(body.overageEnabled !== undefined && { overageEnabled: Boolean(body.overageEnabled) }),
+        ...(body.recordingEnabled !== undefined && { recordingEnabled: Boolean(body.recordingEnabled) }),
+        ...(body.overageCapMinutes !== undefined && {
+          overageCapMinutes: Math.min(10000, Math.max(0, Math.round(Number(body.overageCapMinutes) || 0))),
+        }),
+        ...(body.whatsappFromNumber !== undefined && {
+          whatsappFromNumber:
+            typeof body.whatsappFromNumber === "string" && body.whatsappFromNumber.trim()
+              ? body.whatsappFromNumber.replace(/[^\d+]/g, "").slice(0, 20)
+              : null,
+        }),
       },
     });
 

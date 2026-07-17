@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Trash2, BookOpen, Edit2, X, Check } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, BookOpen, Edit2, X, Check, Globe, HelpCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,6 +22,13 @@ interface KnowledgeItem {
   createdAt: string;
 }
 
+interface KnowledgeGap {
+  id: string;
+  query: string;
+  hits: number;
+  lastAskedAt: string;
+}
+
 const CATEGORIES = ["faq", "policy", "service", "general", "menu", "amenities", "procedures"];
 
 export default function KnowledgePage() {
@@ -38,6 +45,15 @@ export default function KnowledgePage() {
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState("faq");
 
+  // Import-from-website (Item 1)
+  const [showImport, setShowImport] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  // Knowledge gaps (Item 2) — questions callers asked with no answer found
+  const [gaps, setGaps] = useState<KnowledgeGap[]>([]);
+  const [resolvingGapId, setResolvingGapId] = useState<string | null>(null);
+
   const fetchItems = useCallback(() => {
     fetch(base)
       .then((r) => r.json())
@@ -46,7 +62,62 @@ export default function KnowledgePage() {
       .finally(() => setLoading(false));
   }, [base]);
 
+  const fetchGaps = useCallback(() => {
+    fetch(`${base}/gaps`)
+      .then((r) => r.json())
+      .then((d) => setGaps(d.gaps || []))
+      .catch(() => {});
+  }, [base]);
+
   useEffect(() => { fetchItems(); }, [fetchItems]);
+  useEffect(() => { fetchGaps(); }, [fetchGaps]);
+
+  const handleImport = async () => {
+    if (!importUrl.trim()) {
+      toast.error("Enter your website URL");
+      return;
+    }
+    setImporting(true);
+    try {
+      const res = await fetch(`${base}/ingest-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: importUrl.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Import failed");
+      toast.success("Import started — items will appear below as pages are read");
+      setShowImport(false);
+      setImportUrl("");
+      // The ingest runs in the background; refresh the list a few times so
+      // the owner sees items stream in without reloading.
+      [6000, 15000, 30000, 60000].forEach((ms) => setTimeout(fetchItems, ms));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Import failed");
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleGapAction = async (gapId: string, status: "dismissed" | "resolved") => {
+    setGaps((prev) => prev.filter((g) => g.id !== gapId));
+    await fetch(`${base}/gaps`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gapId, status }),
+    }).catch(() => {});
+  };
+
+  const handleAnswerGap = (gap: KnowledgeGap) => {
+    // Prefill the add form with the caller's question; when the owner saves,
+    // the gap is marked resolved.
+    setNewTitle(gap.query.charAt(0).toUpperCase() + gap.query.slice(1));
+    setNewContent("");
+    setNewCategory("faq");
+    setResolvingGapId(gap.id);
+    setShowAdd(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleAdd = async () => {
     if (!newTitle.trim() || !newContent.trim()) {
@@ -61,6 +132,11 @@ export default function KnowledgePage() {
       });
       if (!res.ok) throw new Error();
       toast.success("Knowledge item added!");
+      // If this answer came from a caller-asked gap, mark the gap resolved.
+      if (resolvingGapId) {
+        void handleGapAction(resolvingGapId, "resolved");
+        setResolvingGapId(null);
+      }
       setNewTitle(""); setNewContent(""); setShowAdd(false);
       fetchItems();
     } catch {
@@ -109,11 +185,106 @@ export default function KnowledgePage() {
             <h1 className="font-serif text-3xl md:text-4xl tracking-[-0.02em] text-white">Knowledge base</h1>
             <p className="text-base text-white/55 mt-2">Add FAQs, policies, and info your agent should know.</p>
           </div>
-          <GradientButton onClick={() => setShowAdd(!showAdd)} size="default">
-            <Plus className="w-4 h-4" /> Add item
-          </GradientButton>
+          <div className="flex gap-2 flex-wrap justify-end">
+            <GradientButton onClick={() => setShowImport(!showImport)} variant="outline" size="default">
+              <Globe className="w-4 h-4" /> Import from website
+            </GradientButton>
+            <GradientButton onClick={() => setShowAdd(!showAdd)} size="default">
+              <Plus className="w-4 h-4" /> Add item
+            </GradientButton>
+          </div>
         </div>
       </motion.div>
+
+      {showImport && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mb-6"
+        >
+          <GlassPanel elevation="raised" radius="lg" className="p-6 md:p-7 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-white tracking-tight">Import from your website</h3>
+              <button
+                onClick={() => setShowImport(false)}
+                className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-all"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-white/55">
+              Paste your website URL — we&apos;ll read up to 8 pages (about, FAQ, services, pricing…),
+              split them into knowledge items with AI, and index them for your agent. Items appear
+              below within a minute or two.
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <Input
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleImport()}
+                placeholder="https://your-business.com"
+                className="flex-1 min-w-[220px]"
+              />
+              <GradientButton onClick={handleImport} disabled={importing} size="default">
+                {importing ? <span className="ah-spinner" /> : <Globe className="w-4 h-4" />}
+                {importing ? "Starting…" : "Import"}
+              </GradientButton>
+            </div>
+          </GlassPanel>
+        </motion.div>
+      )}
+
+      {gaps.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mb-6"
+        >
+          <GlassPanel elevation="subtle" radius="lg" className="p-5 md:p-6">
+            <h3 className="font-semibold text-white tracking-tight flex items-center gap-2 mb-1">
+              <HelpCircle className="w-4 h-4 text-amber-300" />
+              Callers asked — your agent had no answer
+            </h3>
+            <p className="text-sm text-white/45 mb-4">
+              These questions came up on real calls but nothing in your knowledge base matched.
+              Add an answer and your agent handles it next time.
+            </p>
+            <div className="space-y-2">
+              {gaps.map((gap) => (
+                <div
+                  key={gap.id}
+                  className="flex items-center justify-between gap-3 bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-2.5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-white/85 truncate">&ldquo;{gap.query}&rdquo;</p>
+                    <p className="text-xs text-white/40 mt-0.5">
+                      asked {gap.hits} time{gap.hits !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => handleAnswerGap(gap)}
+                      className="text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-300/20 text-emerald-300 transition-colors"
+                    >
+                      Add answer
+                    </button>
+                    <button
+                      onClick={() => handleGapAction(gap.id, "dismissed")}
+                      className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+                      aria-label="Dismiss"
+                      title="Dismiss — not relevant"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GlassPanel>
+        </motion.div>
+      )}
 
       {showAdd && (
         <motion.div

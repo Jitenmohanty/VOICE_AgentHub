@@ -364,7 +364,11 @@ export interface LeadCaptureEmailOpts {
     sentiment?: string | null;
     topics?: string[];
     escalated?: boolean;
+    leadScore?: number | null;
+    intentCategory?: string | null;
   } | null;
+  /** Claude-drafted one-tap follow-up message (Item 3). */
+  suggestedReply?: string | null;
 }
 
 export const sendLeadCaptureEmail = traceable(
@@ -378,6 +382,17 @@ export const sendLeadCaptureEmail = traceable(
         : "#10B981";
   const escalatedBanner = opts.analysis?.escalated
     ? `<div style="margin:0 0 16px;padding:12px 16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;color:#FCA5A5;font-size:13px;font-weight:600;">⚠ Call flagged for escalation</div>`
+    : "";
+
+  // AI lead score pill (Item 3) — color-tiered like the dashboard.
+  const score = opts.analysis?.leadScore;
+  const scoreColor = score == null ? "" : score >= 70 ? "#F97316" : score >= 40 ? "#F59E0B" : "#8888AA";
+  const scorePill =
+    score != null
+      ? `<span style="display:inline-block;margin-left:10px;padding:2px 8px;background:${scoreColor}20;color:${scoreColor};border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.3px;">🔥 ${score}/100</span>`
+      : "";
+  const categoryPill = opts.analysis?.intentCategory
+    ? `<span style="display:inline-block;margin-left:6px;padding:2px 8px;background:rgba(34,211,238,0.12);color:#22D3EE;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;">${opts.analysis.intentCategory}</span>`
     : "";
 
   const fmtRow = (label: string, value: string | null | undefined) =>
@@ -409,6 +424,7 @@ export const sendLeadCaptureEmail = traceable(
           <p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">
             What they want
             ${opts.lead.urgency ? `<span style="display:inline-block;margin-left:10px;padding:2px 8px;background:${urgencyColor}20;color:${urgencyColor};border-radius:6px;font-size:10px;font-weight:700;letter-spacing:0.3px;">${opts.lead.urgency.toUpperCase()}</span>` : ""}
+            ${scorePill}${categoryPill}
           </p>
           <p style="margin:0;font-size:15px;color:#F0F0F5;line-height:1.5;">${opts.lead.intent}</p>
           ${opts.lead.notes ? `<p style="margin:10px 0 0;font-size:13px;color:#C0C0D8;line-height:1.5;">${opts.lead.notes}</p>` : ""}
@@ -459,6 +475,22 @@ export const sendLeadCaptureEmail = traceable(
         : ""
     }
 
+    ${
+      opts.suggestedReply
+        ? `
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:12px;border:1px solid #2A2A3E;margin:0 0 16px;">
+      <tr>
+        <td style="padding:18px 22px;">
+          <p style="margin:0 0 10px;font-size:12px;font-weight:600;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">
+            Suggested reply — copy &amp; send
+          </p>
+          <p style="margin:0;font-size:14px;color:#C0C0D8;line-height:1.6;font-style:italic;">${opts.suggestedReply}</p>
+        </td>
+      </tr>
+    </table>`
+        : ""
+    }
+
     <p style="margin:0 0 16px;font-size:12px;color:#555577;">
       Call placed ${opts.capturedAt.toUTCString()} · Duration ${durationStr}
     </p>
@@ -477,10 +509,12 @@ export const sendLeadCaptureEmail = traceable(
     : "new caller";
   const callerLabel = opts.caller.name || "anonymous caller";
 
+  const hotPrefix = score != null && score >= 70 ? "🔥 Hot lead" : "New lead";
+
   return sendMail({
     from: FROM,
     to: opts.to,
-    subject: `New lead from ${opts.agentName} — ${callerLabel}: ${subjectIntent}`,
+    subject: `${hotPrefix} from ${opts.agentName} — ${callerLabel}: ${subjectIntent}`,
     html: body,
   });
   },
@@ -581,6 +615,146 @@ export async function sendTeamInviteEmail(opts: {
     subject: `${inviter} invited you to ${opts.businessName} on Voxie`,
     html: body,
   });
+}
+
+// ── Weekly digest email (Item 2) ──────────────────────────────────────────────
+
+export async function sendWeeklyDigestEmail(opts: {
+  to: string;
+  businessName: string;
+  narrative: string;
+  gapAdvice: string;
+  stats: {
+    totalCalls: number;
+    leadsCaptured: number;
+    hotLeadCount: number;
+    wonLeads: number;
+  };
+  gaps: { query: string; hits: number }[];
+  knowledgeUrl: string;
+  leadsUrl: string;
+}) {
+  const statCell = (label: string, value: string | number) => `
+    <td style="padding:14px 8px;text-align:center;background:#13131F;border-radius:10px;border:1px solid #2A2A3E;">
+      <p style="margin:0;font-size:22px;font-weight:700;color:#FFFFFF;">${value}</p>
+      <p style="margin:4px 0 0;font-size:11px;color:#8888AA;text-transform:uppercase;letter-spacing:0.5px;">${label}</p>
+    </td>`;
+
+  const gapRows = opts.gaps
+    .slice(0, 5)
+    .map(
+      (g) => `
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid #2A2A3E;font-size:14px;color:#F0F0F5;">
+          &ldquo;${escapeHtml(g.query)}&rdquo;
+        </td>
+        <td style="padding:10px 16px;border-bottom:1px solid #2A2A3E;font-size:12px;color:#8888AA;text-align:right;white-space:nowrap;">
+          asked ${g.hits}&times;
+        </td>
+      </tr>`,
+    )
+    .join("");
+
+  const body = emailShell(`
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#FFFFFF;letter-spacing:-0.4px;">
+      Your week with ${escapeHtml(opts.businessName)}
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#B8B8CC;">
+      ${escapeHtml(opts.narrative)}
+    </p>
+
+    <table cellpadding="0" cellspacing="8" width="100%" style="margin:0 0 8px;">
+      <tr>
+        ${statCell("Calls", opts.stats.totalCalls)}
+        ${statCell("Leads", opts.stats.leadsCaptured)}
+        ${statCell("Hot leads", opts.stats.hotLeadCount)}
+        ${statCell("Won", opts.stats.wonLeads)}
+      </tr>
+    </table>
+
+    ${
+      opts.gaps.length > 0
+        ? `
+    <h2 style="margin:28px 0 6px;font-size:16px;font-weight:600;color:#FFFFFF;">
+      Callers asked — your agent had no answer
+    </h2>
+    ${
+      opts.gapAdvice
+        ? `<p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#B8B8CC;">${escapeHtml(opts.gapAdvice)}</p>`
+        : ""
+    }
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:10px;border:1px solid #2A2A3E;overflow:hidden;">
+      ${gapRows}
+    </table>
+    ${primaryButton(opts.knowledgeUrl, "Add answers to your knowledge base")}
+    `
+        : primaryButton(opts.leadsUrl, "Review this week's leads")
+    }
+  `);
+
+  return sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: `Voxie weekly: ${opts.stats.totalCalls} calls, ${opts.stats.leadsCaptured} leads for ${opts.businessName}`,
+    html: body,
+  });
+}
+
+// ── Overage invoice email (Item 13) ──────────────────────────────────────────
+
+export async function sendOverageInvoiceEmail(opts: {
+  to: string;
+  ownerName: string;
+  businessName: string;
+  monthLabel: string; // e.g. "June 2026"
+  overageMinutes: number;
+  ratePaisePerMinute: number;
+  amountPaise: number;
+  paymentUrl: string;
+}) {
+  const rupees = (paise: number) =>
+    `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+
+  const body = emailShell(`
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#FFFFFF;letter-spacing:-0.4px;">
+      Overage usage for ${escapeHtml(opts.monthLabel)}
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#B8B8CC;">
+      Hi ${escapeHtml(opts.ownerName || "there")} — <strong style="color:#FFFFFF;">${escapeHtml(opts.businessName)}</strong>
+      went past its plan minutes in ${escapeHtml(opts.monthLabel)}. Because overage billing is on,
+      your agents kept answering instead of turning callers away.
+    </p>
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#13131F;border-radius:10px;border:1px solid #2A2A3E;">
+      <tr>
+        <td style="padding:14px 16px;font-size:14px;color:#B8B8CC;border-bottom:1px solid #2A2A3E;">Extra minutes used</td>
+        <td style="padding:14px 16px;font-size:14px;color:#FFFFFF;text-align:right;border-bottom:1px solid #2A2A3E;">${opts.overageMinutes} min</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:14px;color:#B8B8CC;border-bottom:1px solid #2A2A3E;">Rate</td>
+        <td style="padding:14px 16px;font-size:14px;color:#FFFFFF;text-align:right;border-bottom:1px solid #2A2A3E;">${rupees(opts.ratePaisePerMinute)}/min</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:15px;font-weight:700;color:#FFFFFF;">Total due</td>
+        <td style="padding:14px 16px;font-size:15px;font-weight:700;color:#FFFFFF;text-align:right;">${rupees(opts.amountPaise)}</td>
+      </tr>
+    </table>
+    ${primaryButton(opts.paymentUrl, "Pay with UPI / card")}
+    <p style="margin:0;font-size:12px;color:#555577;line-height:1.6;">
+      The payment link is valid for 7 days. You can turn overage off any time in Settings —
+      your agents will then pause at 100% of plan minutes instead.
+    </p>
+  `);
+
+  const result = await sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: `Voxie overage for ${opts.monthLabel}: ${opts.overageMinutes} min — ${rupees(opts.amountPaise)}`,
+    html: body,
+  });
+  if (result.error) {
+    console.error("[Email] overage invoice send failed:", result.error.message);
+  }
+  return result;
 }
 
 function escapeHtml(s: string): string {

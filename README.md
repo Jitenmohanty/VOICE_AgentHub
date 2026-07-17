@@ -79,7 +79,9 @@ Voxie lets **business owners** create AI voice agents trained on their own data 
 | **Phase 4** — Polish | Outbound webhook with HMAC-SHA256 signing; lead status workflow (new → contacted → qualified → won / lost / archived); CSV export; settings UI for notification email + webhook URL | ✅ |
 | **Phase 5** — AI pipeline tuning | Per-agent VAD config (`silenceDurationMs` 1.2s/2s, `endOfSpeechSensitivity: LOW`); per-agent `temperature` (0.7 SMB, 0.75 interview); `enableAffectiveDialog`; sliding-window `contextWindowCompression`; `sessionResumption` handle capture; universal `searchKnowledge` tool for dynamic mid-call RAG; per-session variety seed + topic angles for interview agents (no more identical questions across sessions); LangSmith tracing on `deliverLead`, `sendLeadCaptureEmail`, `deliverWebhook`, `searchKnowledgeDispatch` | ✅ |
 | **Phase 6** — Razorpay + hardening | Razorpay subscriptions alongside Stripe (Indian SMB market): hosted checkout via short_url, HMAC-SHA256-signed webhook handling `subscription.{activated,charged,cancelled,completed,paused}` + `payment.failed`; dual-provider billing UI with currency-aware display (USD / INR); per-business `paymentProvider` field; INR plan pricing seeded (₹2399 / ₹7999 / Free); IP rate-limit on `/search-knowledge` (30/min); `robots.ts` + `sitemap.ts` for SEO basics | ✅ |
-| **Phase 7+** — Future | WebSocket reconnect handler (resumption data is captured but the reconnect flow is unbuilt); per-agent webhook overrides; metered overage billing; audio call recording; multi-business per owner; dedicated webhook retry queue with dead-letter UI; LangGraph for real booking workflows (not needed until we add Calendly/EHR integrations) | Planned |
+| **Phase 7** — Dashboard depth + AI lead scoring | Analytics page (KPIs, calls/day chart, sentiment breakdown, top topics — 7/30/90d); Lead inbox (`/business/leads`) with status tabs, search, agent filter, CSV export; team management (`BusinessMember` + single-use email invites, owner-gated mutations); webhook delivery log (`WebhookDelivery` rows + settings UI); `personal` portfolio agent template; resume PDF parsing (Claude) for interview candidates; **AI lead scoring** — Claude post-call now also returns `leadScore` (0-100), `intentCategory` (booking/pricing/support/complaint/information/spam/other), and a `suggestedReply` follow-up draft; lead inbox gains "Hot leads first" sort + score/intent pills; CSV export includes both columns | ✅ |
+| **Phase 8** — Omnichannel + transactions + reliability (ROADMAP_NEXT.md Items 1–13) | Website-URL → auto-built knowledge base (crawler + Claude chunking); knowledge-gap detection + weekly AI digest email; WhatsApp outbound confirmations AND a full inbound WhatsApp text agent (same brain, `WhatsAppConversation` threads, human takeover); Hindi/code-switching language mirroring; **Google Calendar booking** (real slots + events mid-call, OAuth + AES-encrypted tokens, captureLead fallback); **mid-call UPI payment links** (per-agent toggle + ₹ cap, `payment_link.paid` webhook); **Zoho CRM push** (encrypted creds, test button, idempotent delivery step); WebSocket reconnect via session resumption (mic buffered through blips); metered overage billing (opt-in soft cap, monthly Razorpay invoice cron); call-recording infrastructure (R2 SigV4, consent-first, presigned playback); eval harness (`npm run eval` — Claude personas incl. prompt-injection vs. real prompts, Claude judge, CI exit code). **Pipeline-completion pass:** lead email + webhook now carry `leadScore`/`intentCategory`/`suggestedReply` (🔥 subject prefix for hot leads); CRM status + manual re-push in session detail (`POST /api/sessions/[id]/crm-push`); booked-appointment + payment badges; 30-day recording-retention cron; WhatsApp chats tile on the agent page; `.env.example` added | ✅ |
+| **Phase 9+** — Future | Recording wiring in `PublicAgentExperience` (steps in ROADMAP_NEXT.md — needs a live-mic test); audio PII redaction; per-agent webhook overrides; multi-business per owner (schema allows it, UI assumes `businesses[0]`); dedicated webhook retry queue with dead-letter UI; LeadSquared/Kylas CRM adapters; Calendly; LangGraph if booking flows grow states | Planned |
 
 ---
 
@@ -119,6 +121,9 @@ User (NextAuth — credentials + OAuth)
       │     ├── stripeCustomerId / stripeSubscriptionId
       │     ├── currentPeriodStart / End
       │     └── lastQuotaNotice    none | 80 | 95 | 100  (threshold idempotency)
+      ├── BusinessMember (userId, role="member")   ← team access; owner stays on Business.ownerId
+      ├── BusinessInvite (email, unique token, 7-day expiry, acceptedAt)
+      ├── WebhookDelivery (sessionId, statusCode, latencyMs, ok, errorMessage)  ← one row per webhook attempt
       └── Agent (one per business in v1, schema supports many)
            ├── templateType        hotel | medical | restaurant | legal | interview
            ├── config (JSON)       template-specific fields (hotelName, cuisineType, …)
@@ -133,6 +138,7 @@ User (NextAuth — credentials + OAuth)
                 ├── leadStatus     new | contacted | qualified | won | lost | archived
                 ├── leadDeliveredAt    idempotency marker for email + webhook
                 ├── summary, sentiment, sentimentScore, topics[], escalated  (Claude)
+                ├── leadScore (0-100), intentCategory, suggestedReply  (Claude AI lead scoring)
                 └── rating, feedback   (caller's own rating)
 
 BillingPlan
@@ -177,21 +183,31 @@ src/
 │   └── useAudioStream.ts        Mic capture via AudioWorklet
 ├── inngest/
 │   ├── client.ts
-│   └── functions/post-call-analysis.ts    Claude analysis + deliverLead steps
+│   └── functions/               post-call-analysis, ingest-website, weekly-digest,
+│                                overage-invoice, recording-retention
 ├── lib/
-│   ├── agents/                  Per-template prompt + tool definitions
-│   ├── gemini/                  live-session, audio-utils, agent-prompts (universal captureLead tool)
+│   ├── agents/                  Per-template prompt + tool definitions (incl. personal)
+│   ├── gemini/                  live-session (reconnect + recording tap), agent-prompts
+│   │                            (captureLead, searchKnowledge, booking, payment tools + rules)
+│   ├── calendar/                Google Calendar booking: OAuth state, free/busy → slots, events
+│   ├── crm/                     Zoho adapter + pushLeadToCrm dispatcher
+│   ├── whatsapp/                BSP adapters (gupshup/twilio) + inbound text-agent engine
+│   ├── payments/                Razorpay payment links (mid-call UPI + overage invoices)
+│   ├── storage/r2.ts            Cloudflare R2 via dependency-free SigV4 (put/presign/delete)
+│   ├── recording/               CallRecorder (mic + agent mix → webm/opus → upload)
+│   ├── ingest/                  Website crawler (SSRF-guarded) + Claude chunking pipeline
+│   ├── crypto.ts                AES-256-GCM secrets-at-rest (SECRETS_ENCRYPTION_KEY)
 │   ├── auth.ts                  NextAuth config
-│   ├── claude.ts                Post-call analyzer + interview report generator
+│   ├── claude.ts                Post-call analyzer + lead scoring + interview reports + digests
 │   ├── db.ts                    Prisma (Neon HTTP adapter)
 │   ├── embeddings.ts            gemini-embedding-001, 768-dim
 │   ├── rag.ts                   pgvector cosine search + generateAndStoreEmbedding
-│   ├── ratelimit.ts             Upstash limiters + plan-aware quota + threshold notifications
-│   ├── stripe.ts                Stripe SDK + plan-id ↔ price-id mapping
-│   ├── lead-delivery.ts         Email + webhook orchestrator (idempotent)
-│   ├── email.ts                 Resend templates (welcome, verify, lead, quota warning)
+│   ├── ratelimit.ts             Upstash limiters + plan quota + overage soft-cap
+│   ├── stripe.ts / razorpay.ts  Billing provider clients
+│   ├── lead-delivery.ts         Email + webhook + CRM + WhatsApp orchestrator (idempotent)
+│   ├── email.ts                 Resend templates (welcome, verify, lead, quota, digest, overage)
 │   ├── post-call.ts             Inngest trigger + HTTP fallback
-│   ├── templates.ts             Industry template definitions
+│   ├── templates.ts             Industry template definitions (+ Payments config fields)
 │   └── url.ts                   getAppUrl()
 ├── stores/                      Zustand stores
 └── types/                       TypeScript types
@@ -277,6 +293,32 @@ RAZORPAY_WEBHOOK_SECRET=
 RAZORPAY_PLAN_STARTER=           # Razorpay Plan ID for the Starter plan
 RAZORPAY_PLAN_PRO=               # Razorpay Plan ID for the Pro plan
 
+# ── WhatsApp channel (optional — Items 4 + 5) ──
+# Unset = WhatsApp channel silently disabled (Stripe-style gating).
+WHATSAPP_BSP_PROVIDER=           # gupshup | twilio
+WHATSAPP_BSP_API_KEY=            # Gupshup API key
+WHATSAPP_BSP_SOURCE_NUMBER=      # Gupshup WhatsApp Business number (digits, country code, no +)
+WHATSAPP_BSP_APP_NAME=           # Gupshup app name
+TWILIO_ACCOUNT_SID=              # Twilio alternative
+TWILIO_AUTH_TOKEN=
+TWILIO_WHATSAPP_FROM=            # E.164, e.g. +14155238886
+# Inbound text agent (Item 5): point the BSP webhook at
+#   https://your-domain/api/whatsapp/inbound?token=$WHATSAPP_INBOUND_TOKEN
+WHATSAPP_INBOUND_TOKEN=          # `openssl rand -hex 32` — fails closed if unset
+
+# ── Integration secrets at rest (Item 9 CRM + Item 7 calendar) ──
+SECRETS_ENCRYPTION_KEY=          # `openssl rand -hex 32` — AES-256-GCM; CRM/calendar connect return 503 without it
+
+# ── Google Calendar booking (Item 7) reuses GOOGLE_CLIENT_ID/SECRET above.
+# One-time setup: add {APP_URL}/api/integrations/google-calendar/callback
+# as an authorized redirect URI in the Google Cloud console.
+
+# ── Call recording storage (Item 12) — Cloudflare R2. Unset = recording off.
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET=                       # private bucket; playback via presigned URLs only
+
 # ── Observability ─────────────────────────────
 LANGSMITH_API_KEY=               # Optional
 LANGSMITH_TRACING_V2=true
@@ -301,6 +343,10 @@ npm run dev                # Next.js dev (Turbopack)
 npm run build              # Production build
 npm run lint               # ESLint
 npm run start              # Production server
+npm run eval               # Voice-agent eval harness — Claude caller personas
+                           # (incl. prompt injection) vs. real prompts, Claude judge.
+                           # Needs GOOGLE_GEMINI_API_KEY + ANTHROPIC_API_KEY. Exits 1 on failures.
+                           # `npm run eval -- hotel` for one template.
 
 npx prisma db push         # Push schema to Neon (no migration files)
 npx prisma generate        # Regenerate Prisma client after schema changes
@@ -308,6 +354,61 @@ npx prisma studio          # GUI for inspecting the database
 
 node prisma/seed-plans.mjs # Upsert the three billing plans (idempotent)
 ```
+
+---
+
+## Operating Voxie (what you, the owner, need to know)
+
+### Every advanced feature is off until you configure it
+
+Voxie boots and runs the **core loop (voice call → captured lead → email + AI scoring)**
+with just the required env vars. Every integration below is *gated the same way as
+Stripe* — leave its env unset and that feature is silently disabled; nothing else
+breaks. So you can ship the core today and switch features on one at a time.
+
+| Feature | Turns on when you set | Extra dashboard step |
+|---|---|---|
+| AI lead scoring, digests, evals | `ANTHROPIC_API_KEY` (already required) | — |
+| Website → auto knowledge base | required keys only | — |
+| Stripe billing (USD) | `STRIPE_*` (4 vars) | Webhook → `/api/billing/webhook` |
+| Razorpay billing (INR) | `RAZORPAY_*` (5 vars) | Webhook → `/api/billing/razorpay/webhook` |
+| WhatsApp outbound + inbound agent | `WHATSAPP_BSP_*` + `WHATSAPP_INBOUND_TOKEN` | BSP webhook → `/api/whatsapp/inbound?token=…` |
+| Google Calendar booking | `GOOGLE_CLIENT_*` (already set) + `SECRETS_ENCRYPTION_KEY` | Redirect URI → `/api/integrations/google-calendar/callback`; owner clicks **Connect** in Settings |
+| UPI payment links (mid-call) | `RAZORPAY_*` | Razorpay webhook must include `payment_link.paid`; owner enables per-agent + sets ₹ cap |
+| Zoho CRM push | `SECRETS_ENCRYPTION_KEY` | Owner pastes Zoho creds in Settings, clicks **Test connection** |
+| Metered overage billing | `RAZORPAY_*` | Owner opts in per-business in Settings |
+| Call recording | `R2_*` (4 vars) | Owner enables in Settings *(see caveat below)* |
+
+Per-agent toggles (payments, overage, recording, WhatsApp sender) live in the owner
+dashboard — the platform env just makes each feature *available* to enable.
+
+### Go-live checklist (in order)
+
+1. `cp .env.example .env.local` and fill the **required** blocks (database, auth, AI, `INTERNAL_API_SECRET`).
+2. `npx prisma generate && npx prisma db push` — **mandatory**; the app selects columns that don't exist until you do this.
+3. `node prisma/seed-plans.mjs` — seeds Free/Starter/Pro (+ overage rates). Re-run after adding Stripe/Razorpay IDs.
+4. `npm run build` to confirm a clean production build, then deploy (Vercel).
+5. Add any providers you want from the table above, one at a time, and smoke-test each (the CRM card has a **Test connection** button; make one ₹1 payment link; connect a calendar and book a test slot).
+6. `npm run eval` once your AI keys are live — baselines agent behavior; run it before any future prompt change.
+
+### Two things deliberately NOT finished (by design)
+
+- **Call recording capture** — storage, consent flag, upload/playback, and 30-day
+  retention are all built, but the ~20 lines that start the recorder on the caller's
+  device (`PublicAgentExperience.tsx`) are **not wired**, because that's the live-call
+  hot path and must be tested with a real microphone, not shipped blind. Exact steps
+  are in `ROADMAP_NEXT.md` → Item 12. Until then, the recording toggle is inert.
+- **Audio PII redaction** — a separate project (needs word-level transcript timestamps).
+
+### Where your money & leads actually flow
+
+- **Leads**: every call → `AgentSession` → Claude scores it → email to you (hot leads get a
+  🔥 subject) + optional signed webhook + optional Zoho + optional WhatsApp confirmation. All
+  idempotent; see `PRODUCT_FLOW.md`.
+- **Money in**: subscriptions via Stripe/Razorpay; mid-call UPI deposits via payment links;
+  month-end overage auto-invoiced by the `overage-invoice` cron.
+- **Full runtime walkthrough**: `PRODUCT_FLOW.md`. **AI internals**: `AI_PIPELINE.md`.
+  **Next ideas + status**: `ROADMAP_NEXT.md`.
 
 ---
 
