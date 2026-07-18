@@ -213,6 +213,14 @@ export async function POST(
       }
     }
 
+    // Gemini key is required for the voice session. Check BEFORE creating the
+    // session row so a misconfigured platform doesn't leave orphaned sessions;
+    // 503 (not 500) signals "service unavailable / not configured".
+    const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: "Gemini API key not configured" }, { status: 503 });
+    }
+
     // Per-session bearer token. Required on subsequent PATCH so anonymous
     // callers can't overwrite each other's transcripts using only the cuid.
     const updateToken = randomBytes(32).toString("hex");
@@ -228,11 +236,6 @@ export async function POST(
         updateToken,
       },
     });
-
-    const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 });
-    }
 
     return NextResponse.json({
       apiKey,
