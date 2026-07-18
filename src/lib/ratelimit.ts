@@ -15,6 +15,25 @@ function getRedis(): Redis | null {
 }
 
 /**
+ * Call limiter.limit() but never let an Upstash outage take down the request.
+ * Rate limiting is best-effort infra: if the backend is unreachable (fetch
+ * failed / bad creds / network egress blocked) the call throws, and without
+ * this guard the whole route 500s. Fail OPEN instead — same posture as the
+ * "silently allow through if Upstash is not configured" fallback above.
+ */
+async function safeLimit(
+  limiter: Ratelimit,
+  key: string,
+): Promise<{ success: boolean; limit: number; reset: number; remaining: number }> {
+  try {
+    return await limiter.limit(key);
+  } catch (err) {
+    console.warn("[RateLimit] limiter unavailable — failing open:", err);
+    return { success: true, limit: 0, reset: Date.now(), remaining: 0 };
+  }
+}
+
+/**
  * Session creation limiter:
  * - 10 new sessions per IP per minute (sliding window)
  * - 60 sessions per slug per hour — protects individual businesses from being drained
@@ -76,7 +95,7 @@ export async function checkAuthRateLimit(
   if (!limiter) return null;
 
   const ip = getIp(request);
-  const result = await limiter.limit(ip);
+  const result = await safeLimit(limiter, ip);
 
   if (!result.success) {
     const retryAfter = Math.ceil((result.reset - Date.now()) / 1000);
@@ -130,7 +149,7 @@ export async function checkSearchKnowledgeRateLimit(
   if (!limiter) return null; // Upstash not configured — allow through
 
   const ip = getIp(request);
-  const result = await limiter.limit(ip);
+  const result = await safeLimit(limiter, ip);
   if (!result.success) {
     return new Response(
       JSON.stringify({ error: "Too many knowledge searches. Please slow down." }),
@@ -180,7 +199,7 @@ export async function checkTransactionRateLimit(
   if (!limiter) return null; // Upstash not configured — allow through (dev)
 
   const ip = getIp(request);
-  const result = await limiter.limit(ip);
+  const result = await safeLimit(limiter, ip);
   if (!result.success) {
     return new Response(
       JSON.stringify({ error: "Too many requests. Please slow down." }),
@@ -512,8 +531,8 @@ export async function checkSessionRateLimit(
   const ip = getIp(request);
 
   const [ipResult, slugResult] = await Promise.all([
-    limiters.byIp.limit(ip),
-    limiters.bySlug.limit(slug),
+    safeLimit(limiters.byIp, ip),
+    safeLimit(limiters.bySlug, slug),
   ]);
 
   if (!ipResult.success) {
@@ -559,7 +578,7 @@ export async function checkResumeRateLimit(
   if (!limiter) return null;
 
   const ip = getIp(request);
-  const result = await limiter.limit(ip);
+  const result = await safeLimit(limiter, ip);
 
   if (!result.success) {
     return new Response(

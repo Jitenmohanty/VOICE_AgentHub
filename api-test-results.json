@@ -1,0 +1,632 @@
+[
+  {
+    "group": "auth",
+    "name": "providers",
+    "method": "GET",
+    "path": "/api/auth/providers",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "csrf",
+    "method": "GET",
+    "path": "/api/auth/csrf",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "guard(pre-login)",
+    "method": "GET",
+    "path": "/api/business",
+    "actual": 401,
+    "expected": "401",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "login",
+    "method": "POST",
+    "path": "/api/auth/callback/credentials",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "session",
+    "method": "GET",
+    "path": "/api/auth/session",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "register(invalid)",
+    "method": "POST",
+    "path": "/api/auth/register",
+    "actual": 400,
+    "expected": "400|429",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "register(dupe)",
+    "method": "POST",
+    "path": "/api/auth/register",
+    "actual": 409,
+    "expected": "409|400|429",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "verify(bad)",
+    "method": "POST",
+    "path": "/api/auth/verify-email",
+    "actual": 400,
+    "expected": "400|429",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "reset(bad)",
+    "method": "POST",
+    "path": "/api/auth/reset-password",
+    "actual": 400,
+    "expected": "400|429",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "forgot",
+    "method": "POST",
+    "path": "/api/auth/forgot-password",
+    "actual": 200,
+    "expected": "200|429",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "auth",
+    "name": "resend-verify",
+    "method": "POST",
+    "path": "/api/auth/resend-verification",
+    "actual": 200,
+    "expected": "200|400|429",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "onboard",
+    "method": "POST",
+    "path": "/api/business/onboard",
+    "actual": 409,
+    "expected": "201|409",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "list",
+    "method": "GET",
+    "path": "/api/business",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "detail",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "update",
+    "method": "PATCH",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "usage",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/usage",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "analytics",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/analytics",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "leads",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/leads",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "leads export",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/leads/export",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "team list",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/team",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "webhook log",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/webhook-deliveries",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "crm get(no handler)",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/crm",
+    "actual": 405,
+    "expected": "200|405",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "business",
+    "name": "crm test",
+    "method": "POST",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/crm/test",
+    "actual": 400,
+    "expected": "200|400|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "create",
+    "method": "POST",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents",
+    "actual": 403,
+    "expected": "201|403",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "detail",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "update",
+    "method": "PATCH",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "knowledge create",
+    "method": "POST",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv/knowledge",
+    "actual": 201,
+    "expected": "201",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "knowledge list",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv/knowledge",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "knowledge gaps",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv/knowledge/gaps",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "ingest-url",
+    "method": "POST",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv/knowledge/ingest-url",
+    "actual": 202,
+    "expected": "200|201|202|400|422|502|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "data upsert",
+    "method": "POST",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv/data",
+    "actual": 200,
+    "expected": "200|201",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "data list",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv/data",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "sessions list",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv/sessions",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "agents",
+    "name": "whatsapp convos",
+    "method": "GET",
+    "path": "/api/business/cmrq5wsy00000kkxdpoi7uu5q/agents/cmrq5wt1q0001kkxd4uwa35jv/whatsapp",
+    "actual": 200,
+    "expected": "200|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "agent meta",
+    "method": "GET",
+    "path": "/api/public/agent/voxie-api-test-co-pee3",
+    "actual": 200,
+    "expected": "200|404",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "agent data",
+    "method": "GET",
+    "path": "/api/public/agent/voxie-api-test-co-pee3/data",
+    "actual": 200,
+    "expected": "200|404",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "session create",
+    "method": "POST",
+    "path": "/api/public/agent/voxie-api-test-co-pee3/session",
+    "actual": 200,
+    "expected": "200|429",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "session patch(no token)",
+    "method": "PATCH",
+    "path": "/api/public/agent/voxie-api-test-co-pee3/session/cmrq6dpg8000ckkxd9vkp05sg",
+    "actual": 403,
+    "expected": "403",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "session patch",
+    "method": "PATCH",
+    "path": "/api/public/agent/voxie-api-test-co-pee3/session/cmrq6dpg8000ckkxd9vkp05sg",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "search-knowledge",
+    "method": "POST",
+    "path": "/api/public/agent/voxie-api-test-co-pee3/search-knowledge",
+    "actual": 200,
+    "expected": "200|400",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "book-appointment",
+    "method": "POST",
+    "path": "/api/public/agent/voxie-api-test-co-pee3/book-appointment",
+    "actual": 200,
+    "expected": "200|400|403|404|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "payment-link",
+    "method": "POST",
+    "path": "/api/public/agent/voxie-api-test-co-pee3/payment-link",
+    "actual": 400,
+    "expected": "200|400|403|404|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "recording",
+    "method": "POST",
+    "path": "/api/public/agent/voxie-api-test-co-pee3/recording",
+    "actual": 400,
+    "expected": "200|400|403|404|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "session complete",
+    "method": "PATCH",
+    "path": "/api/public/agent/voxie-api-test-co-pee3/session/cmrq6dpg8000ckkxd9vkp05sg",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "public",
+    "name": "resume parse(empty)",
+    "method": "POST",
+    "path": "/api/public/resume/parse",
+    "actual": 400,
+    "expected": "400|415|429",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "sessions",
+    "name": "list",
+    "method": "GET",
+    "path": "/api/sessions",
+    "actual": 200,
+    "expected": "200",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "sessions",
+    "name": "detail",
+    "method": "GET",
+    "path": "/api/sessions/cmrq6dpg8000ckkxd9vkp05sg",
+    "actual": 200,
+    "expected": "200|404",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "sessions",
+    "name": "update status",
+    "method": "PATCH",
+    "path": "/api/sessions/cmrq6dpg8000ckkxd9vkp05sg",
+    "actual": 200,
+    "expected": "200|404",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "sessions",
+    "name": "report",
+    "method": "POST",
+    "path": "/api/sessions/cmrq6dpg8000ckkxd9vkp05sg/report",
+    "actual": 400,
+    "expected": "200|400|404",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "sessions",
+    "name": "crm-push",
+    "method": "POST",
+    "path": "/api/sessions/cmrq6dpg8000ckkxd9vkp05sg/crm-push",
+    "actual": 400,
+    "expected": "200|400|404|409|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "sessions",
+    "name": "recording",
+    "method": "GET",
+    "path": "/api/sessions/cmrq6dpg8000ckkxd9vkp05sg/recording",
+    "actual": 404,
+    "expected": "200|302|404|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "internal",
+    "name": "no-secret",
+    "method": "POST",
+    "path": "/api/internal/post-call",
+    "actual": 403,
+    "expected": "401|403|400",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "internal",
+    "name": "with-secret",
+    "method": "POST",
+    "path": "/api/internal/post-call",
+    "actual": 200,
+    "expected": "200|400|404",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "billing",
+    "name": "stripe checkout",
+    "method": "POST",
+    "path": "/api/billing/checkout",
+    "actual": 503,
+    "expected": "200|400|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "billing",
+    "name": "stripe portal",
+    "method": "POST",
+    "path": "/api/billing/portal",
+    "actual": 503,
+    "expected": "200|400|404|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "billing",
+    "name": "razorpay checkout",
+    "method": "POST",
+    "path": "/api/billing/razorpay/checkout",
+    "actual": 503,
+    "expected": "200|400|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "billing",
+    "name": "stripe webhook(unsigned)",
+    "method": "POST",
+    "path": "/api/billing/webhook",
+    "actual": 503,
+    "expected": "400|401|403|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "billing",
+    "name": "razorpay webhook(unsigned)",
+    "method": "POST",
+    "path": "/api/billing/razorpay/webhook",
+    "actual": 503,
+    "expected": "400|401|403|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "integrations",
+    "name": "gcal status",
+    "method": "GET",
+    "path": "/api/integrations/google-calendar",
+    "actual": 200,
+    "expected": "200|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "integrations",
+    "name": "gcal connect",
+    "method": "GET",
+    "path": "/api/integrations/google-calendar/connect",
+    "actual": 503,
+    "expected": "200|302|400|503",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "misc",
+    "name": "inngest(env-gated)",
+    "method": "GET",
+    "path": "/api/inngest",
+    "actual": 500,
+    "expected": "200|405|500",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "misc",
+    "name": "invite(bad)",
+    "method": "GET",
+    "path": "/api/invites/definitely-invalid-token",
+    "actual": 404,
+    "expected": "400|404",
+    "ok": true,
+    "extra": ""
+  },
+  {
+    "group": "misc",
+    "name": "whatsapp inbound(no-token)",
+    "method": "POST",
+    "path": "/api/whatsapp/inbound",
+    "actual": 503,
+    "expected": "200|400|401|403|503",
+    "ok": true,
+    "extra": ""
+  }
+]

@@ -62,7 +62,7 @@ function parseTwilio(form: URLSearchParams): InboundText | null {
 export async function POST(request: Request) {
   if (!process.env.WHATSAPP_INBOUND_TOKEN) {
     console.error("[WhatsApp inbound] WHATSAPP_INBOUND_TOKEN is not set — refusing request");
-    return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+    return NextResponse.json({ error: "WhatsApp inbound not configured" }, { status: 503 });
   }
   if (!tokenOk(request)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

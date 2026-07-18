@@ -25,7 +25,7 @@ import { getAgentSystemPrompt, getAgentTools } from "../src/lib/gemini/agent-pro
 import type { AgentConfig } from "../src/types/agent";
 
 const GEMINI_MODEL = "gemini-2.5-flash";
-const CLAUDE_MODEL = "claude-sonnet-4-20250514";
+const CLAUDE_MODEL = "claude-sonnet-4-6";
 const MAX_TURNS = 8;
 
 // ── Synthetic agent fixtures (one per SMB template) ──────────────────────────
