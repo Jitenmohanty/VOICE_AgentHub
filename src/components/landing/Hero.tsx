@@ -21,7 +21,7 @@ export function Hero() {
             className="ah-pill mb-8"
           >
             <Sparkles className="w-3.5 h-3.5" style={{ color: "var(--ah-sage-deep)" }} />
-            <span>Voice AI for hotels, clinics, restaurants &amp; more</span>
+            <span>Voxie — Voice AI for hotels, clinics, restaurants &amp; more</span>
           </motion.div>
 
           {/* Headline — EB Garamond, ink-black, italic accent */}
@@ -42,8 +42,9 @@ export function Hero() {
             className="text-xl md:text-2xl max-w-2xl mx-auto mb-12 leading-relaxed"
             style={{ color: "var(--ah-ink-soft)" }}
           >
-            Drop a single iframe into your existing site. Visitors talk to an AI that knows your menu,
-            rooms, doctors, or services — and every captured lead lands in your inbox in under 30 seconds.
+            Voxie is a voice-AI platform for small businesses. Add one line of code to your website and
+            visitors can talk to an AI receptionist that knows your menu, rooms, doctors, or services —
+            and every captured lead lands in your inbox in under 30 seconds.
           </p>
 
           {/* CTAs */}

@@ -31,11 +31,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Voxie — Multi-Agent Voice AI Platform",
   description:
-    "Choose your industry. Get a specialized voice AI agent powered by Gemini.",
+    "Voxie is a voice-AI platform for small businesses. Embed an AI receptionist on your website that answers customer questions and captures leads to your inbox — for hotels, clinics, restaurants, and more.",
   openGraph: {
     title: "Voxie — Multi-Agent Voice AI Platform",
     description:
-      "Choose your industry. Get a specialized voice AI agent powered by Gemini.",
+      "Voxie is a voice-AI platform for small businesses. Embed an AI receptionist on your website that answers customer questions and captures leads to your inbox — for hotels, clinics, restaurants, and more.",
     type: "website",
   },
 };
