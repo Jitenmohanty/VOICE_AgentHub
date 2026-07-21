@@ -17,6 +17,7 @@ export function getSystemPrompt(config: AgentConfig, candidateContext?: Record<s
   const targetRole = candidateContext?.targetRole || (company ? `a role at ${company}` : "a software engineering role");
   const resumeSkills = candidateContext?.resumeSkills || "";
   const resumeSummary = candidateContext?.resumeSummary || "";
+  const resumeText = candidateContext?.resumeText || "";
 
   // Per-session variety hints — populated server-side in the session route
   // so the same candidate doesn't get the same questions every time.
@@ -47,6 +48,19 @@ If you violate these rules the candidate will feel rushed and confused — that 
 - Target: ${targetRole}
 - Interview Style: ${interviewStyle}${resumeSkills ? `\n- Key Skills (from resume): ${resumeSkills}` : ""}${resumeSummary ? `\n- Resume Background: ${resumeSummary}\n  → Reference past roles and projects by name. Ask things like "In your time at [company], how did you handle X?"` : ""}
 
+${resumeText ? `## FULL RESUME (candidate-provided)
+
+This is the candidate's complete resume as plaintext. Treat it as ground truth about their background. Use it to:
+- Ground your questions in specifics ("Your resume mentions [project] at [company] — walk me through the hardest technical decision there.").
+- Answer factual questions the candidate asks about their own resume, drawing ONLY from the text below. If they ask about something not present here, say you don't see it on the resume rather than inventing details.
+
+Do NOT read the resume aloud verbatim or dump its contents; reference it naturally.
+
+<resume>
+${resumeText}
+</resume>
+
+` : ""}
 ${varietySeed ? `## SESSION VARIETY — DO NOT IGNORE
 
 The same candidate may take this interview multiple times. They will quickly notice and lose trust if you ask the same questions every time. To keep each session fresh:

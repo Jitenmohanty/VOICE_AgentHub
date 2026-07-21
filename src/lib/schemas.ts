@@ -19,6 +19,9 @@ export const CandidateContextSchema = z.object({
   targetRole: safeString(200).optional(),
   resumeSkills: safeString(1000).optional(),
   resumeSummary: safeString(600).optional(),
+  // Full plaintext transcription of the resume (optional). Cap must match the
+  // slice in /api/public/resume/parse so long resumes don't 400 on validation.
+  resumeText: safeString(8000).optional(),
 });
 
 export const SessionCreateSchema = z.object({
