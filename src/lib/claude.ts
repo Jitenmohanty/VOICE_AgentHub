@@ -5,6 +5,25 @@ import type { TranscriptMessage } from "@/types/session";
 
 let client: Anthropic | null = null;
 
+/**
+ * Parse JSON from an LLM response that may be wrapped in a ```json fence or
+ * padded with prose, despite instructions to return raw JSON. Throws (like
+ * JSON.parse) if no valid JSON can be recovered, so callers keep their
+ * existing try/catch fallbacks.
+ */
+function parseLooseJson<T>(text: string): T {
+  let t = text.trim();
+  const fence = t.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fence?.[1]) t = fence[1].trim();
+  if (t[0] !== "{" && t[0] !== "[") {
+    const starts = [t.indexOf("{"), t.indexOf("[")].filter((i) => i >= 0);
+    const start = starts.length ? Math.min(...starts) : -1;
+    const end = Math.max(t.lastIndexOf("}"), t.lastIndexOf("]"));
+    if (start >= 0 && end > start) t = t.slice(start, end + 1);
+  }
+  return JSON.parse(t) as T;
+}
+
 function getClient(): Anthropic {
   if (!client) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -117,7 +136,7 @@ Return this exact JSON structure:
       response.content[0]?.type === "text" ? response.content[0].text : "";
 
     try {
-      const parsed = JSON.parse(text) as PostCallAnalysis;
+      const parsed = parseLooseJson<PostCallAnalysis>(text);
       return { ...parsed, ...normalizeLeadScoring(parsed) };
     } catch {
       return {
@@ -162,7 +181,7 @@ Return: [{"title": "Section Title", "content": "section content..."}]`,
       response.content[0]?.type === "text" ? response.content[0].text : "[]";
 
     try {
-      return JSON.parse(text) as { title: string; content: string }[];
+      return parseLooseJson<{ title: string; content: string }[]>(text);
     } catch {
       return [{ title: "Document", content: content.slice(0, 5000) }];
     }
@@ -228,7 +247,7 @@ Return: {"narrative": "<2-4 sentences summarizing the week, highlighting what ch
         ],
       });
       const text = response.content[0]?.type === "text" ? response.content[0].text : "";
-      const parsed = JSON.parse(text) as Partial<WeeklyDigestContent>;
+      const parsed = parseLooseJson<Partial<WeeklyDigestContent>>(text);
       return {
         narrative: typeof parsed.narrative === "string" && parsed.narrative ? parsed.narrative : fallback.narrative,
         gapAdvice: typeof parsed.gapAdvice === "string" ? parsed.gapAdvice : fallback.gapAdvice,
@@ -342,7 +361,7 @@ Return this exact JSON structure:
       response.content[0]?.type === "text" ? response.content[0].text : "";
 
     try {
-      return JSON.parse(text) as InterviewReport;
+      return parseLooseJson<InterviewReport>(text);
     } catch {
       // Fallback: compute from raw scores
       const avgScore = interviewData.scores.length > 0

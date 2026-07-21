@@ -87,13 +87,35 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
   const transcript: TranscriptMessage[] =
     (session?.transcript as unknown as TranscriptMessage[]) || [];
 
-  // Use persisted summary if available, else build from transcript
-  const summary = session?.summary || buildSummary(
-    agentName,
-    transcript.filter((m) => m.speaker === "user"),
-    transcript.filter((m) => m.speaker === "agent"),
-    session?.duration || 0,
-  );
+  // Some legacy sessions stored the entire analysis JSON (sometimes inside a
+  // ```json fence) in `summary`. Recover the real summary text and the
+  // structured fields so the UI renders properly instead of a raw blob.
+  const rawSummary = session?.summary ?? "";
+  const analysisBlob = parseAnalysisBlob(rawSummary);
+  const summaryText =
+    analysisBlob?.summary?.trim() ||
+    (analysisBlob ? "" : rawSummary) ||
+    buildSummary(
+      agentName,
+      transcript.filter((m) => m.speaker === "user"),
+      transcript.filter((m) => m.speaker === "agent"),
+      session?.duration || 0,
+    );
+
+  // Prefer the structured DB columns; fall back to a recovered legacy blob.
+  const ai = {
+    sentiment: session?.sentiment ?? analysisBlob?.sentiment ?? null,
+    sentimentScore: session?.sentimentScore ?? analysisBlob?.sentimentScore ?? null,
+    escalated: session?.escalated ?? analysisBlob?.escalated ?? false,
+    leadScore: session?.leadScore ?? analysisBlob?.leadScore ?? null,
+    intentCategory: session?.intentCategory ?? analysisBlob?.intentCategory ?? null,
+    topics: (session?.topics?.length ? session.topics : analysisBlob?.topics) ?? [],
+    actionItems:
+      (Array.isArray(session?.actionItems) && (session.actionItems as unknown[]).length
+        ? (session.actionItems as { action: string; priority: string }[])
+        : analysisBlob?.actionItems) ?? [],
+  };
+  const suggestedReply = session?.suggestedReply ?? analysisBlob?.suggestedReply ?? null;
 
   return (
     <AnimatePresence>
@@ -321,7 +343,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                     </div>
                   )}
 
-                  {session.suggestedReply && (
+                  {suggestedReply && (
                     <div className="pt-1">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xs text-white/55 uppercase tracking-wider">Suggested reply</p>
@@ -329,7 +351,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                           type="button"
                           onClick={() => {
                             navigator.clipboard
-                              .writeText(session.suggestedReply!)
+                              .writeText(suggestedReply!)
                               .then(() => toast.success("Reply copied"))
                               .catch(() => toast.error("Couldn't copy"));
                           }}
@@ -339,7 +361,7 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                         </button>
                       </div>
                       <p className="text-sm text-white/75 mt-1.5 leading-relaxed bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2.5 italic">
-                        {session.suggestedReply}
+                        {suggestedReply}
                       </p>
                     </div>
                   )}
@@ -361,10 +383,10 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
               {session.recordingKey && <RecordingPlayer sessionId={sessionId} />}
 
               {/* Summary */}
-              {summary && (
+              {summaryText && (
                 <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06]">
                   <h3 className="text-base font-semibold text-white mb-2">Summary</h3>
-                  <p className="text-base text-white/65 leading-relaxed">{summary}</p>
+                  <p className="text-base text-white/65 leading-relaxed">{summaryText}</p>
                 </div>
               )}
 
@@ -374,29 +396,29 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
               )}
 
               {/* AI Analysis (from Claude) */}
-              {Boolean(session.sentiment || (session.topics && session.topics.length > 0) || (session.actionItems && !isInterviewData(session.actionItems))) && (
+              {Boolean(ai.sentiment || ai.topics.length > 0 || (ai.actionItems.length > 0 && !isInterviewData(session.actionItems))) && (
                 <div className="bg-white/[0.03] rounded-2xl p-5 border border-white/[0.06] space-y-3">
                   <h3 className="text-base font-semibold text-white">AI Analysis</h3>
 
                   {/* Sentiment */}
-                  {session.sentiment && (
+                  {ai.sentiment && (
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm text-white/55">Sentiment:</span>
                       <span
                         className={`text-sm font-medium px-2.5 py-0.5 rounded-full capitalize border ${
-                          session.sentiment === "positive"
+                          ai.sentiment === "positive"
                             ? "bg-emerald-500/15 text-emerald-300 border-emerald-300/20"
-                            : session.sentiment === "negative"
+                            : ai.sentiment === "negative"
                               ? "bg-rose-500/15 text-rose-300 border-rose-300/20"
-                              : session.sentiment === "mixed"
+                              : ai.sentiment === "mixed"
                                 ? "bg-amber-500/15 text-amber-300 border-amber-300/20"
                                 : "bg-white/[0.06] text-white/55 border-white/10"
                         }`}
                       >
-                        {String(session.sentiment)}
-                        {session.sentimentScore != null && ` (${(Number(session.sentimentScore) * 100).toFixed(0)}%)`}
+                        {String(ai.sentiment)}
+                        {ai.sentimentScore != null && ` (${(Number(ai.sentimentScore) * 100).toFixed(0)}%)`}
                       </span>
-                      {session.escalated && (
+                      {ai.escalated && (
                         <span className="text-sm px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-300/20">
                           Escalation needed
                         </span>
@@ -405,38 +427,38 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                   )}
 
                   {/* AI lead score + intent category */}
-                  {(session.leadScore != null || session.intentCategory) && (
+                  {(ai.leadScore != null || ai.intentCategory) && (
                     <div className="flex items-center gap-2 flex-wrap">
-                      {session.leadScore != null && (
+                      {ai.leadScore != null && (
                         <>
                           <span className="text-sm text-white/55">Lead score:</span>
                           <span
                             className={`text-sm font-medium px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 tabular-nums ${
-                              session.leadScore >= 70
+                              ai.leadScore >= 70
                                 ? "bg-orange-500/15 text-orange-300 border-orange-300/30"
-                                : session.leadScore >= 40
+                                : ai.leadScore >= 40
                                   ? "bg-amber-500/10 text-amber-300 border-amber-300/20"
                                   : "bg-white/[0.06] text-white/55 border-white/10"
                             }`}
                           >
                             <Flame className="w-3 h-3" />
-                            {session.leadScore}/100
+                            {ai.leadScore}/100
                           </span>
                         </>
                       )}
-                      {session.intentCategory && (
+                      {ai.intentCategory && (
                         <span className="text-sm px-2.5 py-0.5 rounded-full capitalize bg-cyan-500/10 text-cyan-300 border border-cyan-300/20">
-                          {session.intentCategory}
+                          {ai.intentCategory}
                         </span>
                       )}
                     </div>
                   )}
 
                   {/* Topics */}
-                  {session.topics && session.topics.length > 0 && (
+                  {ai.topics.length > 0 && (
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm text-white/55">Topics:</span>
-                      {session.topics.map((topic: string, i: number) => (
+                      {ai.topics.map((topic: string, i: number) => (
                         <span
                           key={i}
                           className="text-sm px-2.5 py-0.5 rounded-full bg-violet-500/10 text-violet-200 border border-violet-300/20"
@@ -448,11 +470,11 @@ export function SessionDetailModal({ sessionId, onClose }: SessionDetailModalPro
                   )}
 
                   {/* Action Items */}
-                  {Array.isArray(session.actionItems) && (session.actionItems as { action: string; priority: string }[]).length > 0 && (
+                  {ai.actionItems.length > 0 && !isInterviewData(session.actionItems) && (
                     <div>
                       <span className="text-sm text-white/55 block mb-1">Action Items:</span>
                       <ul className="space-y-1">
-                        {(session.actionItems as { action: string; priority: string }[]).map((item, i) => (
+                        {ai.actionItems.map((item, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm">
                             <span
                               className="mt-0.5 w-1.5 h-1.5 rounded-full shrink-0"
@@ -702,6 +724,39 @@ function buildSummary(
 
   return parts.join(" ");
 }
+
+interface AnalysisBlob {
+  summary?: string;
+  sentiment?: "positive" | "neutral" | "negative" | "mixed";
+  sentimentScore?: number;
+  actionItems?: { action: string; priority: string }[];
+  topics?: string[];
+  escalated?: boolean;
+  leadScore?: number | null;
+  intentCategory?: string | null;
+  suggestedReply?: string | null;
+}
+
+/**
+ * Legacy fix: some sessions stored the whole post-call analysis JSON — sometimes
+ * inside a ```json fence — in the `summary` column, which then rendered raw.
+ * Detect that case and parse it so the UI can show structured fields. Returns
+ * null for normal plain-text summaries (which don't start with `{`).
+ */
+function parseAnalysisBlob(raw: string): AnalysisBlob | null {
+  if (!raw) return null;
+  let t = raw.trim();
+  const fence = t.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fence?.[1]) t = fence[1].trim();
+  if (t[0] !== "{") return null;
+  try {
+    const obj = JSON.parse(t) as AnalysisBlob;
+    return obj && typeof obj === "object" && typeof obj.summary === "string" ? obj : null;
+  } catch {
+    return null;
+  }
+}
+
 /* ── Interview Score Types & Components ──────── */
 
 interface InterviewScore {
