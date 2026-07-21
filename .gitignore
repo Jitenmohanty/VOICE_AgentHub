@@ -46,3 +46,10 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# local screenshots
+voxie-navbar.png
+.playwright-mcp/
+
+# agent eval harness output (transcripts + verdicts)
+/eval-results/

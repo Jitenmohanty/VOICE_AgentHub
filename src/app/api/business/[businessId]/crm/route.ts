@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -87,7 +88,9 @@ export async function DELETE(_request: Request, { params }: Params) {
 
     await prisma.business.update({
       where: { id: businessId },
-      data: { crmProvider: null, crmConfig: undefined, crmSecretEncrypted: null },
+      // Prisma.DbNull actually nulls the Json? column; `undefined` would leave
+      // the stale crmConfig (region/fieldMapping) behind on disconnect.
+      data: { crmProvider: null, crmConfig: Prisma.DbNull, crmSecretEncrypted: null },
     });
     return NextResponse.json({ disconnected: true });
   } catch (err) {

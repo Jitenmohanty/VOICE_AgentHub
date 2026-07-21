@@ -25,7 +25,7 @@ import { getAgentSystemPrompt, getAgentTools } from "../src/lib/gemini/agent-pro
 import type { AgentConfig } from "../src/types/agent";
 
 const GEMINI_MODEL = "gemini-2.5-flash";
-const CLAUDE_MODEL = "claude-sonnet-4-20250514";
+const CLAUDE_MODEL = "claude-sonnet-4-6";
 const MAX_TURNS = 8;
 
 // ── Synthetic agent fixtures (one per SMB template) ──────────────────────────
@@ -72,8 +72,10 @@ const PERSONAS: Persona[] = [
 
 // ── Model plumbing ───────────────────────────────────────────────────────────
 
-const gemini = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY || "" });
-const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || "" });
+let _gemini: GoogleGenAI | null = null;
+let _claude: Anthropic | null = null;
+const gemini = () => (_gemini ??= new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY! }));
+const claude = () => (_claude ??= new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }));
 
 interface TurnLog {
   speaker: "caller" | "agent" | "tool";
@@ -83,7 +85,7 @@ interface TurnLog {
 /** Claude plays the caller. Returns the caller's next message (or END). */
 async function callerTurn(persona: Persona, transcript: TurnLog[]): Promise<string> {
   const history = transcript.map((t) => `${t.speaker.toUpperCase()}: ${t.text}`).join("\n");
-  const res = await claude.messages.create({
+  const res = await claude().messages.create({
     model: CLAUDE_MODEL,
     max_tokens: 200,
     messages: [
@@ -113,7 +115,7 @@ async function agentTurn(
 ): Promise<string> {
   let contents = history;
   for (let hop = 0; hop < 3; hop++) {
-    const res = await gemini.models.generateContent({
+    const res = await gemini().models.generateContent({
       model: GEMINI_MODEL,
       contents,
       config: {
@@ -160,7 +162,7 @@ async function judge(
   toolCalls: { name: string; args: unknown }[],
 ): Promise<Verdict> {
   const history = transcript.map((t) => `${t.speaker.toUpperCase()}: ${t.text}`).join("\n");
-  const res = await claude.messages.create({
+  const res = await claude().messages.create({
     model: CLAUDE_MODEL,
     max_tokens: 400,
     messages: [

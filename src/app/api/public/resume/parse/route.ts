@@ -13,7 +13,14 @@ export async function POST(request: Request) {
     const limited = await checkResumeRateLimit(request);
     if (limited) return limited;
 
-    const formData = await request.formData();
+    // A non-multipart body (wrong content-type) makes formData() throw — treat
+    // that as a bad request, not a 500.
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return NextResponse.json({ error: "Expected a multipart form upload" }, { status: 400 });
+    }
     const file = formData.get("resume");
 
     if (!file || !(file instanceof File)) {

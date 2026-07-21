@@ -82,7 +82,7 @@ export const generatePostCallAnalysis = traceable(
 
     const claude = getClient();
     const response = await claude.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 1500,
       messages: [
         {
@@ -143,7 +143,7 @@ export const chunkDocument = traceable(
   ): Promise<{ title: string; content: string }[]> {
     const claude = getClient();
     const response = await claude.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 4096,
       messages: [
         {
@@ -207,7 +207,7 @@ export const generateWeeklyDigest = traceable(
     try {
       const claude = getClient();
       const response = await claude.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 600,
         messages: [
           {
@@ -298,7 +298,7 @@ export const generateInterviewReport = traceable(
 
     const claude = getClient();
     const response = await claude.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 2048,
       messages: [
         {

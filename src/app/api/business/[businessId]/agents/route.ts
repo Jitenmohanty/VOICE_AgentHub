@@ -77,7 +77,10 @@ export async function POST(
         greeting: template.defaultGreeting,
         personality: template.defaultPersonality,
         config: body.config || {},
-        enabledTools: template.capabilities,
+        // Empty = allow all of this template's info tools (getAgentTools treats
+        // [] as "all"). template.capabilities are human-readable marketing
+        // labels, NOT tool IDs — storing them here strips every real tool.
+        enabledTools: [],
       },
     });
 

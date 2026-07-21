@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
 import { GradientButton } from "@/components/ui/gradient-button";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
@@ -28,12 +27,14 @@ export function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-2 md:px-8 py-3 md:py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-105"
-            style={{ background: "var(--ah-cta)" }}
-          >
-            <Sparkles className="w-4 h-4" style={{ color: "#FFFCF6" }} strokeWidth={2.5} />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/Voxie_Icon.png"
+            alt="Voxie"
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-full object-cover transition-transform group-hover:scale-105"
+          />
           <span
             className="font-serif text-2xl tracking-tight"
             style={{ color: "var(--ah-ink)" }}
