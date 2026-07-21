@@ -50,3 +50,6 @@ next-env.d.ts
 # local screenshots
 voxie-navbar.png
 .playwright-mcp/
+
+# agent eval harness output (transcripts + verdicts)
+/eval-results/
