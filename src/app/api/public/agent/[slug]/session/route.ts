@@ -116,18 +116,22 @@ export async function POST(
     }
     const enrichedCandidateContext = (body.candidateContext as Record<string, string> | undefined) ?? candidateContext;
 
-    // 1. Build base system prompt
-    let systemPrompt: string;
-    if (agent.systemPrompt && agent.templateType !== "interview") {
-      // Custom system prompt: use as-is for non-interview agents
-      systemPrompt = agent.systemPrompt;
-    } else if (agent.systemPrompt && agent.templateType === "interview" && enrichedCandidateContext) {
-      // Interview agent with custom prompt: still inject candidateContext so the
-      // agent knows who it's talking to (name, resume, stack, level, variety hints)
-      systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, enrichedCandidateContext);
+    // 1. Build base system prompt.
+    //
+    // The auto-generated, config-derived prompt is ALWAYS the base — it carries
+    // the template's behavior, the owner's config fields (rooms, amenities,
+    // hours, identity, links…), the base speaking rules, and the lead-capture
+    // rule. A "Developer mode" custom prompt is layered ON TOP as additional
+    // owner instructions rather than replacing everything.
+    //
+    // The old behavior replaced the entire prompt whenever agent.systemPrompt
+    // was non-empty. That silently dropped all business context, and when the
+    // field was misused to hold data (e.g. a room JSON blob), it left the agent
+    // with no instructions at all. Layering is safe for real custom prompts too
+    // (this is exactly what the interview path already did).
+    let systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, enrichedCandidateContext);
+    if (agent.systemPrompt && agent.systemPrompt.trim()) {
       systemPrompt += `\n\nAdditional Owner Instructions:\n${agent.systemPrompt}`;
-    } else {
-      systemPrompt = getAgentSystemPrompt(agent.templateType, agentConfig, enrichedCandidateContext);
     }
 
     // Inject caller's pre-call context (e.g., "ordering food" or "book appointment with Dr. Smith")

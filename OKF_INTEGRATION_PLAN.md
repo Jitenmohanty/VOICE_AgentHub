@@ -1,6 +1,12 @@
 # OKF Integration Plan — Voxie
 
-> **Status:** Design / proposal. Nothing here is implemented yet. This document is the plan; build phases are additive and default-off (see §9).
+> **Status:** Phases 0–3 **shipped**. 26 unit tests green; `tsc`/`lint`/`build` clean.
+> - ✅ **Phase 0** — pure `src/lib/okf/` lib + unit tests (round-trip, dedupe, resilience, PII-exclusion).
+> - ✅ **Phase 1** — read-only export: `GET …/knowledge/export/okf` + "Export OKF" button.
+> - ✅ **Phase 2** — idempotent import: `POST …/knowledge/import/okf` (upsert by `voxie_id`, skip-unchanged, cross-tenant safe, async re-embed) + "Import OKF" button.
+> - ✅ **Phase 3** — `BusinessData` concepts (lossless JSON round-trip, upsert by `agentId+dataType`) + `agent.md` card (**export-only**; ignored on import by design); personal-portfolio authoring is covered by Phase 2 (hand-authored `type: knowledge` files import like any other).
+>
+> All phases additive and default-off. RAG, embeddings, and the live voice path are unchanged. Integration paths (running-app export→import round-trip, embedding after import) still need a manual smoke test — see §10.
 
 ---
 

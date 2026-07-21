@@ -440,14 +440,15 @@ export default function AgentConfigPage() {
           {showAdvanced && (
             <div className="px-7 pb-7 space-y-5">
               <div>
-                <Label>Custom system prompt</Label>
+                <Label>Extra AI instructions</Label>
                 <p className="text-xs text-white/40 mb-1.5 mt-0.5">
-                  Override the auto-generated AI instructions. Leave empty to use your settings above.
+                  Added on top of your auto-generated prompt (settings above + your business data). Use it for
+                  behavior tweaks only — put rooms, menus, and business facts in the Data tab, not here. Leave empty to use just your settings above.
                 </p>
                 <Textarea
                   value={systemPrompt}
                   onChange={(e) => setSystemPrompt(e.target.value)}
-                  placeholder="Leave empty — your agent's prompt is built automatically from the settings above."
+                  placeholder="e.g. Always mention our weekend brunch special. Never quote prices over the phone."
                   rows={8}
                   className="mt-1.5 bg-[var(--ah-bg-deep)]/60 text-xs font-mono"
                 />

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Trash2, BookOpen, Edit2, X, Check, Globe, HelpCircle } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, BookOpen, Edit2, X, Check, Globe, HelpCircle, Download, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,6 +54,11 @@ export default function KnowledgePage() {
   const [gaps, setGaps] = useState<KnowledgeGap[]>([]);
   const [resolvingGapId, setResolvingGapId] = useState<string | null>(null);
 
+  // OKF export (read-only) + import
+  const [exporting, setExporting] = useState(false);
+  const [importingOkf, setImportingOkf] = useState(false);
+  const okfInputRef = useRef<HTMLInputElement>(null);
+
   const fetchItems = useCallback(() => {
     fetch(base)
       .then((r) => r.json())
@@ -96,6 +101,67 @@ export default function KnowledgePage() {
       toast.error(err instanceof Error ? err.message : "Import failed");
     } finally {
       setImporting(false);
+    }
+  };
+
+  const handleExportOkf = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const res = await fetch(`${base}/export/okf`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Export failed");
+      if (!data.count) {
+        toast.error("Nothing to export yet — add a knowledge item first");
+        return;
+      }
+      // Client-side download of the bundle JSON (no server-side file storage).
+      const blob = new Blob([JSON.stringify(data.files, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = data.filename || "okf-bundle.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${data.count} item${data.count !== 1 ? "s" : ""} as OKF`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleImportOkf = async (file: File) => {
+    if (importingOkf) return;
+    setImportingOkf(true);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      // Accept either the raw { path: contents } map or a { files: {...} } wrapper.
+      const files =
+        parsed && typeof parsed === "object" && parsed.files && typeof parsed.files === "object"
+          ? parsed.files
+          : parsed;
+      const res = await fetch(`${base}/import/okf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Import failed");
+      toast.success(
+        `Imported: ${data.created} new, ${data.updated} updated, ${data.skipped} unchanged` +
+          (data.dataUpserted ? `, ${data.dataUpserted} data set${data.dataUpserted !== 1 ? "s" : ""}` : ""),
+      );
+      // Embeddings run async — refresh a few times so status flips pending → ready.
+      [1500, 6000, 15000].forEach((ms) => setTimeout(fetchItems, ms));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid OKF bundle file");
+    } finally {
+      setImportingOkf(false);
+      if (okfInputRef.current) okfInputRef.current.value = "";
     }
   };
 
@@ -186,6 +252,22 @@ export default function KnowledgePage() {
             <p className="text-base text-white/55 mt-2">Add FAQs, policies, and info your agent should know.</p>
           </div>
           <div className="flex gap-2 flex-wrap justify-end">
+            <input
+              ref={okfInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleImportOkf(f);
+              }}
+            />
+            <GradientButton onClick={() => okfInputRef.current?.click()} disabled={importingOkf} variant="outline" size="default">
+              {importingOkf ? <span className="ah-spinner" /> : <Upload className="w-4 h-4" />} Import OKF
+            </GradientButton>
+            <GradientButton onClick={handleExportOkf} disabled={exporting} variant="outline" size="default">
+              {exporting ? <span className="ah-spinner" /> : <Download className="w-4 h-4" />} Export OKF
+            </GradientButton>
             <GradientButton onClick={() => setShowImport(!showImport)} variant="outline" size="default">
               <Globe className="w-4 h-4" /> Import from website
             </GradientButton>
