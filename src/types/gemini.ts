@@ -20,4 +20,13 @@ export interface GeminiToolCall {
   args: Record<string, unknown>;
 }
 
-export type ConnectionState = "disconnected" | "connecting" | "connected" | "error";
+// "reconnecting" = an abnormal mid-call socket drop is being recovered via the
+// Gemini session-resumption handle (see GeminiLiveSession.attemptReconnect).
+// The call is still logically live; the UI shows a transient banner and the
+// call clock pauses rather than resetting.
+export type ConnectionState =
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "error";

@@ -195,7 +195,7 @@ export function InterviewPreCallForm({
             }}
           />
           {resumeFile ? (
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/10">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/4 border border-white/10">
               <FileText className="w-4 h-4 shrink-0" style={{ color: "var(--ah-lavender-deep)" }} />
               <span className="text-sm truncate flex-1" style={{ color: "var(--ah-ink)" }}>{resumeFile.name}</span>
               {uploadingResume && (
@@ -226,7 +226,7 @@ export function InterviewPreCallForm({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full px-3 py-3 rounded-xl border border-dashed border-white/15 text-sm text-white/55 hover:border-white/30 hover:text-white/85 hover:bg-white/[0.03] transition-all"
+              className="w-full px-3 py-3 rounded-xl border border-dashed border-white/15 text-sm text-white/55 hover:border-white/30 hover:text-white/85 hover:bg-white/3 transition-all"
             >
               Click to upload PDF resume
             </button>

@@ -85,6 +85,10 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
   const activeRef = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const savedRef = useRef(false);
+  // True from the moment a call first goes live until it ends. Lets the timer
+  // effect distinguish the initial connect (reset the clock) from a mid-call
+  // reconnect (resume the clock) — see the timer effect below.
+  const callActiveRef = useRef(false);
   const partialIds = useRef<{ user?: string; agent?: string }>({});
   const updateTokenRef = useRef<string | null>(null);
   // The session.on(...) handler and the call-limit interval are both
@@ -123,8 +127,14 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
 
   useEffect(() => {
     if (connectionState === "connected") {
-      setElapsedSeconds(0);
-      setShowEndingWarning(false);
+      // Reset the clock ONLY on the initial connect. A reconnect arrives as
+      // reconnecting→connected; callActiveRef is already true, so we resume the
+      // existing elapsed time instead of restarting the countdown.
+      if (!callActiveRef.current) {
+        callActiveRef.current = true;
+        setElapsedSeconds(0);
+        setShowEndingWarning(false);
+      }
       timerRef.current = setInterval(() => {
         setElapsedSeconds((s) => {
           const next = s + 1;
@@ -135,8 +145,14 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
         });
       }, 1000);
     } else {
+      // Reconnecting pauses the countdown but keeps the call logically active
+      // so it resumes without resetting. Only a real end (disconnected/error)
+      // clears the active flag so the next call starts fresh.
       if (timerRef.current) clearInterval(timerRef.current);
-      setShowEndingWarning(false);
+      if (connectionState !== "reconnecting") {
+        callActiveRef.current = false;
+        setShowEndingWarning(false);
+      }
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -177,6 +193,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
       setTranscript([]);
       setElapsedSeconds(0);
       savedRef.current = false;
+      callActiveRef.current = false;
 
       const body: Record<string, unknown> = { language: selectedLanguage };
       if (candidateContext) body.candidateContext = candidateContext;
@@ -247,6 +264,19 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
             setError(typeof event.data === "string" ? event.data : "Connection error");
             setConnectionState("error");
             break;
+          case "reconnecting":
+            // Abnormal socket drop being auto-recovered with the resumption
+            // handle. Keep the call mounted and show a transient banner; mic
+            // capture keeps running (the session buffers it during the gap).
+            setConnectionState("reconnecting");
+            break;
+          case "reconnected":
+            // Resumption succeeded — back to a live call. The timer effect
+            // resumes elapsed time (callActiveRef is still true) rather than
+            // resetting it.
+            setConnectionState("connected");
+            activeRef.current = true;
+            break;
           case "session-expiring":
             void handleEndCallRef.current?.();
             break;
@@ -282,7 +312,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
   }, [handleEndCall]);
 
   useEffect(() => {
-    const handler = () => { if (connectionState === "connected") saveSession(); };
+    const handler = () => { if (connectionState === "connected" || connectionState === "reconnecting") saveSession(); };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [connectionState, saveSession]);
@@ -325,7 +355,11 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
   }
 
   const isConnected = connectionState === "connected";
+  const isReconnecting = connectionState === "reconnecting";
   const isDisconnected = connectionState === "disconnected";
+  // "In a call" for UI purposes covers both a live socket and a transient
+  // reconnect, so the call screen stays mounted through a network blip.
+  const inCall = isConnected || isReconnecting;
   const accentColor = agentInfo.accentColor;
 
   return (
@@ -512,7 +546,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
           )}
 
           {/* ── Active call / Post-call transcript ── */}
-          {(isConnected || (isDisconnected && transcript.length > 0)) && (
+          {(inCall || (isDisconnected && transcript.length > 0)) && (
             <motion.div
               key="active"
               initial={{ opacity: 0 }}
@@ -539,6 +573,22 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
                 <TranscriptPanel messages={transcript} accentColor={accentColor} />
               </GlassPanel>
 
+              {isReconnecting && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="shrink-0 flex items-center justify-center gap-2 px-4 py-2 rounded-2xl text-xs font-medium"
+                  style={{
+                    background: "var(--ah-bg-inset)",
+                    border: "1px solid var(--ah-border)",
+                    color: "var(--ah-ink-soft)",
+                  }}
+                >
+                  <span className="ah-spinner" />
+                  Reconnecting…
+                </motion.div>
+              )}
+
               {isConnected && showEndingWarning && (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
@@ -555,7 +605,7 @@ export function PublicAgentExperience({ slug, mode = "standalone" }: Props) {
                 </motion.div>
               )}
 
-              {isConnected && (
+              {inCall && (
                 <div className="shrink-0 flex items-center justify-center gap-5 py-2">
                   <button
                     onClick={() => setMuted(!isMuted)}
