@@ -9,13 +9,19 @@ export function Hero() {
     <section className="relative flex items-center justify-center overflow-hidden pt-28 pb-20 md:pt-36 md:pb-28">
       <div className="relative z-10 max-w-5xl mx-auto px-4 md:px-6 text-center">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          // NOTE: opacity is intentionally NOT animated from 0 here. Framer
+          // Motion serializes `initial` into the server-rendered HTML as an
+          // inline style, so `opacity: 0` would leave the app name + purpose
+          // invisible to any crawler (incl. Google's OAuth homepage reviewer)
+          // that snapshots the page before JS animations finish. Keeping the
+          // subtle y-slide preserves the entrance without hiding the copy.
+          initial={{ opacity: 1, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* Eyebrow */}
+          {/* Eyebrow — carries the "Voxie" app name; must render visible in SSR */}
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.05 }}
             className="ah-pill mb-8"

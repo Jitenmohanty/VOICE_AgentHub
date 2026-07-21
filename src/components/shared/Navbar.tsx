@@ -19,7 +19,11 @@ export function Navbar() {
 
   return (
     <motion.nav
-      initial={{ y: -16, opacity: 0 }}
+      // opacity stays 1 (not animated from 0) so the persistent "Voxie"
+      // wordmark is present in the server-rendered HTML — the OAuth homepage
+      // reviewer reads the app name even before JS animations run. The y-slide
+      // still gives the entrance motion.
+      initial={{ y: -16, opacity: 1 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       data-scrolled={scrolled}
