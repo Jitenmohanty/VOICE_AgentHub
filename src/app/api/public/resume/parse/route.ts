@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { checkResumeRateLimit } from "@/lib/ratelimit";
+import { parseResumeAnalysis, RESUME_TEXT_MARKER } from "@/lib/resume/parse-response";
 
 /**
  * POST /api/public/resume/parse
@@ -46,12 +47,6 @@ export async function POST(request: Request) {
 
     const claude = new Anthropic({ apiKey });
 
-    // Delimiter separating the metadata JSON from the raw full-text transcription.
-    // We keep the JSON small so it always parses cleanly (summary/skills never
-    // regress), and take the full resume text as raw trailing text — no JSON
-    // string-escaping fragility for a multi-line document.
-    const RESUME_TEXT_MARKER = "---RESUME-TEXT---";
-
     // Use Claude's PDF support to extract a rich profile + a full plaintext copy
     const response = await claude.messages.create({
       model: "claude-sonnet-4-6",
@@ -86,32 +81,13 @@ Return raw text only — no markdown code fences.`,
 
     const raw = response.content[0]?.type === "text" ? response.content[0].text.trim() : "{}";
 
-    // Split metadata JSON (part 1) from the full-text transcription (part 2).
-    const markerIdx = raw.indexOf(RESUME_TEXT_MARKER);
-    const jsonPart = markerIdx === -1 ? raw : raw.slice(0, markerIdx).trim();
-    const textPart =
-      markerIdx === -1 ? "" : raw.slice(markerIdx + RESUME_TEXT_MARKER.length).trim();
+    // Split + validate the two-part response (JSON metadata + raw full text).
+    // Pure, dependency-free, and unit-tested — see parse-response.test.ts.
+    // Every field is length-capped to mirror CandidateContextSchema so the
+    // values here can't 400 the downstream session-create request.
+    const { name, skills, summary, resumeText } = parseResumeAnalysis(raw);
 
-    let parsed: { name?: string; skills?: string; summary?: string } = {};
-    try {
-      parsed = JSON.parse(jsonPart);
-    } catch {
-      // Fallback: treat the metadata part as a skills list (backward compat)
-      parsed = { skills: jsonPart };
-    }
-
-    // Cap summary at 600 chars to prevent system prompt bloat
-    const summary = (parsed.summary || "").slice(0, 600);
-    // Cap full text so the baked-in system prompt stays bounded (must match the
-    // CandidateContextSchema.resumeText limit in src/lib/schemas.ts).
-    const resumeText = textPart.slice(0, 8000);
-
-    return NextResponse.json({
-      name: parsed.name || "",
-      skills: parsed.skills || "",
-      summary,
-      resumeText,
-    });
+    return NextResponse.json({ name, skills, summary, resumeText });
   } catch (error) {
     console.error("[Resume] Parse failed:", error);
     return NextResponse.json(

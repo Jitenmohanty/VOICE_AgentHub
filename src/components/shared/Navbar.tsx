@@ -29,7 +29,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2.5 group">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/Voxie_Icon.png"
+            src="/Voxie_Logo.png"
             alt="Voxie"
             width={36}
             height={36}
