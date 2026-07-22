@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { businessAccessFilter } from "@/lib/access";
-import { generateAndStoreEmbedding } from "@/lib/rag";
+import { enqueueEmbeddings } from "@/lib/embeddings-queue";
 import { parseOkfBundle, conceptToKnowledgeItem, conceptToBusinessData } from "@/lib/okf";
 
 type Params = { params: Promise<{ businessId: string; agentId: string }> };
@@ -144,11 +144,9 @@ export async function POST(request: Request, { params }: Params) {
       dataUpserted++;
     }
 
-    // Fire-and-forget embeddings — failures land as embeddingStatus="failed"
-    // on the row (retry button in the dashboard), same as manual adds.
-    for (const e of toEmbed) {
-      void generateAndStoreEmbedding(e.id, e.text);
-    }
+    // Durable embeddings via Inngest (fanned out, retried); failures land as
+    // embeddingStatus="failed" on the row for the dashboard retry button.
+    await enqueueEmbeddings(toEmbed.map((e) => ({ itemId: e.id, text: e.text })));
 
     return NextResponse.json({
       created,

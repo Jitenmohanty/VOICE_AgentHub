@@ -2,6 +2,8 @@ import { serve } from "inngest/next";
 import { inngest } from "@/inngest/client";
 import { postCallAnalysis } from "@/inngest/functions/post-call-analysis";
 import { ingestWebsite } from "@/inngest/functions/ingest-website";
+import { embedKnowledge } from "@/inngest/functions/embed-knowledge";
+import { embedBackfill } from "@/inngest/functions/embed-backfill";
 import { weeklyDigest } from "@/inngest/functions/weekly-digest";
 import { overageInvoice } from "@/inngest/functions/overage-invoice";
 import { recordingRetention } from "@/inngest/functions/recording-retention";
@@ -13,5 +15,13 @@ import { recordingRetention } from "@/inngest/functions/recording-retention";
  */
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [postCallAnalysis, ingestWebsite, weeklyDigest, overageInvoice, recordingRetention],
+  functions: [
+    postCallAnalysis,
+    ingestWebsite,
+    embedKnowledge,
+    embedBackfill,
+    weeklyDigest,
+    overageInvoice,
+    recordingRetention,
+  ],
 });

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { businessAccessFilter } from "@/lib/access";
-import { generateAndStoreEmbedding } from "@/lib/rag";
+import { enqueueEmbedding } from "@/lib/embeddings-queue";
 
 type Params = { params: Promise<{ businessId: string; agentId: string; itemId: string }> };
 
@@ -50,7 +50,7 @@ export async function PATCH(request: Request, { params }: Params) {
     });
 
     if (contentChanged) {
-      void generateAndStoreEmbedding(itemId, `${updated.title}: ${updated.content}`);
+      await enqueueEmbedding(itemId, `${updated.title}: ${updated.content}`);
     }
 
     return NextResponse.json({ item: updated });

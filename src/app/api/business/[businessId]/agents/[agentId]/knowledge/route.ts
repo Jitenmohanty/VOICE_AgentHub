@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { businessAccessFilter } from "@/lib/access";
-import { generateAndStoreEmbedding } from "@/lib/rag";
+import { enqueueEmbedding } from "@/lib/embeddings-queue";
 
 type Params = { params: Promise<{ businessId: string; agentId: string }> };
 
@@ -66,9 +66,9 @@ export async function POST(request: Request, { params }: Params) {
       },
     });
 
-    // Async — failures land on the row as embeddingStatus="failed" so the
-    // dashboard can show a retry button instead of silently dropping the item.
-    void generateAndStoreEmbedding(item.id, `${body.title}: ${body.content}`);
+    // Durable embedding via Inngest so a returning serverless response can't
+    // kill the work; failures land on the row as embeddingStatus="failed".
+    await enqueueEmbedding(item.id, `${body.title}: ${body.content}`);
 
     return NextResponse.json({ item }, { status: 201 });
   } catch {

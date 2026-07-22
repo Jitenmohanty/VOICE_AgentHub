@@ -20,6 +20,8 @@ interface KnowledgeItem {
   sourceType: string;
   isActive: boolean;
   createdAt: string;
+  embeddingStatus?: "pending" | "ready" | "failed" | string;
+  embeddingError?: string | null;
 }
 
 interface KnowledgeGap {
@@ -205,6 +207,8 @@ export default function KnowledgePage() {
       }
       setNewTitle(""); setNewContent(""); setShowAdd(false);
       fetchItems();
+      // Embedding runs asynchronously — refresh so the badge flips to ready.
+      [2000, 6000, 15000].forEach((ms) => setTimeout(fetchItems, ms));
     } catch {
       toast.error("Failed to add");
     }
@@ -231,10 +235,32 @@ export default function KnowledgePage() {
       toast.success("Updated");
       setEditingId(null);
       fetchItems();
+      // Content edits re-embed asynchronously — refresh so the badge flips.
+      [2000, 6000, 15000].forEach((ms) => setTimeout(fetchItems, ms));
     } catch {
       toast.error("Failed to update");
     }
   };
+
+  const handleReembed = async (id: string) => {
+    // Optimistically flip to "pending" so the badge updates immediately.
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, embeddingStatus: "pending", embeddingError: null } : i)),
+    );
+    try {
+      const res = await fetch(`${base}/${id}/reembed`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      toast.success("Re-indexing started");
+      [2000, 6000, 15000].forEach((ms) => setTimeout(fetchItems, ms));
+    } catch {
+      toast.error("Couldn't start re-indexing");
+      fetchItems();
+    }
+  };
+
+  // Agent-level indexing summary for the header indicator.
+  const indexing = items.filter((i) => i.embeddingStatus === "pending").length;
+  const failed = items.filter((i) => i.embeddingStatus === "failed").length;
 
   return (
     <div className="max-w-4xl mx-auto px-2 py-6 md:p-10">
@@ -250,6 +276,21 @@ export default function KnowledgePage() {
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/40 mb-2">Agent Memory</p>
             <h1 className="font-serif text-3xl md:text-4xl tracking-[-0.02em] text-white">Knowledge base</h1>
             <p className="text-base text-white/55 mt-2">Add FAQs, policies, and info your agent should know.</p>
+            {(indexing > 0 || failed > 0) && (
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                {indexing > 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-300/20 text-amber-300">
+                    <span className="ah-spinner !w-3 !h-3" />
+                    {indexing} item{indexing !== 1 ? "s" : ""} indexing — not yet searchable by the agent
+                  </span>
+                )}
+                {failed > 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-300/20 text-rose-300">
+                    {failed} failed to index — retry below
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex gap-2 flex-wrap justify-end">
             <input
@@ -454,6 +495,7 @@ export default function KnowledgePage() {
               onCancelEdit={() => setEditingId(null)}
               onSave={(data) => handleUpdate(item.id, data)}
               onDelete={() => handleDelete(item.id)}
+              onRetry={() => handleReembed(item.id)}
             />
           ))}
         </div>
@@ -462,8 +504,43 @@ export default function KnowledgePage() {
   );
 }
 
+function EmbeddingBadge({
+  status,
+  error,
+  onRetry,
+}: {
+  status?: string;
+  error?: string | null;
+  onRetry: () => void;
+}) {
+  if (status === "pending") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-300/20 text-amber-300 shrink-0">
+        <span className="ah-spinner !w-2.5 !h-2.5" /> Indexing
+      </span>
+    );
+  }
+  if (status === "failed") {
+    return (
+      <button
+        onClick={onRetry}
+        title={error || "Embedding failed — click to retry"}
+        className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-300/20 text-rose-300 hover:bg-rose-500/20 transition-colors shrink-0"
+      >
+        Failed · Retry
+      </button>
+    );
+  }
+  // ready (or legacy null) — a quiet confirmation.
+  return (
+    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-300/20 text-emerald-300 shrink-0">
+      <Check className="w-3 h-3" /> Indexed
+    </span>
+  );
+}
+
 function KnowledgeItemCard({
-  item, index, isEditing, onEdit, onCancelEdit, onSave, onDelete,
+  item, index, isEditing, onEdit, onCancelEdit, onSave, onDelete, onRetry,
 }: {
   item: KnowledgeItem;
   index: number;
@@ -472,6 +549,7 @@ function KnowledgeItemCard({
   onCancelEdit: () => void;
   onSave: (data: Partial<KnowledgeItem>) => void;
   onDelete: () => void;
+  onRetry: () => void;
 }) {
   const [title, setTitle] = useState(item.title);
   const [content, setContent] = useState(item.content);
@@ -497,6 +575,9 @@ function KnowledgeItemCard({
             <span className="text-xs px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-white/55 shrink-0">
               {item.category}
             </span>
+            {!isEditing && (
+              <EmbeddingBadge status={item.embeddingStatus} error={item.embeddingError} onRetry={onRetry} />
+            )}
           </div>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
             {isEditing ? (

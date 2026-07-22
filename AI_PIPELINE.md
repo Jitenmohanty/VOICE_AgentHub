@@ -262,18 +262,39 @@ Tool handlers are intentionally **client-side** (running in the caller's browser
 
 ### Embedding generation (write path)
 
-When the owner adds a `KnowledgeItem`:
+When the owner adds a `KnowledgeItem` (manual add, OKF import, or website ingest):
 
 1. Row is created with `embeddingStatus: "pending"`.
-2. Async kickoff: `generateAndStoreEmbedding(itemId, "{title}: {content}")`.
+2. **Durable enqueue** via `enqueueEmbedding()` (`src/lib/embeddings-queue.ts`) → Inngest
+   event `knowledge/embed-item` → the `embed-knowledge` function runs
+   `generateAndStoreEmbedding(itemId, "{title}: {content}")` in a retried step.
 3. Calls `gemini-embedding-001` with `outputDimensionality: 768`.
 4. Stores via raw SQL (pgvector requires it):
    ```sql
    UPDATE "KnowledgeItem" SET embedding = $1::vector WHERE id = $2
    ```
-5. On success: `embeddingStatus = "ready"`. On failure: `embeddingStatus = "failed"`, `embeddingError` populated for the dashboard.
+5. On success: `embeddingStatus = "ready"`. On failure: `generateAndStoreEmbedding`
+   records `embeddingStatus = "failed"` + `embeddingError` **and rethrows**, so
+   Inngest retries (3×) transient failures.
 
-The async kickoff means the POST returns instantly. Owners can see in the dashboard which knowledge items haven't been indexed yet.
+**Durability & self-healing (why this isn't fire-and-forget anymore).** Embedding
+used to be `void generateAndStoreEmbedding(...)` after the response returned — on
+serverless that promise can be killed mid-flight, stranding items in `pending`
+forever (invisible to RAG). Now:
+
+- **Enqueue, don't fire-and-forget.** Routes `await enqueueEmbedding()` (a fast
+  event send) before responding; the slow work runs out-of-band in Inngest. If the
+  event can't be sent (e.g. no local Inngest dev server) it falls back to inline
+  `generateAndStoreEmbedding` — no worse than before.
+- **Backfill cron.** `embed-backfill` (every 15 min) re-enqueues any item stuck in
+  `pending`/`failed` for >5 min, so a dropped event or a transient outage
+  self-heals without anyone touching the item.
+- **Manual retry.** `POST .../knowledge/[itemId]/reembed` resets status and
+  re-enqueues — wired to the dashboard's per-item "Failed · Retry" badge.
+
+Owners see per-item status badges (Indexing / Indexed / Failed) and an agent-level
+"N items indexing — not yet searchable" indicator on the knowledge page, so a call
+placed before indexing finishes is no longer a silent gap.
 
 ### Knowledge retrieval (read path)
 
@@ -346,6 +367,10 @@ Both branches end with `flushTraces()` so LangSmith captures the full call.
 ### Why Claude, not Gemini, for post-call?
 
 We use Claude Sonnet 4 here because the post-call analysis needs strong instruction-following on a structured-output schema (`actionItems` with `priority` enum, `sentiment` enum, etc.) and Sonnet's tool-use + structured output is more reliable than Gemini's at this size. Gemini handles the real-time voice; Claude handles the reasoning afterward.
+
+### JSON parsing gotcha (why summaries once rendered as raw JSON)
+
+Claude occasionally wraps its output in a ```` ```json … ``` ```` fence despite the "return only JSON" instruction. A raw `JSON.parse` then throws, and the catch fallback wrote the **entire raw response into `summary`** — so the dashboard showed a raw JSON blob and the structured columns stayed empty. Fix: `src/lib/claude.ts` parses all model JSON through `parseLooseJson<T>()` (strips fences/prose first); the `SessionDetailModal` also defensively recovers legacy blobs via `parseAnalysisBlob`. Keep both — never parse LLM output with a bare `JSON.parse`.
 
 ### Why Inngest, not a setTimeout?
 

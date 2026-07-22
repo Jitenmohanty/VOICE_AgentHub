@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { chunkDocument } from "@/lib/claude";
-import { generateAndStoreEmbedding } from "@/lib/rag";
+import { enqueueEmbeddings } from "@/lib/embeddings-queue";
 import { crawlSite, type CrawledPage } from "@/lib/ingest/crawl";
 
 /**
@@ -66,6 +66,7 @@ export async function ingestWebsiteForAgent(agentId: string, url: string): Promi
 
   let itemsCreated = 0;
   let skippedDuplicates = 0;
+  const toEmbed: { itemId: string; text: string }[] = [];
 
   for (const page of pages) {
     if (itemsCreated >= MAX_ITEMS_PER_INGEST) break;
@@ -94,11 +95,13 @@ export async function ingestWebsiteForAgent(agentId: string, url: string): Promi
       });
       existingTitles.add(title.toLowerCase());
       itemsCreated++;
-      // Same fire-and-forget pattern as manual knowledge adds — failures land
-      // on the row as embeddingStatus="failed" for the dashboard to surface.
-      void generateAndStoreEmbedding(item.id, `${title}: ${content}`);
+      toEmbed.push({ itemId: item.id, text: `${title}: ${content}` });
     }
   }
+
+  // Durable, retried embedding via Inngest — fanned out after the crawl so a
+  // returning serverless response can't strand items in "pending".
+  await enqueueEmbeddings(toEmbed);
 
   console.log(
     `[Ingest] ${url} → ${pages.length} pages, ${itemsCreated} items created, ${skippedDuplicates} duplicates skipped (agent ${agentId})`,

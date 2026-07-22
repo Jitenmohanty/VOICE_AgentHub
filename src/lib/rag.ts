@@ -6,9 +6,10 @@ import { traceable } from "langsmith/traceable";
  * Generate the embedding for a knowledge item and persist both the vector and
  * a status field so the dashboard can show pending/ready/failed.
  *
- * Awaits internally — callers should NOT await this if they want a fast HTTP
- * response. When called fire-and-forget, success and failure are still
- * recorded on the row, which is the whole point of having this helper.
+ * Records `ready`/`failed` on the row either way, then **rethrows on failure**
+ * so the durable Inngest `embed-knowledge` function retries transient errors
+ * (rate limits, cold embedding API). Callers that run this inline as a
+ * best-effort fallback must therefore attach a `.catch()`.
  */
 export async function generateAndStoreEmbedding(itemId: string, text: string): Promise<void> {
   try {
@@ -27,6 +28,7 @@ export async function generateAndStoreEmbedding(itemId: string, text: string): P
         data: { embeddingStatus: "failed", embeddingError: message.slice(0, 500) },
       })
       .catch((updateErr) => console.error("[Knowledge] Status write also failed:", updateErr));
+    throw err;
   }
 }
 

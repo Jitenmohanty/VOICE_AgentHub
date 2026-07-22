@@ -63,7 +63,11 @@ const response = await anthropic.messages.create({
   messages: [{ role: "user", content: prompt }],
 });
 
-const analysis = JSON.parse(response.content[0].text);
+// ⚠️ Do NOT use raw JSON.parse here — Claude sometimes wraps the object in a
+// ```json … ``` fence despite the "no markdown" instruction, which throws and
+// (via the catch fallback) dumps the whole raw response into `summary`. Always
+// use the fence-tolerant helper.
+const analysis = parseLooseJson<PostCallAnalysis>(response.content[0].text);
 ```
 
 ### 4. Write the new field to the database
@@ -100,6 +104,27 @@ if (session.summary) {
 ```
 
 To force a re-run during development, set `summary = null` on the session directly in Prisma Studio (`npx prisma studio`).
+
+---
+
+## Gotchas: robust JSON parsing & legacy rows
+
+**1. Always parse LLM JSON fence-tolerantly.** Claude may return the object inside
+a ```` ```json … ``` ```` fence even when told not to. `src/lib/claude.ts` exports
+`parseLooseJson<T>()` which strips fences / surrounding prose before `JSON.parse`.
+Every LLM JSON call in that file uses it (post-call analysis, doc chunking, weekly
+digest, interview report). **Never revert to raw `JSON.parse` on model output** — a
+throw there falls through to a catch that stores the raw text in `summary`, which
+renders as a raw JSON blob in the dashboard.
+
+**2. Legacy sessions may hold the whole analysis JSON in `summary`.** Rows created
+before the fix above have the entire (often fenced) JSON in the `summary` column and
+`null` in the structured columns (`sentiment`, `topics`, `leadScore`, …).
+`SessionDetailModal.tsx` recovers gracefully via `parseAnalysisBlob(summary)`: it
+shows the real summary text and hydrates the AI-Analysis panel from the recovered
+blob when the columns are empty. If you add a new analysis field, mirror it in that
+`AnalysisBlob` fallback so legacy rows display it too. To permanently backfill the
+DB columns for old rows, a re-parse script is the clean path (not yet written).
 
 ---
 
